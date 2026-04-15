@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELA — Your AI Travel Concierge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --obsidian: #0a0a0a;
+    --void: #050505;
+    --gold: #c9a96e;
+    --gold-light: #e8d5a3;
+    --gold-dim: #7a6340;
+    --ivory: #f5f0e8;
+    --ivory-dim: #c8bfaa;
+    --glass: rgba(201,169,110,0.06);
+    --glass-border: rgba(201,169,110,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--ivory);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(201,169,110,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.25s ease, width 0.3s ease, height 0.3s ease;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem;
+    background: linear-gradient(to bottom, rgba(5,5,5,0.95), transparent);
+  }
+
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 3rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ivory-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  .nav-cta {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--obsidian);
+    background: var(--gold);
+    padding: 0.75rem 2rem;
+    text-decoration: none;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 4rem 0 4rem;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at 75% 50%, rgba(201,169,110,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 30% 40% at 80% 20%, rgba(201,169,110,0.04) 0%, transparent 60%);
+  }
+
+  .hero-lines {
+    position: absolute;
+    top: 0; right: 0;
+    width: 55%;
+    height: 100%;
+    overflow: hidden;
+    opacity: 0.12;
+  }
+
+  .hero-lines svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.6rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 9vw, 9rem);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--ivory);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    max-width: 480px;
+    font-size: 0.85rem;
+    line-height: 1.9;
+    letter-spacing: 0.05em;
+    color: var(--ivory-dim);
+    margin-bottom: 3.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s forwards;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--gold);
+    color: var(--obsidian);
+    padding: 1.1rem 2.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    transition: transform 0.2s, background 0.3s;
+    cursor: none;
+  }
+  .btn-primary:hover { transform: translateY(-2px); background: var(--gold-light); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gold);
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 2px;
+    transition: color 0.3s, border-color 0.3s;
+    cursor: none;
+  }
+  .btn-ghost:hover { color: var(--gold-light); border-color: var(--gold-light); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+  .hero-scroll span {
+    font-size: 0.55rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--gold-dim), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* MARQUEE */
+  .marquee-wrap {
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    overflow: hidden;
+    padding: 1.2rem 0;
+    background: rgba(201,169,110,0.02);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 4rem;
+    white-space: nowrap;
+    animation: marquee 30s linear infinite;
+    width: max-content;
+  }
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .marquee-dot {
+    width: 3px; height: 3px;
+    background: var(--gold);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* SECTION COMMONS */
+  section { position: relative; z-index: 2; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; }
+
+  .section-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  /* DREAM INPUT SECTION */
+  .dream-section {
+    padding: 10rem 0;
+    background: linear-gradient(to bottom, var(--void), #080808);
+  }
+
+  .dream-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: center;
+  }
+
+  .dream-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 4vw, 4.5rem);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--ivory);
+    margin-bottom: 2rem;
+  }
+
+  .dream-title em { font-style: italic; color: var(--gold); }
+
+  .dream-desc {
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--ivory-dim);
+    letter-spacing: 0.03em;
+  }
+
+  .dream-input-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dream-input-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .input-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  .dream-textarea {
+    width: 100%;
+    background: rgba(201,169,110,0.04);
+    border: 1px solid rgba(201,169,110,0.1);
+    color: var(--ivory);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    font-style: italic;
+    padding: 1.25rem;
+    resize: none;
+    height: 120px;
+    outline: none;
+    transition: border-color 0.3s;
+    letter-spacing: 0.02em;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+  .dream-textarea::placeholder { color: var(--gold-dim); }
+  .dream-textarea:focus { border-color: rgba(201,169,110,0.4); }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-field {
+    background: rgba(201,169,110,0.04);
+    border: 1px solid rgba(201,169,110,0.1);
+    color: var(--ivory);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 300;
+    padding: 0.9rem 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+    letter-spacing: 0.05em;
+    width: 100%;
+  }
+  .input-field::placeholder { color: var(--gold-dim); }
+  .input-field:focus { border-color: rgba(201,169,110,0.4); }
+
+  .tier-select {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .tier-btn {
+    padding: 0.75rem 0.5rem;
+    border: 1px solid rgba(201,169,110,0.15);
+    background: transparent;
+    color: var(--ivory-dim);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .tier-btn:hover, .tier-btn.active {
+    background: rgba(201,169,110,0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--obsidian);
+    border: none;
+    padding: 1.2rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .submit-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  /* AGENTS SECTION */
+  .agents-section {
+    padding: 10rem 0;
+    background: #080808;
+  }
+
+  .agents-header {
+    text-align: center;
+    margin-bottom: 6rem;
+  }
+
+  .agents-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 4vw, 5rem);
+    font-weight: 300;
+    color: var(--ivory);
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+  }
+  .agents-title em { font-style: italic; color: var(--gold); }
+
+  .agents-desc {
+    max-width: 520px;
+    margin: 0 auto;
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--ivory-dim);
+    letter-spacing: 0.03em;
+  }
+
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5px;
+  }
+
+  .agent-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 2.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s, transform 0.3s;
+    cursor: none;
+  }
+  .agent-card:hover {
+    background: rgba(201,169,110,0.1);
+    transform: translateY(-4px);
+  }
+
+  .agent-icon {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+
+  .agent-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--ivory);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  .agent-desc {
+    font-size: 0.72rem;
+    line-height: 1.8;
+    color: var(--ivory-dim);
+    letter-spacing: 0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  .agent-features {
+    list-style: none;
+  }
+  .agent-features li {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--gold-dim);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(201,169,110,0.07);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .agent-features li::before {
+    content: '—';
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  /* TIERS SECTION */
+  .tiers-section {
+    padding: 10rem 0;
+    background: linear-gradient(to bottom, #080808, var(--void));
+  }
+
+  .tiers-header {
+    margin-bottom: 6rem;
+  }
+
+  .tiers-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 4vw, 5rem);
+    font-weight: 300;
+    color: var(--ivory);
+    line-height: 1.1;
+  }
+  .tiers-title em { font-style: italic; color: var(--gold); }
+
+  .tiers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .tier-card {
+    padding: 3.5rem 3rem;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s;
+  }
+  .tier-card:hover { transform: translateY(-6px); }
+
+  .tier-card.standard { background: rgba(201,169,110,0.03); }
+  .tier-card.premium { background: rgba(201,169,110,0.07); }
+  .tier-card.elite {
+    background: linear-gradient(135deg, rgba(201,169,110,0.12), rgba(201,169,110,0.05));
+    border-color: var(--gold-dim);
+  }
+  .tier-card.elite::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 0.35rem 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .tier-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--ivory);
+    margin-bottom: 0.5rem;
+  }
+
+  .tier-tagline {
+    font-size: 0.75rem;
+    color: var(--ivory-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  .tier-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    color: var(--gold);
+    font-weight: 300;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+  }
+  .tier-price-note {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--ivory-dim);
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  .tier-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: 2rem 0;
+  }
+
+  .tier-list {
+    list-style: none;
+    margin-bottom: 2.5rem;
+  }
+  .tier-list li {
+    font-size: 0.72rem;
+    color: var(--ivory-dim);
+    letter-spacing: 0.05em;
+    padding: 0.6rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    line-height: 1.5;
+  }
+  .tier-list li span.check {
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* HOW IT WORKS */
+  .how-section {
+    padding: 10rem 0;
+    background: var(--void);
+  }
+
+  .how-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 8rem;
+    align-items: start;
+  }
+
+  .how-sticky {
+    position: sticky;
+    top: 6rem;
+  }
+
+  .how-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 3.5vw, 4rem);
+    font-weight: 300;
+    color: var(--ivory);
+    line-height: 1.15;
+    margin-bottom: 2rem;
+  }
+  .how-title em { font-style: italic; color: var(--gold); }
+
+  .how-sub {
+    font-size: 0.78rem;
+    line-height: 2;
+    color: var(--ivory-dim);
+    letter-spacing: 0.03em;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 2rem;
+    padding: 3rem 0;
+    border-bottom: 1px solid var(--glass-border);
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: rgba(201,169,110,0.2);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .step-content h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--ivory);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  .step-content p {
+    font-size: 0.78rem;
+    line-height: 1.9;
+    color: var(--ivory-dim);
+    letter-spacing: 0.03em;
+  }
+
+  /* SECURITY */
+  .security-section {
+    padding: 8rem 0;
+    background: linear-gradient(to bottom, var(--void), #060608);
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .security-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .security-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 3vw, 3.5rem);
+    font-weight: 300;
+    color: var(--ivory);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+  .security-title em { font-style: italic; color: var(--gold); }
+
+  .security-desc {
+    font-size: 0.78rem;
+    line-height: 2;
+    color: var(--ivory-dim);
+    letter-spacing: 0.03em;
+    margin-bottom: 3rem;
+  }
+
+  .security-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .sec-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--glass-border);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  .security-visual {
+    position: relative;
+    height: 380px;
+  }
+
+  .sec-card {
+    position: absolute;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 1.5rem 2rem;
+    min-width: 220px;
+  }
+  .sec-card:nth-child(1) { top: 0; left: 0; }
+  .sec-card:nth-child(2) { top: 60px; right: 0; border-color: var(--gold-dim); }
+  .sec-card:nth-child(3) { bottom: 40px; left: 60px; }
+  .sec-card:nth-child(4) { bottom: 0; right: 20px; }
+
+  .sec-card-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .sec-card-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ivory);
+    letter-spacing: 0.05em;
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 12rem 0;
+    background: #060608;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .cta-section::before {
+    content: 'VELA';
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 25vw;
+    font-weight: 300;
+    color: rgba(201,169,110,0.025);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+  }
+
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 6vw, 7rem);
+    font-weight: 300;
+    color: var(--ivory);
+    line-height: 1.05;
+    margin-bottom: 2rem;
+  }
+  .cta-title em { font-style: italic; color: var(--gold); }
+
+  .cta-sub {
+    max-width: 500px;
+    margin: 0 auto 4rem;
+    font-size: 0.82rem;
+    line-height: 2;
+    color: var(--ivory-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--glass-border);
+    padding: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--void);
+  }
+
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+  }
+
+  .footer-copy {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    nav { padding: 1.5rem 2rem; }
+    .nav-links { display: none; }
+    .hero { padding: 0 2rem; }
+    .container { padding: 0 2rem; }
+    .dream-layout, .agents-grid, .tiers-grid, .how-layout, .security-grid { grid-template-columns: 1fr; }
+    .agents-grid { grid-template-columns: 1fr 1fr; }
+    footer { flex-direction: column; gap: 2rem; text-align: center; }
+    .hero-lines { opacity: 0.05; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Vela</div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#agents">AI Agents</a></li>
+    <li><a href="#tiers">Tiers</a></li>
+    <li><a href="#security">Security</a></li>
+  </ul>
+  <a href="#dream" class="nav-cta">Begin Your Journey</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-lines">
+    <svg viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="300" cy="450" r="250" stroke="#c9a96e" stroke-width="0.5"/>
+      <circle cx="300" cy="450" r="180" stroke="#c9a96e" stroke-width="0.3"/>
+      <circle cx="300" cy="450" r="120" stroke="#c9a96e" stroke-width="0.3"/>
+      <circle cx="300" cy="450" r="60" stroke="#c9a96e" stroke-width="0.5"/>
+      <line x1="50" y1="450" x2="550" y2="450" stroke="#c9a96e" stroke-width="0.3"/>
+      <line x1="300" y1="50" x2="300" y2="850" stroke="#c9a96e" stroke-width="0.3"/>
+      <line x1="123" y1="173" x2="477" y2="727" stroke="#c9a96e" stroke-width="0.3"/>
+      <line x1="477" y1="173" x2="123" y2="727" stroke="#c9a96e" stroke-width="0.3"/>
+      <circle cx="300" cy="450" r="4" fill="#c9a96e" opacity="0.6"/>
+      <circle cx="300" cy="200" r="2.5" fill="#c9a96e" opacity="0.4"/>
+      <circle cx="300" cy="700" r="2.5" fill="#c9a96e" opacity="0.4"/>
+      <circle cx="50" cy="450" r="2.5" fill="#c9a96e" opacity="0.4"/>
+      <circle cx="550" cy="450" r="2.5" fill="#c9a96e" opacity="0.4"/>
+    </svg>
+  </div>
+
+  <p class="hero-eyebrow">AI-Powered Luxury Travel Concierge</p>
+  <h1 class="hero-title">
+    Every<br>
+    <em>dream</em><br>
+    realized.
+  </h1>
+  <p class="hero-sub">
+    Tell us where you want to go. Vela's AI agents handle every detail — from private jet charters and five-star villas to curated excursions — while you simply anticipate the experience.
+  </p>
+  <div class="hero-actions">
+    <a href="#dream" class="btn-primary">
+      Plan My Journey
+      <span>→</span>
+    </a>
+    <a href="#how" class="btn-ghost">
+      See How It Works
+    </a>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <div class="marquee-item"><span class="marquee-dot"></span> Private Aviation & Jets</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Ultra-Luxury Resorts</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Overwater Bungalows</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Michelin-Star Reservations</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Expedition Cruises</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Budget Backpacking</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Visa Arrangements</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Helicopter Transfers</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Safari Camps</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Yacht Charters</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Private Islands</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Ground Transfers</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Travel Insurance</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Private Aviation & Jets</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Ultra-Luxury Resorts</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Overwater Bungalows</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Michelin-Star Reservations</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Expedition Cruises</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Budget Backpacking</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Visa Arrangements</div>
+    <div class="marquee-item"><span class="marquee-dot"></span> Helicopter Transfers</div>
+  </div>
+</div>
+
+<!-- DREAM INPUT -->
+<section class="dream-section" id="dream">
+  <div class="container">
+    <div class="dream-layout">
+      <div class="reveal">
+        <p class="section-label">The Experience</p>
+        <h2 class="dream-title">Describe your <em>perfect</em> journey in any language, any detail.</h2>
+        <p class="dream-desc">
+          Whether it's a weekend escape to the Amalfi Coast or an open-ended odyssey across Southeast Asia — speak it into existence. Vela understands context, nuance, and the spaces between the words. Our agents then execute every single element autonomously, in real time.
+        </p>
+      </div>
+      <div class="reveal">
+        <div class="dream-input-card">
+          <p class="input-label">Describe your dream trip</p>
+          <textarea class="dream-textarea" placeholder="I want to wake up in Bali watching the sunrise over rice terraces, then spend a week island-hopping through Indonesia with my partner for our anniversary..."></textarea>
+
+          <div class="input-row">
+            <div>
+              <p class="input-label">Budget</p>
+              <input class="input-field" type="text" placeholder="e.g. $5,000 or Unlimited">
+            </div>
+            <div>
+              <p class="input-label">Travelers</p>
+              <input class="input-field" type="text" placeholder="e.g. 2 adults">
+            </div>
+          </div>
+
+          <p class="input-label" style="margin-bottom:0.75rem;">Travel tier</p>
+          <div class="tier-select">
+            <button class="tier-btn">Explorer</button>
+            <button class="tier-btn active">Premier</button>
+            <button class="tier-btn">Elite</button>
+          </div>
+
+          <button class="submit-btn">
+            <span>Summon Vela</span>
+            <span>✦</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI AGENTS -->
+<section class="agents-section" id="agents">
+  <div class="container">
+    <div class="agents-header reveal">
+      <p class="section-label" style="justify-content:center;">The Intelligence</p>
+      <h2 class="agents-title">Autonomous agents.<br><em>Zero effort from you.</em></h2>
+      <p class="agents-desc">Eight specialized AI agents work in concert — searching, booking, confirming, and managing every aspect of your journey simultaneously.</p>
+    </div>
+    <div class="agents-grid">
+      <div class="agent-card reveal">
+        <span class="agent-icon">✈</span>
+        <h3 class="agent-name">Flight Agent</h3>
+        <p class="agent-desc">Searches and books optimal flights across commercial airlines, private charter operators, and fractional jet networks.</p>
+        <ul class="agent-features">
+          <li>Commercial & business class</li>
+          <li>Private jet operators</li>
+          <li>Fractional ownership networks</li>
+          <li>Real-time fare monitoring</li>
+        </ul>
+      </div>
+      <div class="agent-card reveal">
+        <span class="agent-icon">🏛</span>
+        <h3 class="agent-name">Accommodation Agent</h3>
+        <p class="agent-desc">From budget hostels to ultra-private island resorts — sources and confirms the perfect stay matched to your specifications.</p>
+        <ul class="agent-features">
+          <li>Budget to ultra-luxury</li>
+          <li>Private villas & estates</li>
+          <li>Exclusive resort access</li>
+          <li>Special occasion setup</li>
+        </ul>
+      </div>
+      <div class="agent-card reveal">
+        <span class="agent-icon">🚗</span>
+        <h3 class="agent-name">Transfer Agent</h3>
+        <p class="agent-desc">Coordinates every movement — airport pickups, helicopter transfers, yacht tenders, and everything in between.</p>
+        <ul class="agent-features">
+          <li>Ground transportation</li>
+          <li>Helicopter & seaplane</li>
+          <li>Yacht & boat charters</li>
+          <li>Door-to-door logistics</li>
+        </ul>
+      </div>
+      <div class="agent-card reveal">
+        <span class="agent-icon">🗺</span>
+        <h3 class="agent-name">Experience Agent</h3>
+        <p class="agent-desc">Books and confirms curated excursions, restaurant reservations, cultural experiences, and once-in-a-lifetime moments.</p>
+        <ul class="agent-features">
+          <li>Michelin-star dining</li>
+          <li>Private guided tours</li>
+          <li>Adventure excursions</li>
+          <li>Cultural experiences</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIERS -->
+<section class="tiers-section" id="tiers">
+  <div class="container">
+    <div class="tiers-header reveal">
+      <p class="section-label">Service Tiers</p>
+      <h2 class="tiers-title">From budget explorer<br>to <em>limitless luxury.</em></h2>
+    </div>
+    <div class="tiers-grid">
+      <div class="tier-card standard reveal">
+        <span class="tier-badge">Explorer</span>
+        <h3 class="tier-name">Explorer</h3>
+        <p class="tier-tagline">Smart AI planning for the budget-conscious adventurer. Every dollar optimized.</p>
+        <div class="tier-price">$29</div>
+        <p class="tier-price-note">per trip plan</p>
+        <div class="tier-divider"></div>
+        <ul class="tier-list">
+          <li><span class="check">✓</span> AI flight & hotel search</li>
+          <li><span class="check">✓</span> Budget optimization engine</li>
+          <li><span class="check">✓</span> Basic itinerary planning</li>
+          <li><span class="check">✓</span> Booking assistance</li>
+          <li><span class="check">✓</span> Travel documentation checklist</li>
+        </ul>
+        <a href="#dream" class="btn-ghost">Start Planning →</a>
+      </div>
+      <div class="tier-card premium reveal">
+        <span class="tier-badge">Premier</span>
+        <h3 class="tier-name">Premier</h3>
+        <p class="tier-tagline">Full autonomous booking with curated recommendations for discerning travelers.</p>
+        <div class="tier-price">$149</div>
+        <p class="tier-price-note">per trip plan</p>
+        <div class="tier-divider"></div>
+        <ul class="tier-list">
+          <li><span class="check">✓</span> Everything in Explorer</li>
+          <li><span class="check">✓</span> Autonomous booking agents</li>
+          <li><span class="check">✓</span> Business & premium class flights</li>
+          <li><span class="check">✓</span> 4–5 star accommodation curation</li>
+          <li><span class="check">✓</span> Restaurant reservations</li>
+          <li><span class="check">✓</span> Transfer coordination</li>
+          <li><span class="check">✓</span> 24/7 agent support</li>
+        </ul>
+        <a href="#dream" class="btn-primary" style="display:inline-flex; margin-top: 1rem;">Start Planning →</a>
+      </div>
+      <div class="tier-card elite reveal">
+        <span class="tier-badge">Elite — No Limits</span>
+        <h3 class="tier-name">Elite</h3>
+        <p class="tier-tagline">White-glove AI concierge. Budget is irrelevant. Experience is everything.</p>
+        <div class="tier-price">Bespoke</div>
+        <p class="tier-price-note">Pricing on engagement</p>
+        <div class="tier-divider"></div>
+        <ul class="tier-list">
+          <li><span class="check">✓</span> Everything in Premier</li>
+          <li><span class="check">✓</span> Private jet sourcing & booking</li>
+          <li><span class="check">✓</span> Private island & estate access</li>
+          <li><span class="check">✓</span> Yacht charter coordination</li>
+          <li><span class="check">✓</span> Dedicated human concierge</li>
+          <li><span class="check">✓</span> Encrypted vault for all credentials</li>
+          <li><span class="check">✓</span> Passport & visa management</li>
+          <li><span class="check">✓</span> 24/7 real-time modifications</li>
+        </ul>
+        <a href="#dream" class="btn-ghost" style="margin-top:1rem;">Contact Us →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="container">
+    <div class="how-layout">
+      <div class="how-sticky reveal">
+        <p class="section-label">The Process</p>
+        <h2 class="how-title">From <em>dream</em> to departure in minutes.</h2>
+        <p class="how-sub">Vela's agents work autonomously in the background — searching, comparing, booking, and confirming — while you live your life.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step-num">01</span>
+          <div class="step-content">
+            <h3>Describe your dream</h3>
+            <p>Tell Vela everything — your destination, travel style, who you're going with, what matters most to you. Use casual language, bullet points, or stream of consciousness. The AI understands it all.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">02</span>
+          <div class="step-content">
+            <h3>Set your parameters</h3>
+            <p>Input your budget range (or select "no limit"), travel dates, number of travelers, and your tier. Optionally provide your passport details and payment method for fully autonomous booking.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">03</span>
+          <div class="step-content">
+            <h3>Agents activate</h3>
+            <p>Eight specialized AI agents simultaneously search flights, accommodations, transfers, dining, and experiences — cross-referencing availability, optimizing for your preferences, and surfacing the best options.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">04</span>
+          <div class="step-content">
+            <h3>Review & approve</h3>
+            <p>Within minutes, receive a complete itinerary with all options ranked and explained. Approve autonomously or customize any element. For Elite clients, Vela simply acts.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">05</span>
+          <div class="step-content">
+            <h3>Everything confirmed</h3>
+            <p>Bookings are made, confirmations sent to your encrypted travel vault, documents organized, and your journey timeline synced across all your devices. All you do is pack.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="security-section" id="security">
+  <div class="container">
+    <div class="security-grid">
+      <div class="reveal">
+        <p class="section-label">Trust & Security</p>
+        <h2 class="security-title">Your credentials.<br><em>Fortress-grade</em> protection.</h2>
+        <p class="security-desc">
+          Vela is entrusted with the most sensitive personal data — passports, payment cards, travel documents. We treat this with the gravity it deserves. Military-grade encryption, zero-knowledge architecture, and full audit trails on every agent action.
+        </p>
+        <div class="security-badges">
+          <div class="sec-badge">🔐 AES-256 Encryption</div>
+          <div class="sec-badge">🛡 PCI DSS Compliant</div>
+          <div class="sec-badge">🔑 Zero-Knowledge Vault</div>
+          <div class="sec-badge">📋 Full Audit Logs</div>
+          <div class="sec-badge">🌐 SOC 2 Type II</div>
+        </div>
+      </div>
+      <div class="security-visual reveal">
+        <div class="sec-card">
+          <p class="sec-card-label">Passport</p>
+          <p class="sec-card-val">••••••• 7842</p>
+        </div>
+        <div class="sec-card">
+          <p class="sec-card-label">Payment Method</p>
+          <p class="sec-card-val">Visa •••• 4421</p>
+        </div>
+        <div class="sec-card">
+          <p class="sec-card-label">Booking Reference</p>
+          <p class="sec-card-val">AETH-7X2K9M</p>
+        </div>
+        <div class="sec-card">
+          <p class="sec-card-label">Agent Activity</p>
+          <p class="sec-card-val">All actions logged ✓</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-title reveal">
+      Your next<br><em>extraordinary</em><br>journey awaits.
+    </h2>
+    <p class="cta-sub reveal">
+      Join the waitlist for early access. The first 500 members receive complimentary Elite status for their inaugural trip.
+    </p>
+    <div class="cta-actions reveal">
+      <a href="#dream" class="btn-primary">Join the Waitlist — Free</a>
+      <a href="#agents" class="btn-ghost">Explore the Platform</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Vela</div>
+  <p class="footer-copy">© 2026 Vela — AI Travel Concierge. All rights reserved.</p>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Contact</a></li>
+    <li><a href="#">Press</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 4 + 'px';
+    cursor.style.top = my - 4 + 'px';
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx - 16 + 'px';
+    ring.style.top = ry - 16 + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width = '50px';
+      ring.style.height = '50px';
+      ring.style.borderColor = 'rgba(201,169,110,0.7)';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '32px';
+      ring.style.height = '32px';
+      ring.style.borderColor = 'rgba(201,169,110,0.4)';
+    });
+  });
+
+  // Tier buttons
+  document.querySelectorAll('.tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.tier-select').querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Duplicate marquee
+  const track = document.getElementById('marquee');
+  track.innerHTML += track.innerHTML;
+</script>
+</body>
+</html>

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELA — Plan Your Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#050505;--obsidian:#0a0a0a;--surface:#111;
+  --gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;
+  --ivory:#f5f0e8;--ivory-dim:#c8bfaa;
+  --glass:rgba(201,169,110,0.06);--glass-border:rgba(201,169,110,0.15);
+  --success:#6eb88a;--sidebar-w:340px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+.cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,169,110,.4);border-radius:50%;pointer-events:none;z-index:9998;transition:width .3s,height .3s,border-color .3s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.5rem 3rem;background:rgba(5,5,5,.92);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(12px)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.nav-back{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);text-decoration:none;display:flex;align-items:center;gap:.75rem;transition:color .3s;cursor:none}
+.nav-back:hover{color:var(--gold)}
+
+/* API KEY BANNER */
+.api-banner{background:linear-gradient(135deg,rgba(201,169,110,.1),rgba(201,169,110,.04));border:1px solid var(--glass-border);padding:1rem 2rem;display:flex;align-items:center;gap:1.5rem;margin:0;position:relative;z-index:1;margin-top:65px}
+.api-banner-text{font-size:.68rem;letter-spacing:.06em;color:var(--ivory-dim);flex:1}
+.api-banner-text strong{color:var(--gold)}
+.api-input{background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.72rem;padding:.6rem 1rem;outline:none;width:340px;letter-spacing:.04em;transition:border-color .3s}
+.api-input:focus{border-color:var(--gold)}
+.api-input::placeholder{color:var(--gold-dim)}
+.api-save-btn{background:var(--gold);color:var(--obsidian);border:none;padding:.6rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;cursor:none;transition:all .3s;white-space:nowrap}
+.api-save-btn:hover{background:var(--gold-light)}
+.api-status{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
+.api-status.set{color:var(--success)}
+.api-status.unset{color:var(--gold-dim)}
+
+/* LAYOUT */
+.planner-layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:calc(100vh - 65px)}
+
+/* SIDEBAR */
+.sidebar{background:rgba(201,169,110,.03);border-right:1px solid var(--glass-border);padding:2.5rem 2rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;display:flex;flex-direction:column;gap:2rem}
+.sidebar-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--ivory);line-height:1.2}
+.sidebar-title em{font-style:italic;color:var(--gold)}
+.sidebar-sub{font-size:.68rem;line-height:1.9;color:var(--ivory-dim);letter-spacing:.03em;margin-top:-.5rem}
+
+/* PROGRESS */
+.progress-steps{display:flex;flex-direction:column;gap:0}
+.prog-step{display:flex;align-items:flex-start;gap:1.1rem;padding:.875rem 0;position:relative}
+.prog-step:not(:last-child)::after{content:'';position:absolute;left:13px;top:40px;width:1px;height:calc(100% - 10px);background:var(--glass-border)}
+.prog-circle{width:26px;height:26px;border:1px solid var(--glass-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;color:var(--gold-dim);flex-shrink:0;transition:all .4s;background:var(--void);position:relative;z-index:1}
+.prog-step.active .prog-circle{border-color:var(--gold);background:rgba(201,169,110,.12);color:var(--gold)}
+.prog-step.done .prog-circle{border-color:var(--success);background:rgba(110,184,138,.1);color:var(--success)}
+.prog-label{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim);padding-top:4px;transition:color .3s}
+.prog-step.active .prog-label{color:var(--gold)}
+
+/* SUMMARY */
+.summary-card{background:var(--glass);border:1px solid var(--glass-border);padding:1.5rem;position:relative}
+.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.sum-heading{font-size:.52rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.sum-item{display:flex;justify-content:space-between;align-items:baseline;padding:.45rem 0;border-bottom:1px solid rgba(201,169,110,.07)}
+.sum-item:last-child{border-bottom:none}
+.sum-key{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim)}
+.sum-val{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--ivory);font-style:italic}
+.sum-val.empty{font-size:.6rem;font-style:normal;font-family:'Montserrat',sans-serif;color:rgba(201,169,110,.25);letter-spacing:.08em}
+
+/* MAIN */
+.main-content{padding:3rem 4rem;min-height:calc(100vh - 65px);position:relative;z-index:1}
+
+/* STEP PANELS */
+.step-panel{display:none;animation:panelIn .5s ease forwards}
+.step-panel.active{display:block}
+@keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+.panel-eyebrow{font-size:.55rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
+.panel-eyebrow::before{content:'';width:28px;height:1px;background:var(--gold)}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.5vw,3.5rem);font-weight:300;color:var(--ivory);line-height:1.1;margin-bottom:.75rem}
+.panel-title em{font-style:italic;color:var(--gold)}
+.panel-sub{font-size:.78rem;line-height:1.9;color:var(--ivory-dim);letter-spacing:.03em;max-width:540px;margin-bottom:2.5rem}
+
+/* FORM */
+.field-group{margin-bottom:1.75rem}
+.field-label{font-size:.56rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:block}
+.field-hint{font-size:.6rem;color:var(--gold-dim);letter-spacing:.05em;margin-top:.4rem}
+.dream-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;font-style:italic;padding:1.4rem;resize:none;height:150px;outline:none;transition:border-color .3s,box-shadow .3s;letter-spacing:.02em;line-height:1.7}
+.dream-input::placeholder{color:rgba(201,169,110,.3)}
+.dream-input:focus{border-color:rgba(201,169,110,.4);box-shadow:0 0 0 1px rgba(201,169,110,.08)}
+.text-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.8rem;font-weight:300;padding:.95rem 1.2rem;outline:none;transition:border-color .3s;letter-spacing:.05em}
+.text-input::placeholder{color:rgba(201,169,110,.3)}
+.text-input:focus{border-color:rgba(201,169,110,.4)}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.chip{padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.1em;cursor:none;transition:all .25s}
+.chip:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.06)}
+.chip.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.1)}
+
+/* TIER CARDS */
+.tier-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-bottom:1.75rem}
+.tier-card{border:1px solid var(--glass-border);padding:1.75rem 1.5rem;cursor:none;transition:all .3s;background:transparent;text-align:left;position:relative}
+.tier-card:hover{border-color:var(--gold-dim);background:rgba(201,169,110,.04);transform:translateY(-3px)}
+.tier-card.selected{border-color:var(--gold);background:rgba(201,169,110,.08)}
+.tier-card.selected::after{content:'✓';position:absolute;top:.875rem;right:.875rem;font-size:.65rem;color:var(--gold)}
+.tier-icon{font-size:1.4rem;margin-bottom:.875rem;display:block}
+.tier-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--ivory);margin-bottom:.35rem}
+.tier-desc{font-size:.65rem;color:var(--ivory-dim);line-height:1.65;letter-spacing:.03em;margin-bottom:.875rem}
+.tier-price{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold)}
+.tier-price-note{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);margin-top:.15rem}
+
+/* BUDGET */
+.budget-display{font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:var(--gold);font-weight:300;margin:.875rem 0 .35rem;letter-spacing:-.02em}
+.budget-note{font-size:.62rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase}
+.slider-track{position:relative;height:2px;background:rgba(201,169,110,.12);margin:1.4rem 0}
+.slider-fill{position:absolute;left:0;top:0;height:100%;background:var(--gold);transition:width .1s}
+input[type="range"]{position:absolute;top:-8px;left:0;width:100%;appearance:none;background:transparent;cursor:none;outline:none}
+input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--void);border:2px solid var(--gold);cursor:none;box-shadow:0 0 10px rgba(201,169,110,.3)}
+.slider-labels{display:flex;justify-content:space-between;font-size:.58rem;letter-spacing:.1em;color:var(--gold-dim);text-transform:uppercase;margin-top:.4rem}
+
+/* NAV BUTTONS */
+.panel-nav{display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:1.75rem;border-top:1px solid var(--glass-border)}
+.btn-next{display:inline-flex;align-items:center;gap:.875rem;background:var(--gold);color:var(--obsidian);padding:.95rem 2.25rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;border:none;cursor:none;transition:all .3s}
+.btn-next:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-back{display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--ivory-dim);padding:.95rem 1.4rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;border:1px solid var(--glass-border);cursor:none;transition:all .3s}
+.btn-back:hover{border-color:var(--gold-dim);color:var(--gold)}
+.step-ind{font-size:.58rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase}
+
+/* ═══ GENERATING SCREEN ═══ */
+.generating-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;text-align:center;gap:2rem}
+.gen-orb{width:110px;height:110px;border-radius:50%;border:1px solid var(--gold-dim);position:relative;display:flex;align-items:center;justify-content:center;animation:orbSpin 3s linear infinite}
+.gen-orb::before{content:'';position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(201,169,110,.3);animation:orbSpin 2s linear infinite reverse}
+.gen-orb::after{content:'✦';font-size:1.6rem;color:var(--gold);animation:orbSpin 3s linear infinite reverse}
+@keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.gen-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory)}
+.gen-status{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);min-height:1.2em}
+.gen-agents{display:flex;flex-direction:column;gap:.4rem;width:300px}
+.gen-agent-row{display:flex;align-items:center;justify-content:space-between;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);padding:.4rem 0;border-bottom:1px solid rgba(201,169,110,.06)}
+.gen-agent-row .agent-status{color:var(--gold)}
+.gen-agent-row .agent-status.done{color:var(--success)}
+
+/* ═══ RESULT PANEL ═══ */
+#result-panel{display:none}
+#result-panel.active{display:block;animation:panelIn .6s ease forwards}
+
+.itin-header{margin-bottom:2.5rem}
+.itin-destination{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,4.5rem);font-weight:300;color:var(--ivory);line-height:1;margin-bottom:.5rem}
+.itin-destination em{font-style:italic;color:var(--gold)}
+.itin-meta{display:flex;gap:1.75rem;flex-wrap:wrap;margin-top:1rem}
+.itin-meta-item{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:.5rem}
+.itin-meta-item span{color:var(--ivory-dim)}
+
+/* AI RESPONSE */
+.ai-response{background:var(--surface);border:1px solid var(--glass-border);position:relative;overflow:hidden}
+.ai-response::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.ai-response-header{padding:1.25rem 2rem;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;gap:1rem}
+.ai-badge{font-size:.52rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.6rem}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:livePulse 1.5s infinite}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.ai-response-body{padding:2rem;font-size:.82rem;line-height:2;color:var(--ivory-dim);letter-spacing:.03em;white-space:pre-wrap;font-family:'Montserrat',sans-serif;max-height:600px;overflow-y:auto}
+.ai-response-body::-webkit-scrollbar{width:3px}
+.ai-response-body::-webkit-scrollbar-thumb{background:var(--gold-dim)}
+
+/* STREAMING CURSOR */
+.stream-cursor{display:inline-block;width:2px;height:1em;background:var(--gold);margin-left:2px;animation:blink .8s infinite;vertical-align:text-bottom}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ACTION ROW */
+.action-row{display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap}
+.btn-confirm{display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2.25rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;border:none;cursor:none;transition:all .3s}
+.btn-confirm:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-modify{display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--gold);padding:1rem 1.75rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;border:1px solid var(--gold-dim);cursor:none;transition:all .3s}
+.btn-modify:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
+
+/* ERROR */
+.error-box{background:rgba(212,100,100,.08);border:1px solid rgba(212,100,100,.25);padding:1.5rem 2rem;margin-top:1.5rem}
+.error-box p{font-size:.72rem;color:#e08080;letter-spacing:.05em;line-height:1.7}
+
+@media(max-width:900px){
+  .planner-layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .main-content{padding:2rem 1.5rem}
+  .tier-cards{grid-template-columns:1fr}
+  nav{padding:1.25rem 1.5rem}
+  .api-banner{flex-wrap:wrap;gap:1rem}
+  .api-input{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="vela-home.html" class="nav-logo">Vela</a>
+  <a href="vela-home.html" class="nav-back">← Back to Home</a>
+</nav>
+
+<!-- API KEY BANNER -->
+<div class="api-banner">
+  <div class="api-banner-text">
+    <strong>Connect your AI</strong> — Enter your Anthropic API key to activate real itinerary generation. Your key is stored locally and never sent anywhere except directly to Anthropic.
+  </div>
+  <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+  <button class="api-save-btn" onclick="saveApiKey()">Save Key</button>
+  <span class="api-status unset" id="apiStatus">● Not set</span>
+</div>
+
+<div class="planner-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <h2 class="sidebar-title">Your <em>journey</em> begins here.</h2>
+      <p class="sidebar-sub">Complete each step and Vela's AI will craft your perfect itinerary in real time.</p>
+    </div>
+    <div class="progress-steps" id="progressSteps">
+      <div class="prog-step active" data-step="1">
+        <div class="prog-circle">01</div>
+        <div class="prog-label">Describe Your Dream</div>
+      </div>
+      <div class="prog-step" data-step="2">
+        <div class="prog-circle">02</div>
+        <div class="prog-label">Dates & Budget</div>
+      </div>
+      <div class="prog-step" data-step="3">
+        <div class="prog-circle">03</div>
+        <div class="prog-label">Preferences</div>
+      </div>
+      <div class="prog-step" data-step="4">
+        <div class="prog-circle">04</div>
+        <div class="prog-label">Choose Your Tier</div>
+      </div>
+      <div class="prog-step" data-step="5">
+        <div class="prog-circle">✦</div>
+        <div class="prog-label">Your Itinerary</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <p class="sum-heading">Trip Summary</p>
+      <div class="sum-item"><span class="sum-key">Destination</span><span class="sum-val" id="sum-dest"><span class="empty">Not set</span></span></div>
+      <div class="sum-item"><span class="sum-key">Dates</span><span class="sum-val" id="sum-dates"><span class="empty">Not set</span></span></div>
+      <div class="sum-item"><span class="sum-key">Budget</span><span class="sum-val" id="sum-budget"><span class="empty">Not set</span></span></div>
+      <div class="sum-item"><span class="sum-key">Travelers</span><span class="sum-val" id="sum-travelers"><span class="empty">Not set</span></span></div>
+      <div class="sum-item"><span class="sum-key">Tier</span><span class="sum-val" id="sum-tier"><span class="empty">Not set</span></span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- STEP 1 -->
+    <div class="step-panel active" id="panel-1">
+      <p class="panel-eyebrow">Step 01</p>
+      <h1 class="panel-title">Describe your<br><em>perfect journey.</em></h1>
+      <p class="panel-sub">Use your own words — the more detail you give, the more personalized your itinerary will be.</p>
+      <div class="field-group">
+        <label class="field-label">Your dream trip</label>
+        <textarea class="dream-input" id="dreamText" placeholder="I want to spend 10 days in Japan with my partner for our anniversary. Ryokans, incredible food, maybe something totally unexpected — show us the Japan most people miss..."></textarea>
+        <p class="field-hint">Be as specific or as vague as you like. Vela's AI understands context and nuance.</p>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Destination</label>
+        <input class="text-input" id="destination" type="text" placeholder="e.g. Japan, Maldives, Amalfi Coast, Surprise me...">
+        <div class="chips">
+          <button class="chip" onclick="setDest(this,'Japan')">🗾 Japan</button>
+          <button class="chip" onclick="setDest(this,'Maldives')">🏝 Maldives</button>
+          <button class="chip" onclick="setDest(this,'African Safari — Kenya')">🦁 Safari</button>
+          <button class="chip" onclick="setDest(this,'Amalfi Coast, Italy')">🍋 Amalfi Coast</button>
+          <button class="chip" onclick="setDest(this,'Bali, Indonesia')">🌺 Bali</button>
+          <button class="chip" onclick="setDest(this,'Patagonia')">🏔 Patagonia</button>
+          <button class="chip" onclick="setDest(this,'Iceland')">❄️ Iceland</button>
+          <button class="chip" onclick="setDest(this,'French Riviera')">⛵ French Riviera</button>
+          <button class="chip" onclick="setDest(this,'Morocco')">🕌 Morocco</button>
+          <button class="chip" onclick="setDest(this,'New Zealand')">🌿 New Zealand</button>
+        </div>
+      </div>
+      <div class="panel-nav">
+        <div></div>
+        <span class="step-ind">Step 1 of 4</span>
+        <button class="btn-next" onclick="goTo(2)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-panel" id="panel-2">
+      <p class="panel-eyebrow">Step 02</p>
+      <h1 class="panel-title">When, and<br><em>how much?</em></h1>
+      <p class="panel-sub">Set your travel window and total budget.</p>
+      <div class="field-group">
+        <label class="field-label">Travel Dates</label>
+        <div class="input-row">
+          <div>
+            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Departure</label>
+            <input class="text-input" type="date" id="dateFrom" onchange="updateDates()">
+          </div>
+          <div>
+            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Return</label>
+            <input class="text-input" type="date" id="dateTo" onchange="updateDates()">
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Travelers</label>
+        <div class="input-row">
+          <div>
+            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Adults</label>
+            <input class="text-input" id="adults" type="number" min="1" max="20" value="2" onchange="updateTravelers()">
+          </div>
+          <div>
+            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Children</label>
+            <input class="text-input" id="children" type="number" min="0" max="10" value="0" onchange="updateTravelers()">
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Total Budget</label>
+        <div class="budget-display" id="budgetDisplay">$10,000</div>
+        <div class="budget-note" id="budgetNote">Per trip, all-inclusive</div>
+        <div class="slider-track">
+          <div class="slider-fill" id="sliderFill" style="width:30%"></div>
+          <input type="range" id="budgetSlider" min="0" max="100" value="30" oninput="updateBudget(this.value)">
+        </div>
+        <div class="slider-labels"><span>$1K</span><span>$25K</span><span>$100K</span><span>No Limit</span></div>
+      </div>
+      <div class="panel-nav">
+        <button class="btn-back" onclick="goTo(1)">← Back</button>
+        <span class="step-ind">Step 2 of 4</span>
+        <button class="btn-next" onclick="goTo(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-panel" id="panel-3">
+      <p class="panel-eyebrow">Step 03</p>
+      <h1 class="panel-title">Refine the<br><em>experience.</em></h1>
+      <p class="panel-sub">Tell Vela what matters most to you.</p>
+      <div class="field-group">
+        <label class="field-label">Travel Vibe</label>
+        <div class="chips">
+          <button class="chip selected" onclick="toggleChip(this)">🌿 Relaxation</button>
+          <button class="chip" onclick="toggleChip(this)">🏔 Adventure</button>
+          <button class="chip selected" onclick="toggleChip(this)">🍽 Culinary</button>
+          <button class="chip" onclick="toggleChip(this)">🎭 Culture</button>
+          <button class="chip" onclick="toggleChip(this)">🏄 Beach</button>
+          <button class="chip selected" onclick="toggleChip(this)">💆 Wellness</button>
+          <button class="chip" onclick="toggleChip(this)">📸 Photography</button>
+          <button class="chip" onclick="toggleChip(this)">🛍 Shopping</button>
+          <button class="chip" onclick="toggleChip(this)">🌙 Nightlife</button>
+          <button class="chip" onclick="toggleChip(this)">🏛 History</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Accommodation Style</label>
+        <div class="chips">
+          <button class="chip" onclick="toggleChip(this)">🏨 Luxury Hotels</button>
+          <button class="chip selected" onclick="toggleChip(this)">🏡 Private Villa</button>
+          <button class="chip" onclick="toggleChip(this)">🛖 Boutique</button>
+          <button class="chip" onclick="toggleChip(this)">⛵ Yacht</button>
+          <button class="chip" onclick="toggleChip(this)">⛺ Safari Camp</button>
+          <button class="chip" onclick="toggleChip(this)">🌊 Overwater Bungalow</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Special Requests</label>
+        <input class="text-input" id="specialRequests" type="text" placeholder="Anniversary, dietary restrictions, accessibility needs, surprise element...">
+      </div>
+      <div class="panel-nav">
+        <button class="btn-back" onclick="goTo(2)">← Back</button>
+        <span class="step-ind">Step 3 of 4</span>
+        <button class="btn-next" onclick="goTo(4)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-panel" id="panel-4">
+      <p class="panel-eyebrow">Step 04</p>
+      <h1 class="panel-title">Choose your<br><em>tier.</em></h1>
+      <p class="panel-sub">Every tier generates a full AI itinerary. Higher tiers unlock autonomous booking and dedicated support.</p>
+      <div class="tier-cards">
+        <button class="tier-card" onclick="selectTier(this,'Explorer')">
+          <span class="tier-icon">🌍</span>
+          <div class="tier-name">Explorer</div>
+          <p class="tier-desc">AI itinerary + recommendations. You handle the bookings yourself.</p>
+          <div class="tier-price">Free</div>
+          <div class="tier-price-note">Or $49 per trip</div>
+        </button>
+        <button class="tier-card selected" onclick="selectTier(this,'Premier')">
+          <span class="tier-icon">✈</span>
+          <div class="tier-name">Premier</div>
+          <p class="tier-desc">Full autonomous booking. Agents handle everything for you.</p>
+          <div class="tier-price">$99</div>
+          <div class="tier-price-note">Per month</div>
+        </button>
+        <button class="tier-card" onclick="selectTier(this,'Elite')">
+          <span class="tier-icon">💎</span>
+          <div class="tier-name">Elite</div>
+          <p class="tier-desc">Premier + private aviation + dedicated human concierge.</p>
+          <div class="tier-price">$499</div>
+          <div class="tier-price-note">Per month</div>
+        </button>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Departure City</label>
+        <input class="text-input" id="departCity" type="text" placeholder="e.g. New York (JFK), Los Angeles (LAX), Miami (MIA)...">
+      </div>
+      <div class="panel-nav">
+        <button class="btn-back" onclick="goTo(3)">← Back</button>
+        <span class="step-ind">Step 4 of 4</span>
+        <button class="btn-next" onclick="generate()" id="generateBtn">Summon Vela ✦</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-panel">
+
+      <!-- GENERATING -->
+      <div id="generating" class="generating-screen">
+        <div class="gen-orb"></div>
+        <div class="gen-title">Crafting your journey</div>
+        <div class="gen-status" id="genStatus">Initializing AI...</div>
+        <div class="gen-agents" id="genAgents">
+          <div class="gen-agent-row"><span>✈ Flight Agent</span><span class="agent-status" id="ga-1">Standby</span></div>
+          <div class="gen-agent-row"><span>🏨 Hotel Agent</span><span class="agent-status" id="ga-2">Standby</span></div>
+          <div class="gen-agent-row"><span>🚗 Transfer Agent</span><span class="agent-status" id="ga-3">Standby</span></div>
+          <div class="gen-agent-row"><span>🍽 Dining Agent</span><span class="agent-status" id="ga-4">Standby</span></div>
+          <div class="gen-agent-row"><span>🗺 Experience Agent</span><span class="agent-status" id="ga-5">Standby</span></div>
+        </div>
+      </div>
+
+      <!-- ITINERARY OUTPUT -->
+      <div id="itinerary" style="display:none">
+        <div class="itin-header">
+          <p class="panel-eyebrow">Your AI-Generated Itinerary</p>
+          <div class="itin-destination" id="itinTitle">Your Journey <em>Awaits</em></div>
+          <div class="itin-meta">
+            <div class="itin-meta-item">📅 <span id="itinDates">—</span></div>
+            <div class="itin-meta-item">👤 <span id="itinTravelers">—</span></div>
+            <div class="itin-meta-item">✦ <span id="itinTier">—</span></div>
+            <div class="itin-meta-item">💰 <span id="itinBudget">—</span></div>
+          </div>
+        </div>
+
+        <div class="ai-response">
+          <div class="ai-response-header">
+            <div class="ai-badge"><span class="ai-dot"></span> Vela AI — Live Response</div>
+          </div>
+          <div class="ai-response-body" id="aiResponseBody"></div>
+        </div>
+
+        <div id="errorBox" class="error-box" style="display:none">
+          <p id="errorMsg"></p>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-confirm" onclick="alert('In the live product this would connect to booking APIs and confirm all reservations autonomously.')">Confirm & Book All ✦</button>
+          <button class="btn-modify" onclick="restart()">← Modify Journey</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─── CURSOR ───
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-4+'px';cur.style.top=my-4+'px';});
+(function a(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button,input,textarea').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(201,169,110,.7)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(201,169,110,.4)';});
+});
+
+// ─── API KEY ───
+let API_KEY = localStorage.getItem('vela_api_key') || '';
+if(API_KEY){
+  document.getElementById('apiKeyInput').value = API_KEY;
+  document.getElementById('apiStatus').textContent = '● Connected';
+  document.getElementById('apiStatus').className = 'api-status set';
+}
+function saveApiKey(){
+  API_KEY = document.getElementById('apiKeyInput').value.trim();
+  if(!API_KEY){return;}
+  localStorage.setItem('vela_api_key', API_KEY);
+  document.getElementById('apiStatus').textContent = '● Connected';
+  document.getElementById('apiStatus').className = 'api-status set';
+}
+
+// ─── STATE ───
+let currentStep = 1;
+let selectedTier = 'Premier';
+
+// ─── NAVIGATION ───
+function goTo(n){
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n)?.classList.add('active');
+  document.querySelectorAll('.prog-step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i+1<n) s.classList.add('done');
+    if(i+1===n) s.classList.add('active');
+  });
+  currentStep=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─── HELPERS ───
+function setDest(el,dest){
+  document.getElementById('destination').value=dest;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('sum-dest').innerHTML=dest;
+}
+function toggleChip(el){el.classList.toggle('selected');}
+function updateDates(){
+  const f=document.getElementById('dateFrom').value;
+  const t=document.getElementById('dateTo').value;
+  if(f&&t){
+    const opts={month:'short',day:'numeric'};
+    document.getElementById('sum-dates').innerHTML=new Date(f).toLocaleDateString('en-US',opts)+' – '+new Date(t).toLocaleDateString('en-US',opts);
+  }
+}
+function updateTravelers(){
+  const a=document.getElementById('adults').value;
+  const c=document.getElementById('children').value;
+  let s=a+' Adult'+(a>1?'s':'');
+  if(c>0) s+=', '+c+' Child'+(c>1?'ren':'');
+  document.getElementById('sum-travelers').innerHTML=s;
+}
+function updateBudget(v){
+  const fill=document.getElementById('sliderFill');
+  fill.style.width=v+'%';
+  let d,n;
+  if(v<=5){d='$1,000';n='Budget travel';}
+  else if(v<=15){d='$'+Math.round(1000+(v-5)*900).toLocaleString();n='Economy travel';}
+  else if(v<=30){d='$'+Math.round(10000+(v-15)*1000).toLocaleString();n='Per trip, all-inclusive';}
+  else if(v<=60){d='$'+Math.round(25000+(v-30)*2500).toLocaleString();n='Premium travel';}
+  else if(v<=85){d='$'+Math.round(100000+(v-60)*4000).toLocaleString();n='Luxury travel';}
+  else if(v<100){d='$'+Math.round(200000+(v-85)*15000).toLocaleString();n='Ultra-luxury travel';}
+  else{d='No Limit';n='Elite — the extraordinary awaits';}
+  document.getElementById('budgetDisplay').textContent=d;
+  document.getElementById('budgetNote').textContent=n;
+  document.getElementById('sum-budget').innerHTML=d;
+}
+function selectTier(el,tier){
+  document.querySelectorAll('.tier-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTier=tier;
+  document.getElementById('sum-tier').innerHTML=tier;
+}
+
+// ─── BUILD PROMPT ───
+function buildPrompt(){
+  const dream = document.getElementById('dreamText').value || 'A wonderful trip';
+  const dest = document.getElementById('destination').value || 'anywhere beautiful';
+  const budget = document.getElementById('budgetDisplay').textContent;
+  const adults = document.getElementById('adults').value;
+  const children = document.getElementById('children').value;
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+  const depart = document.getElementById('departCity').value || 'unspecified departure city';
+  const special = document.getElementById('specialRequests').value;
+  const vibes = [...document.querySelectorAll('.chip.selected')].map(c=>c.textContent.trim()).join(', ');
+
+  const dates = dateFrom && dateTo
+    ? `from ${new Date(dateFrom).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} to ${new Date(dateTo).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`
+    : 'dates flexible';
+
+  return `You are Vela, a world-class AI luxury travel concierge. Create a detailed, beautiful, and highly personalized travel itinerary based on the following client request.
+
+CLIENT DETAILS:
+- Dream trip description: "${dream}"
+- Destination: ${dest}
+- Travel dates: ${dates}
+- Travelers: ${adults} adult(s)${children>0?`, ${children} child(ren)`:''}
+- Departure city: ${depart}
+- Total budget: ${budget}
+- Travel tier: ${selectedTier}
+- Travel vibes & interests: ${vibes || 'open to suggestions'}
+- Special requests: ${special || 'none'}
+
+Please create a day-by-day itinerary that feels genuinely crafted for this specific client. Include:
+
+1. A brief evocative introduction (2-3 sentences) capturing the essence of this journey
+2. A complete day-by-day breakdown with:
+   - Morning, afternoon, and evening activities
+   - Specific hotel/accommodation recommendations (real properties)
+   - Restaurant recommendations (real restaurants where possible)
+   - Transportation between locations
+   - Any special experiences or unique moments
+3. Practical notes (best time to visit, what to pack, visa requirements if relevant)
+4. An estimated cost breakdown fitting the ${budget} budget
+
+Write in an elevated, inspiring tone that makes the client genuinely excited about this trip. Be specific — use real place names, real hotels, real restaurants. This should feel like it was written by someone who has actually been there.`;
+}
+
+// ─── AGENT ANIMATION ───
+function animateAgents(callback){
+  const agents=[
+    {id:'ga-1',label:'Scanning routes...'},
+    {id:'ga-2',label:'Finding properties...'},
+    {id:'ga-3',label:'Mapping transfers...'},
+    {id:'ga-4',label:'Sourcing dining...'},
+    {id:'ga-5',label:'Curating experiences...'},
+  ];
+  const statuses=['Initializing AI...','Analyzing your dream trip...','Building your itinerary...','Adding local expertise...','Finalizing details...'];
+  let i=0;
+  const statusEl=document.getElementById('genStatus');
+
+  agents.forEach((ag,idx)=>{
+    setTimeout(()=>{
+      document.getElementById(ag.id).textContent=ag.label;
+      document.getElementById(ag.id).className='agent-status';
+      if(statuses[idx]) statusEl.textContent=statuses[idx];
+    },idx*500);
+    setTimeout(()=>{
+      document.getElementById(ag.id).textContent='✓ Done';
+      document.getElementById(ag.id).className='agent-status done';
+    },idx*500+400);
+  });
+
+  setTimeout(()=>{
+    statusEl.textContent='Your itinerary is ready.';
+    setTimeout(callback, 400);
+  }, agents.length*500+300);
+}
+
+// ─── STREAM RESPONSE ───
+async function streamToElement(text, el){
+  el.textContent='';
+  const cursor=document.createElement('span');
+  cursor.className='stream-cursor';
+  el.appendChild(cursor);
+
+  const words=text.split('');
+  let i=0;
+  return new Promise(resolve=>{
+    function next(){
+      if(i<words.length){
+        cursor.before(words[i]);
+        i++;
+        el.parentElement.scrollTop=el.parentElement.scrollHeight;
+        setTimeout(next, i<50?8:i<200?4:2);
+      } else {
+        cursor.remove();
+        resolve();
+      }
+    }
+    next();
+  });
+}
+
+// ─── MAIN GENERATE ───
+async function generate(){
+  if(!API_KEY){
+    alert('Please enter your Anthropic API key in the banner at the top of the page first.');
+    return;
+  }
+
+  // Hide all step panels, show result
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  const rp=document.getElementById('result-panel');
+  rp.style.display='block';
+  rp.classList.add('active');
+  document.getElementById('generating').style.display='flex';
+  document.getElementById('itinerary').style.display='none';
+  document.getElementById('errorBox').style.display='none';
+
+  // Update progress sidebar
+  document.querySelectorAll('.prog-step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i<4) s.classList.add('done');
+    if(i===4) s.classList.add('active');
+  });
+
+  // Update meta
+  const dest=document.getElementById('destination').value||'Your Destination';
+  document.getElementById('itinTitle').innerHTML=dest+' <em>Awaits</em>';
+  document.getElementById('itinTier').textContent=selectedTier+' Tier';
+  document.getElementById('itinTravelers').textContent=(document.getElementById('adults').value||2)+' Traveler(s)';
+  document.getElementById('itinBudget').textContent=document.getElementById('budgetDisplay').textContent;
+  const f=document.getElementById('dateFrom').value;
+  const t=document.getElementById('dateTo').value;
+  document.getElementById('itinDates').textContent=f&&t?new Date(f).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Dates flexible';
+
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // Animate agents then call API
+  animateAgents(async()=>{
+    document.getElementById('generating').style.display='none';
+    document.getElementById('itinerary').style.display='block';
+
+    const responseEl=document.getElementById('aiResponseBody');
+    responseEl.textContent='';
+
+    // Add streaming cursor
+    const cursor=document.createElement('span');
+    cursor.className='stream-cursor';
+    responseEl.appendChild(cursor);
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          stream: true,
+          messages: [{
+            role: 'user',
+            content: buildPrompt()
+          }]
+        })
+      });
+
+      if(!response.ok){
+        const err=await response.json();
+        throw new Error(err.error?.message || 'API error '+response.status);
+      }
+
+      cursor.remove();
+      responseEl.textContent='';
+
+      // Handle streaming
+      const reader=response.body.getReader();
+      const decoder=new TextDecoder();
+      let buffer='';
+
+      while(true){
+        const {done,value}=await reader.read();
+        if(done) break;
+
+        buffer+=decoder.decode(value,{stream:true});
+        const lines=buffer.split('\n');
+        buffer=lines.pop();
+
+        for(const line of lines){
+          if(line.startsWith('data: ')){
+            const data=line.slice(6);
+            if(data==='[DONE]') continue;
+            try{
+              const parsed=JSON.parse(data);
+              if(parsed.type==='content_block_delta' && parsed.delta?.type==='text_delta'){
+                responseEl.textContent+=parsed.delta.text;
+                responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
+              }
+            } catch(e){}
+          }
+        }
+      }
+
+    } catch(err){
+      cursor.remove();
+      responseEl.textContent='';
+      document.getElementById('errorBox').style.display='block';
+      document.getElementById('errorMsg').textContent=
+        err.message.includes('401') ? 'Invalid API key. Please check your Anthropic API key and try again.' :
+        err.message.includes('429') ? 'Rate limit reached. Please wait a moment and try again.' :
+        err.message.includes('Failed to fetch') ? 'Connection error. Make sure you\'re running this from a local server (not just opening the file directly). Try: npx serve . in your project folder.' :
+        'Error: '+err.message;
+    }
+  });
+}
+
+function restart(){
+  document.getElementById('result-panel').style.display='none';
+  document.getElementById('result-panel').classList.remove('active');
+  goTo(1);
+}
+
+// Init
+updateTravelers();
+document.getElementById('sum-tier').innerHTML='Premier';
+</script>
+</body>
+</html>

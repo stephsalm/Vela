@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELA — Destinations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#050505;--obsidian:#0a0a0a;--gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;
+  --ivory:#f5f0e8;--ivory-dim:#c8bfaa;--glass:rgba(201,169,110,0.06);--glass-border:rgba(201,169,110,0.15);
+}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+
+.cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,169,110,.4);border-radius:50%;pointer-events:none;z-index:9998;transition:width .3s,height .3s,border-color .3s}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.75rem 4rem;background:linear-gradient(to bottom,rgba(5,5,5,.95),transparent);backdrop-filter:blur(8px)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);text-decoration:none;transition:color .3s;cursor:none}
+.nav-links a:hover,.nav-links a.active{color:var(--gold)}
+.nav-cta{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--obsidian);background:var(--gold);padding:.7rem 1.75rem;text-decoration:none;transition:background .3s;cursor:none}
+.nav-cta:hover{background:var(--gold-light)}
+
+/* HERO */
+.dest-hero{position:relative;height:70vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4rem 5rem;overflow:hidden}
+.dest-hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,5,5,.9) 0%,rgba(5,5,5,.4) 50%,rgba(5,5,5,.7) 100%),
+  radial-gradient(ellipse 80% 60% at 60% 40%,rgba(201,169,110,.08),transparent);}
+.dest-hero-pattern{position:absolute;inset:0;opacity:.06}
+.dest-hero-pattern svg{width:100%;height:100%}
+.hero-eyebrow{font-size:.6rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;opacity:0;animation:fadeUp .8s .2s forwards}
+.hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3.5rem,8vw,8rem);font-weight:300;line-height:.95;color:var(--ivory);opacity:0;animation:fadeUp .8s .4s forwards}
+.hero-h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{max-width:500px;font-size:.8rem;line-height:1.9;color:var(--ivory-dim);letter-spacing:.04em;margin-top:1.5rem;opacity:0;animation:fadeUp .8s .6s forwards}
+.hero-scroll-hint{position:absolute;bottom:2rem;right:4rem;display:flex;align-items:center;gap:1rem;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);opacity:0;animation:fadeUp .8s .9s forwards}
+
+/* FILTER BAR */
+.filter-bar{position:sticky;top:0;z-index:100;background:rgba(5,5,5,.94);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(12px);padding:0 4rem;display:flex;align-items:center;gap:0;overflow-x:auto}
+.filter-btn{padding:1.25rem 2rem;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);border:none;background:transparent;border-bottom:2px solid transparent;cursor:none;transition:all .3s;white-space:nowrap;margin-bottom:-1px;font-family:'Montserrat',sans-serif}
+.filter-btn:hover{color:var(--ivory)}
+.filter-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* FEATURED SECTION */
+.section{padding:6rem 0;position:relative;z-index:1}
+.container{max-width:1500px;margin:0 auto;padding:0 4rem}
+.section-label{font-size:.55rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;gap:1.25rem}
+.section-label::before{content:'';width:30px;height:1px;background:var(--gold)}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.5vw,3.5rem);font-weight:300;color:var(--ivory);margin-bottom:3.5rem;line-height:1.1}
+.section-title em{font-style:italic;color:var(--gold)}
+
+/* FEATURED GRID */
+.featured-grid{display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:auto auto;gap:2px;margin-bottom:2px}
+.dest-card{position:relative;overflow:hidden;cursor:none}
+.dest-card:hover .dest-overlay{opacity:1}
+.dest-card:hover .dest-img-bg{transform:scale(1.06)}
+.dest-card:hover .dest-btn{opacity:1;transform:translateY(0)}
+
+.dest-img-bg{position:absolute;inset:0;transition:transform .7s ease;background-size:cover;background-position:center}
+.dest-card-1 .dest-img-bg{background:linear-gradient(135deg,#1a0e05 0%,#0d1a0a 50%,#050a1a 100%),url('')}
+.dest-card-2 .dest-img-bg{background:linear-gradient(135deg,#050d1a 0%,#0a0510 50%,#1a0505 100%)}
+.dest-card-3 .dest-img-bg{background:linear-gradient(135deg,#0a1505 0%,#1a1005 50%,#0a0a15 100%)}
+.dest-card-4 .dest-img-bg{background:linear-gradient(135deg,#15050a 0%,#05101a 50%,#0a1505 100%)}
+
+/* Destination color overlays — simulating photography */
+.dest-card-1 .dest-img-bg{background:radial-gradient(ellipse at 30% 60%,rgba(180,120,40,.4),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(100,160,200,.3),transparent 50%),linear-gradient(160deg,#0d0805 0%,#151008 40%,#0a0d12 100%)}
+.dest-card-2 .dest-img-bg{background:radial-gradient(ellipse at 50% 70%,rgba(50,120,180,.5),transparent 60%),radial-gradient(ellipse at 20% 20%,rgba(200,180,100,.2),transparent 50%),linear-gradient(180deg,#08100d 0%,#050d10 100%)}
+.dest-card-3 .dest-img-bg{background:radial-gradient(ellipse at 40% 50%,rgba(160,100,50,.4),transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(80,150,100,.3),transparent 50%),linear-gradient(150deg,#0d0805 0%,#100d08 100%)}
+.dest-card-4 .dest-img-bg{background:radial-gradient(ellipse at 60% 40%,rgba(40,100,160,.4),transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(120,80,40,.3),transparent 50%),linear-gradient(130deg,#080d10 0%,#0d0808 100%)}
+
+.dest-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,5,.9) 0%,rgba(5,5,5,.2) 50%,transparent 100%);opacity:.7;transition:opacity .4s}
+.dest-content{position:absolute;bottom:0;left:0;right:0;padding:2.5rem}
+.dest-region{font-size:.55rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
+.dest-name{font-family:'Cormorant Garamond',serif;font-weight:300;color:var(--ivory);line-height:1.05}
+.dest-card.large .dest-name{font-size:clamp(2rem,4vw,4rem)}
+.dest-card.medium .dest-name{font-size:clamp(1.5rem,2.5vw,2.5rem)}
+.dest-card.small .dest-name{font-size:clamp(1.2rem,2vw,2rem)}
+.dest-tagline{font-size:.7rem;color:var(--ivory-dim);letter-spacing:.06em;margin-top:.4rem;line-height:1.6}
+.dest-meta{display:flex;gap:1.5rem;margin-top:1rem;flex-wrap:wrap}
+.dest-tag{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);border:1px solid rgba(201,169,110,.15);padding:.3rem .75rem}
+.dest-btn{display:inline-flex;align-items:center;gap:.75rem;margin-top:1.25rem;background:var(--gold);color:var(--obsidian);padding:.7rem 1.5rem;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-family:'Montserrat',sans-serif;font-weight:500;text-decoration:none;opacity:0;transform:translateY(10px);transition:all .4s;cursor:none}
+.dest-btn:hover{background:var(--gold-light)}
+
+.dest-card.large{grid-row:span 2;min-height:680px}
+.dest-card.medium{min-height:334px}
+.dest-card.small{min-height:250px}
+
+/* SECOND GRID ROW */
+.grid-row-2{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:2px;margin-bottom:2px}
+.dest-card-5 .dest-img-bg{background:radial-gradient(ellipse at 50% 30%,rgba(200,160,60,.35),transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(60,120,80,.3),transparent 50%),linear-gradient(170deg,#100d05 0%,#080d0a 100%)}
+.dest-card-6 .dest-img-bg{background:radial-gradient(ellipse at 30% 50%,rgba(80,60,180,.4),transparent 55%),radial-gradient(ellipse at 70% 20%,rgba(180,140,80,.25),transparent 50%),linear-gradient(145deg,#080810 0%,#0d0c08 100%)}
+.dest-card-7 .dest-img-bg{background:radial-gradient(ellipse at 60% 60%,rgba(40,140,100,.4),transparent 55%),radial-gradient(ellipse at 20% 30%,rgba(160,120,60,.3),transparent 50%),linear-gradient(155deg,#050d0a 0%,#0a0d08 100%)}
+
+/* GRID ROW 3 */
+.grid-row-3{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:2px}
+.dest-card-8 .dest-img-bg{background:radial-gradient(ellipse at 40% 50%,rgba(60,80,160,.45),transparent 55%),linear-gradient(160deg,#050810 0%,#080510 100%)}
+.dest-card-9 .dest-img-bg{background:radial-gradient(ellipse at 60% 40%,rgba(180,80,40,.4),transparent 55%),linear-gradient(155deg,#100805 0%,#0d0508 100%)}
+.dest-card-10 .dest-img-bg{background:radial-gradient(ellipse at 50% 60%,rgba(40,160,120,.4),transparent 55%),linear-gradient(165deg,#050d0a 0%,#08100d 100%)}
+.dest-card-11 .dest-img-bg{background:radial-gradient(ellipse at 40% 40%,rgba(160,140,60,.35),transparent 55%),linear-gradient(140deg,#0d0c05 0%,#100d08 100%)}
+
+/* EDITORIAL FEATURE */
+.editorial{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;padding:8rem 0;border-top:1px solid var(--glass-border)}
+.editorial-text h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.5vw,4rem);font-weight:300;color:var(--ivory);line-height:1.15;margin-bottom:1.5rem}
+.editorial-text h2 em{font-style:italic;color:var(--gold)}
+.editorial-text p{font-size:.78rem;line-height:2;color:var(--ivory-dim);letter-spacing:.04em;margin-bottom:2rem}
+.editorial-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2.5rem}
+.stat-block{border:1px solid var(--glass-border);padding:1.5rem}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:var(--gold);font-weight:300;line-height:1}
+.stat-label{font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);margin-top:.4rem}
+.editorial-visual{position:relative;height:500px}
+.ed-card{position:absolute;border:1px solid var(--glass-border);background:var(--glass);padding:2rem}
+.ed-card:nth-child(1){top:0;left:0;right:60px;height:300px;background:radial-gradient(ellipse at 40% 50%,rgba(201,169,110,.12),transparent 70%),var(--glass)}
+.ed-card:nth-child(2){bottom:0;right:0;left:80px;height:220px;background:radial-gradient(ellipse at 60% 50%,rgba(40,100,160,.15),transparent 70%),var(--glass)}
+.ed-card-label{font-size:.55rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.ed-card-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--ivory);margin-bottom:.5rem}
+.ed-card-sub{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.7}
+
+/* PRIVATE AVIATION BANNER */
+.aviation-banner{background:linear-gradient(135deg,rgba(201,169,110,.08) 0%,rgba(201,169,110,.03) 100%);border:1px solid var(--glass-border);padding:5rem 4rem;display:grid;grid-template-columns:1fr auto;gap:4rem;align-items:center;margin:4rem 0;position:relative;overflow:hidden}
+.aviation-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.aviation-banner::after{content:'✈';position:absolute;right:6rem;top:50%;transform:translateY(-50%);font-size:12rem;color:rgba(201,169,110,.04);pointer-events:none}
+.aviation-text h3{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3vw,3.5rem);font-weight:300;color:var(--ivory);line-height:1.15;margin-bottom:1rem}
+.aviation-text h3 em{font-style:italic;color:var(--gold)}
+.aviation-text p{font-size:.78rem;line-height:2;color:var(--ivory-dim);letter-spacing:.04em;max-width:560px}
+.aviation-action{display:flex;flex-direction:column;gap:1rem;flex-shrink:0}
+.btn-gold{display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;text-decoration:none;border:none;cursor:none;transition:all .3s;white-space:nowrap}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-outline{display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--gold);padding:1rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--gold-dim);text-decoration:none;cursor:none;transition:all .3s;white-space:nowrap}
+.btn-outline:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
+
+/* EXPERIENCE STRIPS */
+.experience-strips{display:grid;grid-template-columns:1fr;gap:1px;margin:2rem 0}
+.exp-strip{display:grid;grid-template-columns:200px 1fr auto;align-items:center;gap:3rem;padding:2rem 2.5rem;border:1px solid var(--glass-border);background:var(--glass);transition:all .3s;cursor:none}
+.exp-strip:hover{background:rgba(201,169,110,.08);transform:translateX(6px)}
+.exp-num{font-family:'Cormorant Garamond',serif;font-size:4rem;color:rgba(201,169,110,.15);font-weight:300;letter-spacing:-.04em;line-height:1}
+.exp-info h4{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--ivory);margin-bottom:.3rem}
+.exp-info p{font-size:.7rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.6}
+.exp-tags{display:flex;gap:.5rem;flex-wrap:wrap}
+.exp-tag{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);border:1px solid rgba(201,169,110,.1);padding:.25rem .6rem}
+
+/* CTA BOTTOM */
+.dest-cta{text-align:center;padding:10rem 0;position:relative}
+.dest-cta::before{content:'EXPLORE';position:absolute;font-family:'Cormorant Garamond',serif;font-size:18vw;font-weight:300;color:rgba(201,169,110,.025);left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;letter-spacing:.1em}
+.dest-cta h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,5vw,6rem);font-weight:300;color:var(--ivory);line-height:1.05;margin-bottom:1.5rem}
+.dest-cta h2 em{font-style:italic;color:var(--gold)}
+.dest-cta p{max-width:460px;margin:0 auto 3.5rem;font-size:.8rem;line-height:2;color:var(--ivory-dim);letter-spacing:.04em}
+.cta-btns{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex;justify-content:space-between;align-items:center;background:var(--void);position:relative;z-index:1}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;letter-spacing:.4em;color:var(--gold)}
+.footer-copy{font-size:.58rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase}
+.footer-links{display:flex;gap:2rem;list-style:none}
+.footer-links a{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:color .3s;cursor:none}
+.footer-links a:hover{color:var(--gold)}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* CATEGORY LABELS */
+.cat-badge{display:inline-block;padding:.3rem .9rem;border:1px solid rgba(201,169,110,.2);font-size:.52rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.75rem}
+
+@media(max-width:900px){
+  nav{padding:1.25rem 1.5rem}.nav-links{display:none}
+  .container{padding:0 1.5rem}
+  .dest-hero{padding:0 1.5rem 3rem}
+  .featured-grid{grid-template-columns:1fr}
+  .dest-card.large{grid-row:span 1;min-height:400px}
+  .grid-row-2,.grid-row-3{grid-template-columns:1fr 1fr}
+  .editorial{grid-template-columns:1fr;gap:3rem}
+  .aviation-banner{grid-template-columns:1fr;gap:2rem}
+  .exp-strip{grid-template-columns:60px 1fr}
+  .exp-tags{display:none}
+  footer{flex-direction:column;gap:1.5rem;text-align:center}
+  .filter-bar{padding:0 1.5rem}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="vela-home.html" class="nav-logo">Vela</a>
+  <ul class="nav-links">
+    <li><a href="vela-planner.html">Plan a Trip</a></li>
+    <li><a href="#" class="active">Destinations</a></li>
+    <li><a href="vela-how.html">How It Works</a></li>
+    <li><a href="vela-pricing.html">Pricing</a></li>
+  </ul>
+  <a href="vela-planner.html" class="nav-cta">Begin Journey</a>
+</nav>
+
+<!-- HERO -->
+<section class="dest-hero">
+  <div class="dest-hero-bg"></div>
+  <div class="dest-hero-pattern">
+    <svg viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <circle cx="700" cy="350" r="300" stroke="#c9a96e" stroke-width=".4"/>
+      <circle cx="700" cy="350" r="200" stroke="#c9a96e" stroke-width=".3"/>
+      <circle cx="700" cy="350" r="100" stroke="#c9a96e" stroke-width=".3"/>
+      <line x1="0" y1="350" x2="1400" y2="350" stroke="#c9a96e" stroke-width=".3"/>
+      <line x1="700" y1="0" x2="700" y2="700" stroke="#c9a96e" stroke-width=".3"/>
+      <line x1="488" y1="138" x2="912" y2="562" stroke="#c9a96e" stroke-width=".25"/>
+      <line x1="912" y1="138" x2="488" y2="562" stroke="#c9a96e" stroke-width=".25"/>
+    </svg>
+  </div>
+  <p class="hero-eyebrow">Curated by Vela Intelligence</p>
+  <h1 class="hero-h1">The world,<br><em>reimagined.</em></h1>
+  <p class="hero-sub">Every destination in our collection has been curated for its capacity to move you — from private island overtures to ancient mountain silences. No two journeys alike.</p>
+  <div class="hero-scroll-hint">Scroll to explore →</div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="setFilter(this)">All Destinations</button>
+  <button class="filter-btn" onclick="setFilter(this)">Asia & Pacific</button>
+  <button class="filter-btn" onclick="setFilter(this)">Europe</button>
+  <button class="filter-btn" onclick="setFilter(this)">Americas</button>
+  <button class="filter-btn" onclick="setFilter(this)">Middle East & Africa</button>
+  <button class="filter-btn" onclick="setFilter(this)">Private Islands</button>
+  <button class="filter-btn" onclick="setFilter(this)">Adventure</button>
+  <button class="filter-btn" onclick="setFilter(this)">Ultra-Luxury</button>
+</div>
+
+<!-- FEATURED DESTINATIONS -->
+<section class="section">
+  <div class="container">
+    <div class="section-label reveal">Featured Collections</div>
+    <h2 class="section-title reveal">This season's <em>most extraordinary</em> destinations.</h2>
+
+    <!-- ROW 1 -->
+    <div class="featured-grid">
+      <div class="dest-card large dest-card-1 reveal">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="cat-badge">Asia Pacific · Most Requested</div>
+          <div class="dest-region">Japan</div>
+          <div class="dest-name">Tokyo &<br>Ancient Kyoto</div>
+          <div class="dest-tagline">Bullet trains and temple gates. Modern zen and 1,000-year-old ryokans.</div>
+          <div class="dest-meta">
+            <span class="dest-tag">10–14 days</span>
+            <span class="dest-tag">From $8,500</span>
+            <span class="dest-tag">All tiers</span>
+          </div>
+          <a href="vela-planner.html" class="dest-btn">Plan This Journey →</a>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div class="dest-card medium dest-card-2 reveal">
+          <div class="dest-img-bg"></div>
+          <div class="dest-overlay"></div>
+          <div class="dest-content">
+            <div class="dest-region">Indian Ocean</div>
+            <div class="dest-name">Maldives Private Atolls</div>
+            <div class="dest-tagline">Overwater bungalows above crystalline lagoons. Nothing but horizon.</div>
+            <div class="dest-meta">
+              <span class="dest-tag">5–10 days</span>
+              <span class="dest-tag">From $12,000</span>
+            </div>
+            <a href="vela-planner.html" class="dest-btn">Plan This Journey →</a>
+          </div>
+        </div>
+        <div class="dest-card medium dest-card-3 reveal">
+          <div class="dest-img-bg"></div>
+          <div class="dest-overlay"></div>
+          <div class="dest-content">
+            <div class="dest-region">East Africa</div>
+            <div class="dest-name">Kenya &amp; Tanzania Safari</div>
+            <div class="dest-tagline">The Great Migration. Dawn game drives. Starlit camps in the Serengeti.</div>
+            <div class="dest-meta">
+              <span class="dest-tag">8–12 days</span>
+              <span class="dest-tag">From $15,000</span>
+            </div>
+            <a href="vela-planner.html" class="dest-btn">Plan This Journey →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="grid-row-2 reveal" style="margin-top:2px">
+      <div class="dest-card medium dest-card-5">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="dest-region">Mediterranean</div>
+          <div class="dest-name">Amalfi Coast</div>
+          <div class="dest-tagline">Cliffside villages, lemon groves, and cerulean waters.</div>
+          <div class="dest-meta"><span class="dest-tag">7–10 days</span><span class="dest-tag">From $7,500</span></div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+      <div class="dest-card medium dest-card-6">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="dest-region">South America</div>
+          <div class="dest-name">Patagonia</div>
+          <div class="dest-tagline">The end of the world. Torres del Paine. Glaciers at dawn.</div>
+          <div class="dest-meta"><span class="dest-tag">10–14 days</span><span class="dest-tag">From $9,000</span></div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+      <div class="dest-card medium dest-card-7">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="cat-badge">Elite — Private Access</div>
+          <div class="dest-region">Indonesia</div>
+          <div class="dest-name">Bali &amp; Private Island Archipelago</div>
+          <div class="dest-tagline">Terraced rice fields, volcanic peaks, and your own private island for a night.</div>
+          <div class="dest-meta"><span class="dest-tag">10–14 days</span><span class="dest-tag">Elite tier</span></div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="grid-row-3 reveal" style="margin-top:2px">
+      <div class="dest-card small dest-card-8">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="dest-region">North Atlantic</div>
+          <div class="dest-name">Iceland</div>
+          <div class="dest-tagline">Aurora borealis, black sand, geothermal pools.</div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+      <div class="dest-card small dest-card-9">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="dest-region">North Africa</div>
+          <div class="dest-name">Morocco</div>
+          <div class="dest-tagline">Medinas, riads, saharan camps under infinite stars.</div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+      <div class="dest-card small dest-card-10">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="dest-region">South Pacific</div>
+          <div class="dest-name">New Zealand</div>
+          <div class="dest-tagline">Fjords, geysers, and the world's finest Pinot Noir.</div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+      <div class="dest-card small dest-card-11">
+        <div class="dest-img-bg"></div>
+        <div class="dest-overlay"></div>
+        <div class="dest-content">
+          <div class="dest-region">Mediterranean</div>
+          <div class="dest-name">French Riviera</div>
+          <div class="dest-tagline">Yacht week in Cannes. Dinner in Monaco. Cap Ferrat sunsets.</div>
+          <a href="vela-planner.html" class="dest-btn">Plan →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AVIATION BANNER -->
+<section style="position:relative;z-index:1">
+  <div class="container">
+    <div class="aviation-banner reveal">
+      <div class="aviation-text">
+        <p class="section-label" style="margin-bottom:1.25rem">Elite Access</p>
+        <h3>Anywhere on earth.<br><em>By private jet.</em></h3>
+        <p style="margin-top:1rem">For Elite clients, distance is simply a detail. Vela sources and books private jet charters, fractional ownership flights, and ultra-long-range aircraft to place you anywhere in the world — often within 24 hours.</p>
+      </div>
+      <div class="aviation-action">
+        <a href="vela-planner.html" class="btn-gold">Plan an Elite Journey</a>
+        <a href="vela-pricing.html" class="btn-outline">View Elite Tier →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDITORIAL -->
+<section class="section">
+  <div class="container">
+    <div class="editorial">
+      <div class="editorial-text reveal">
+        <p class="section-label">The Vela Difference</p>
+        <h2>We've been <em>everywhere.</em><br>So you can be too.</h2>
+        <p>Every destination in Vela's collection has been assessed not just for beauty, but for the quality of experience our agents can create there. We know which Kyoto ryokan requires a 6-month lead time. We know which Maldives resort lets you sleep above bioluminescent water. We know which camp in the Serengeti positions you for the crossing.</p>
+        <p>This is intelligence that takes years to build. It's baked into every recommendation Vela makes.</p>
+        <div class="editorial-stats">
+          <div class="stat-block"><div class="stat-num">190+</div><div class="stat-label">Countries covered</div></div>
+          <div class="stat-block"><div class="stat-num">4,200+</div><div class="stat-label">Vetted properties</div></div>
+          <div class="stat-block"><div class="stat-num">12K+</div><div class="stat-label">Experiences curated</div></div>
+          <div class="stat-block"><div class="stat-num">24/7</div><div class="stat-label">Agent availability</div></div>
+        </div>
+      </div>
+      <div class="editorial-visual reveal">
+        <div class="ed-card">
+          <div class="ed-card-label">Agent Intelligence — Japan</div>
+          <div class="ed-card-title">Tawaraya Ryokan, Kyoto</div>
+          <div class="ed-card-sub">Founded 1709. Historically requires 6–12 months advance booking. Vela maintains direct relationships with properties of this caliber to secure availability for our clients.</div>
+        </div>
+        <div class="ed-card">
+          <div class="ed-card-label">Agent Intelligence — Maldives</div>
+          <div class="ed-card-title">Gili Lankanfushi Private Reserve</div>
+          <div class="ed-card-sub">The world's largest overwater villa. Bioluminescent plankton in the lagoon March–May. Vela agents pre-check natural phenomenon calendars for every booking.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE STRIPS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-label reveal">Signature Experiences</div>
+    <h2 class="section-title reveal">Moments that <em>define</em> the journey.</h2>
+    <div class="experience-strips">
+      <div class="exp-strip reveal">
+        <div class="exp-num">01</div>
+        <div class="exp-info"><h4>Sunrise at Angkor Wat — Private Access</h4><p>Cambodia · Temple complex opens before dawn for Vela Elite clients only</p></div>
+        <div class="exp-tags"><span class="exp-tag">Asia</span><span class="exp-tag">Cultural</span><span class="exp-tag">Elite</span></div>
+      </div>
+      <div class="exp-strip reveal">
+        <div class="exp-num">02</div>
+        <div class="exp-info"><h4>Helicopter Over the Grand Canyon at Dusk</h4><p>Arizona, USA · Private landing on the North Rim · Champagne dinner on the canyon floor</p></div>
+        <div class="exp-tags"><span class="exp-tag">Americas</span><span class="exp-tag">Adventure</span><span class="exp-tag">Premier+</span></div>
+      </div>
+      <div class="exp-strip reveal">
+        <div class="exp-num">03</div>
+        <div class="exp-info"><h4>Northern Lights — Private Glass Cabin, Lapland</h4><p>Finland · Heated glass ceiling suite · Guided aurora excursion with astronomer</p></div>
+        <div class="exp-tags"><span class="exp-tag">Europe</span><span class="exp-tag">Luxury</span><span class="exp-tag">Romantic</span></div>
+      </div>
+      <div class="exp-strip reveal">
+        <div class="exp-num">04</div>
+        <div class="exp-info"><h4>The Great Migration Crossing — Private Camp</h4><p>Masai Mara, Kenya · Timed arrival for river crossing · Exclusive bush dinner under the stars</p></div>
+        <div class="exp-tags"><span class="exp-tag">Africa</span><span class="exp-tag">Wildlife</span><span class="exp-tag">All Tiers</span></div>
+      </div>
+      <div class="exp-strip reveal">
+        <div class="exp-num">05</div>
+        <div class="exp-info"><h4>Omakase with a Michelin 3-Star Master, Tokyo</h4><p>Japan · 12-course seasonal menu · Private seating for two · Sake pairing included</p></div>
+        <div class="exp-tags"><span class="exp-tag">Asia</span><span class="exp-tag">Culinary</span><span class="exp-tag">Premier+</span></div>
+      </div>
+      <div class="exp-strip reveal">
+        <div class="exp-num">06</div>
+        <div class="exp-info"><h4>Overnight on a Private Island, French Polynesia</h4><p>Bora Bora · Full island exclusive for one night · Personal chef, dive instructor, sunset cruise</p></div>
+        <div class="exp-tags"><span class="exp-tag">Pacific</span><span class="exp-tag">Private Island</span><span class="exp-tag">Elite</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="dest-cta" style="position:relative;z-index:1">
+  <div class="container">
+    <h2 class="reveal">Where will <em>Vela</em><br>take you?</h2>
+    <p class="reveal">Every destination above is plannable right now. Describe your dream trip and our agents begin working immediately.</p>
+    <div class="cta-btns reveal">
+      <a href="vela-planner.html" class="btn-gold">Start Planning — Free</a>
+      <a href="vela-pricing.html" class="btn-outline">View Pricing →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Vela</div>
+  <p class="footer-copy">© 2026 Vela — AI Travel Concierge</p>
+  <ul class="footer-links">
+    <li><a href="vela-home.html">Home</a></li>
+    <li><a href="vela-planner.html">Plan a Trip</a></li>
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</footer>
+
+<script>
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-4+'px';cur.style.top=my-4+'px';});
+(function a(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='48px';ring.style.height='48px';ring.style.borderColor='rgba(201,169,110,.7)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(201,169,110,.4)';});
+});
+function setFilter(el){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
