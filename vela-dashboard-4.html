@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELA — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#050505;--obsidian:#0d0d0d;--surface:#111111;--surface2:#161616;
+  --gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;--gold-faint:rgba(201,169,110,0.07);
+  --ivory:#f5f0e8;--ivory-dim:#c8bfaa;--ivory-faint:rgba(245,240,232,0.06);
+  --glass:rgba(201,169,110,0.06);--glass-border:rgba(201,169,110,0.13);
+  --success:#6eb88a;--warning:#d4956a;--info:#6a9fd4;
+  --sidebar-w:260px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--obsidian);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none;min-height:100vh}
+
+/* NOISE */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+
+/* CURSOR */
+.cursor{position:fixed;width:7px;height:7px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen;transition:transform .1s}
+.cursor-ring{position:fixed;width:28px;height:28px;border:1px solid rgba(201,169,110,.35);border-radius:50%;pointer-events:none;z-index:9998;transition:width .25s,height .25s,border-color .25s}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;position:relative;z-index:1}
+
+/* ─── SIDEBAR ─── */
+.sidebar{background:var(--void);border-right:1px solid var(--glass-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);z-index:100;overflow:hidden}
+
+.sidebar-logo{padding:2rem 1.75rem 1.5rem;border-bottom:1px solid var(--glass-border)}
+.logo-mark{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;letter-spacing:.4em;color:var(--gold);display:block}
+.logo-tier{font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);margin-top:.2rem}
+
+.sidebar-user{padding:1.25rem 1.75rem;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;gap:.875rem}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(201,169,110,.3),rgba(201,169,110,.1));border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);flex-shrink:0}
+.user-name{font-size:.68rem;letter-spacing:.08em;color:var(--ivory);margin-bottom:.15rem}
+.user-tier{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim)}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:1.25rem 0}
+.nav-section-label{font-size:.5rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold-dim);padding:.75rem 1.75rem .4rem;margin-top:.5rem}
+.nav-item{display:flex;align-items:center;gap:.875rem;padding:.75rem 1.75rem;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ivory-dim);cursor:none;transition:all .25s;border-left:2px solid transparent;position:relative}
+.nav-item:hover{color:var(--ivory);background:var(--ivory-faint)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-faint)}
+.nav-icon{width:16px;text-align:center;font-size:.85rem;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--gold);color:var(--obsidian);font-size:.5rem;letter-spacing:.1em;padding:.15rem .5rem;border-radius:20px;font-weight:500}
+.nav-badge.pulse{animation:badgePulse 2s infinite}
+
+.sidebar-bottom{padding:1.25rem 1.75rem;border-top:1px solid var(--glass-border)}
+.agent-live{display:flex;align-items:center;gap:.75rem;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dim);padding:.75rem 1rem;border:1px solid var(--glass-border);background:var(--glass)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:livePulse 1.5s infinite}
+
+@keyframes badgePulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.7)}}
+
+/* ─── MAIN ─── */
+.main{margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh}
+
+/* TOP BAR */
+.topbar{background:rgba(13,13,13,.95);border-bottom:1px solid var(--glass-border);padding:1rem 2.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+.topbar-left h1{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--ivory);letter-spacing:.04em}
+.topbar-left p{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-top:.1rem}
+.topbar-right{display:flex;align-items:center;gap:1.5rem}
+.topbar-btn{background:transparent;border:1px solid var(--glass-border);color:var(--ivory-dim);padding:.6rem 1.25rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;cursor:none;transition:all .3s;display:flex;align-items:center;gap:.6rem}
+.topbar-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+.topbar-btn.primary{background:var(--gold);color:var(--obsidian);border-color:var(--gold)}
+.topbar-btn.primary:hover{background:var(--gold-light)}
+.notif-btn{position:relative;width:36px;height:36px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:none;transition:all .3s;background:transparent;font-size:1rem}
+.notif-btn:hover{border-color:var(--gold-dim)}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--gold);border-radius:50%;border:1.5px solid var(--obsidian)}
+
+/* ─── CONTENT ─── */
+.content{padding:2rem 2.5rem;flex:1}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block;animation:panelFade .4s ease forwards}
+@keyframes panelFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── OVERVIEW PANEL ─── */
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;margin-bottom:2rem}
+.stat-card{background:var(--surface);border:1px solid var(--glass-border);padding:1.5rem;transition:all .3s;cursor:none}
+.stat-card:hover{background:var(--surface2);transform:translateY(-2px)}
+.stat-label{font-size:.55rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.75rem}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;color:var(--ivory);line-height:1;letter-spacing:-.02em}
+.stat-sub{font-size:.6rem;letter-spacing:.1em;color:var(--gold-dim);margin-top:.4rem}
+.stat-change{font-size:.58rem;letter-spacing:.1em;margin-top:.5rem}
+.stat-change.up{color:var(--success)}
+.stat-change.pending{color:var(--warning)}
+
+/* ACTIVE TRIP HERO */
+.active-trip-hero{background:var(--surface);border:1px solid var(--glass-border);padding:2.5rem;margin-bottom:1px;position:relative;overflow:hidden;display:grid;grid-template-columns:1fr auto;gap:3rem;align-items:center}
+.active-trip-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(201,169,110,.07),transparent 70%)}
+.active-trip-hero::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.trip-hero-label{font-size:.52rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.trip-hero-name{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3vw,3.5rem);font-weight:300;color:var(--ivory);line-height:1.05}
+.trip-hero-name em{font-style:italic;color:var(--gold)}
+.trip-hero-meta{display:flex;gap:2rem;margin-top:1.25rem;flex-wrap:wrap}
+.trip-meta-item{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:.5rem}
+.trip-meta-item span{color:var(--ivory-dim)}
+.trip-hero-status{display:flex;flex-direction:column;align-items:flex-end;gap:1rem;flex-shrink:0}
+.countdown{text-align:right}
+.countdown-num{font-family:'Cormorant Garamond',serif;font-size:3.5rem;color:var(--gold);font-weight:300;line-height:1;letter-spacing:-.02em}
+.countdown-label{font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim)}
+.status-pill{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem 1rem;border:1px solid rgba(110,184,138,.3);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--success)}
+.status-pill .dot{width:5px;height:5px;border-radius:50%;background:var(--success);animation:livePulse 1.5s infinite}
+
+/* TRIP PROGRESS */
+.trip-progress{background:var(--surface);border:1px solid var(--glass-border);border-top:none;padding:1.75rem 2.5rem;display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.progress-node{text-align:center;position:relative;padding:.75rem 0}
+.progress-node:not(:last-child)::after{content:'';position:absolute;top:1.2rem;left:50%;right:-50%;height:1px;background:var(--glass-border);z-index:0}
+.progress-node.done::after{background:var(--gold-dim)}
+.progress-node.active::after{background:linear-gradient(to right,var(--gold-dim),var(--glass-border))}
+.prog-circle{width:24px;height:24px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:.6rem;position:relative;z-index:1;transition:all .3s}
+.progress-node.done .prog-circle{background:rgba(110,184,138,.15);border:1px solid var(--success);color:var(--success)}
+.progress-node.active .prog-circle{background:rgba(201,169,110,.15);border:1px solid var(--gold);color:var(--gold);box-shadow:0 0 12px rgba(201,169,110,.2)}
+.progress-node.pending .prog-circle{background:transparent;border:1px solid var(--glass-border);color:var(--gold-dim)}
+.prog-label{font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim)}
+.progress-node.done .prog-label{color:var(--ivory-dim)}
+.progress-node.active .prog-label{color:var(--gold)}
+
+/* TWO-COL GRID */
+.two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:1px;margin-top:1px}
+.col-stack{display:flex;flex-direction:column;gap:1px}
+
+/* AGENT ACTIVITY */
+.card{background:var(--surface);border:1px solid var(--glass-border);padding:1.75rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.card-title{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold)}
+.card-action{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim);cursor:none;transition:color .3s;background:transparent;border:none}
+.card-action:hover{color:var(--gold)}
+
+.activity-feed{display:flex;flex-direction:column;gap:0}
+.activity-item{display:grid;grid-template-columns:32px 1fr auto;gap:.875rem;align-items:flex-start;padding:.875rem 0;border-bottom:1px solid rgba(201,169,110,.05)}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.activity-icon.flight{background:rgba(106,159,212,.12);border:1px solid rgba(106,159,212,.2)}
+.activity-icon.hotel{background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.15)}
+.activity-icon.dining{background:rgba(110,184,138,.1);border:1px solid rgba(110,184,138,.15)}
+.activity-icon.transfer{background:rgba(212,149,106,.1);border:1px solid rgba(212,149,106,.15)}
+.activity-icon.exp{background:rgba(169,110,201,.1);border:1px solid rgba(169,110,201,.15)}
+.activity-text h4{font-size:.68rem;letter-spacing:.06em;color:var(--ivory);margin-bottom:.2rem;line-height:1.4}
+.activity-text p{font-size:.6rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.5}
+.activity-time{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dim);white-space:nowrap;margin-top:2px}
+.activity-status{display:inline-block;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:.2rem .6rem;margin-top:.4rem}
+.activity-status.confirmed{color:var(--success);border:1px solid rgba(110,184,138,.25)}
+.activity-status.pending{color:var(--warning);border:1px solid rgba(212,149,106,.25)}
+.activity-status.searching{color:var(--info);border:1px solid rgba(106,159,212,.25)}
+
+/* UPCOMING FLIGHTS */
+.flight-card{padding:1.25rem 0;border-bottom:1px solid rgba(201,169,110,.05);display:grid;grid-template-columns:1fr auto 1fr auto;gap:1rem;align-items:center}
+.flight-card:last-child{border-bottom:none}
+.flight-city{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--ivory);font-weight:300;line-height:1}
+.flight-code{font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim);margin-top:.2rem}
+.flight-time{font-size:.72rem;letter-spacing:.1em;color:var(--ivory-dim)}
+.flight-arrow{text-align:center}
+.flight-line{height:1px;background:linear-gradient(to right,var(--gold-dim),transparent,var(--gold-dim));margin:.4rem 0;position:relative}
+.flight-plane{position:absolute;left:50%;top:-6px;transform:translateX(-50%);font-size:.75rem}
+.flight-class{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);text-align:center;margin-top:.2rem}
+.flight-ref{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--success);text-align:right;margin-top:.3rem}
+
+/* BOOKINGS VAULT */
+.vault-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.vault-item{background:var(--surface2);border:1px solid var(--glass-border);padding:1.25rem;transition:all .3s;cursor:none}
+.vault-item:hover{background:rgba(201,169,110,.06);transform:translateY(-2px)}
+.vault-type{font-size:.5rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.vault-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ivory);margin-bottom:.3rem}
+.vault-detail{font-size:.62rem;letter-spacing:.08em;color:var(--ivory-dim)}
+.vault-status{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem}
+.vault-ref{font-size:.55rem;letter-spacing:.18em;color:var(--gold-dim)}
+.vault-badge{font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;padding:.2rem .55rem;color:var(--success);border:1px solid rgba(110,184,138,.25)}
+
+/* ─── TRIPS PANEL ─── */
+.trips-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.trips-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory)}
+.trips-title em{font-style:italic;color:var(--gold)}
+.trips-tabs{display:flex;gap:0;border-bottom:1px solid var(--glass-border);margin-bottom:1.5rem}
+.trip-tab{padding:.875rem 1.5rem;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);border:none;background:transparent;cursor:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .3s;font-family:'Montserrat',sans-serif}
+.trip-tab:hover{color:var(--ivory)}
+.trip-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+.trips-list{display:flex;flex-direction:column;gap:1px}
+.trip-row{background:var(--surface);border:1px solid var(--glass-border);padding:1.75rem 2rem;display:grid;grid-template-columns:1fr auto auto;gap:2rem;align-items:center;transition:all .3s;cursor:none}
+.trip-row:hover{background:var(--surface2);transform:translateX(4px)}
+.trip-row-dest{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--ivory);margin-bottom:.25rem}
+.trip-row-dest em{font-style:italic;color:var(--gold)}
+.trip-row-meta{font-size:.62rem;letter-spacing:.1em;color:var(--gold-dim);display:flex;gap:1.5rem}
+.trip-row-dates{font-size:.68rem;letter-spacing:.1em;color:var(--ivory-dim);text-align:right}
+.trip-row-status{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;padding:.35rem .9rem}
+.trip-row-status.active-s{color:var(--success);border:1px solid rgba(110,184,138,.3)}
+.trip-row-status.upcoming{color:var(--info);border:1px solid rgba(106,159,212,.3)}
+.trip-row-status.planning{color:var(--warning);border:1px solid rgba(212,149,106,.3)}
+.trip-row-status.completed{color:var(--gold-dim);border:1px solid var(--glass-border)}
+.trip-row-actions{display:flex;gap:.5rem}
+.trip-action-btn{background:transparent;border:1px solid var(--glass-border);color:var(--ivory-dim);padding:.45rem .9rem;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;cursor:none;transition:all .3s;font-family:'Montserrat',sans-serif}
+.trip-action-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+
+/* ─── VAULT PANEL ─── */
+.vault-panel-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-bottom:1px}
+.vault-full-item{background:var(--surface);border:1px solid var(--glass-border);padding:2rem;transition:all .3s;cursor:none}
+.vault-full-item:hover{background:var(--surface2);transform:translateY(-3px)}
+.vfi-type{font-size:.52rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem}
+.vfi-type::before{content:'';width:20px;height:1px;background:var(--gold)}
+.vfi-name{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--ivory);margin-bottom:.4rem}
+.vfi-detail{font-size:.68rem;letter-spacing:.06em;color:var(--ivory-dim);line-height:1.7;margin-bottom:1rem}
+.vfi-masked{font-family:'Montserrat',sans-serif;font-size:.8rem;letter-spacing:.25em;color:var(--gold-dim)}
+.vfi-footer{display:flex;justify-content:space-between;align-items:center;padding-top:1rem;border-top:1px solid var(--glass-border);margin-top:.5rem}
+.vfi-enc{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--success);display:flex;align-items:center;gap:.4rem}
+.vfi-action{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim);cursor:none;background:transparent;border:none;transition:color .3s;font-family:'Montserrat',sans-serif}
+.vfi-action:hover{color:var(--gold)}
+
+.vault-security-banner{background:linear-gradient(135deg,rgba(110,184,138,.07),rgba(110,184,138,.03));border:1px solid rgba(110,184,138,.15);padding:2rem 2.5rem;display:flex;align-items:center;gap:2.5rem;margin-top:1px}
+.sec-icon{font-size:2rem;flex-shrink:0}
+.sec-text h4{font-size:.72rem;letter-spacing:.12em;color:var(--success);margin-bottom:.4rem}
+.sec-text p{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.7}
+.sec-badges{display:flex;gap:.75rem;flex-wrap:wrap;margin-left:auto;flex-shrink:0}
+.sec-badge{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--success);border:1px solid rgba(110,184,138,.2);padding:.3rem .75rem}
+
+/* ─── AGENTS PANEL ─── */
+.agents-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:1px}
+.agent-detail-card{background:var(--surface);border:1px solid var(--glass-border);padding:2rem}
+.adc-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--glass-border)}
+.adc-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.adc-icon.active-agent{border:1px solid var(--gold);background:rgba(201,169,110,.1);box-shadow:0 0 16px rgba(201,169,110,.15)}
+.adc-icon.idle-agent{border:1px solid var(--glass-border);background:transparent}
+.adc-name{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ivory)}
+.adc-status{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;margin-top:.15rem}
+.adc-status.running{color:var(--gold)}
+.adc-status.idle{color:var(--gold-dim)}
+.adc-status.done{color:var(--success)}
+.adc-log{display:flex;flex-direction:column;gap:.5rem}
+.log-line{font-size:.65rem;letter-spacing:.05em;color:var(--ivory-dim);display:flex;align-items:flex-start;gap:.75rem;line-height:1.5}
+.log-time{font-size:.55rem;letter-spacing:.12em;color:var(--gold-dim);white-space:nowrap;flex-shrink:0;margin-top:1px}
+.log-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.log-dot.done{background:var(--success)}
+.log-dot.active{background:var(--gold);animation:livePulse 1.5s infinite}
+.log-dot.pending{background:var(--glass-border)}
+
+.agent-summary-card{background:var(--surface);border:1px solid var(--glass-border);padding:2rem;grid-column:span 2}
+.agent-summary-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px}
+.asm-item{text-align:center;padding:1.25rem;border:1px solid var(--glass-border);background:var(--surface2)}
+.asm-icon{font-size:1.5rem;margin-bottom:.6rem}
+.asm-name{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim);margin-bottom:.35rem}
+.asm-stat{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold);font-weight:300}
+.asm-label{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dim)}
+
+/* NOTIFICATION PANEL */
+.notif-panel{position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--void);border-left:1px solid var(--glass-border);z-index:300;transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);overflow-y:auto}
+.notif-panel.open{transform:translateX(0)}
+.notif-header{padding:1.75rem;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--void);z-index:1}
+.notif-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--ivory)}
+.notif-close{background:transparent;border:none;color:var(--ivory-dim);font-size:1.2rem;cursor:none;transition:color .3s}
+.notif-close:hover{color:var(--gold)}
+.notif-list{padding:1rem}
+.notif-item{padding:1rem;border:1px solid var(--glass-border);background:var(--glass);margin-bottom:.75rem;transition:all .3s}
+.notif-item.unread{border-color:rgba(201,169,110,.25)}
+.notif-item-type{font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+.notif-item-text{font-size:.68rem;letter-spacing:.04em;color:var(--ivory);line-height:1.6;margin-bottom:.4rem}
+.notif-item-time{font-size:.55rem;letter-spacing:.12em;color:var(--gold-dim)}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(5,5,5,.6);z-index:290;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px)}
+.overlay.show{opacity:1;pointer-events:all}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:4rem 2rem}
+.empty-state p{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--ivory-dim);margin-bottom:1.5rem}
+.empty-state span{font-size:.68rem;letter-spacing:.1em;color:var(--gold-dim)}
+
+@media(max-width:1100px){
+  :root{--sidebar-w:220px}
+  .overview-grid{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .vault-panel-grid{grid-template-columns:1fr 1fr}
+  .agents-panel-grid{grid-template-columns:1fr}
+  .agent-summary-row{grid-template-columns:repeat(3,1fr)}
+  .agent-summary-card{grid-column:span 1}
+}
+@media(max-width:768px){
+  .app{grid-template-columns:1fr}
+  .sidebar{transform:translateX(-100%)}
+  .main{margin-left:0}
+  .overview-grid{grid-template-columns:1fr 1fr}
+  .vault-panel-grid{grid-template-columns:1fr}
+  .active-trip-hero{grid-template-columns:1fr}
+  .trip-progress{grid-template-columns:repeat(3,1fr)}
+  .notif-panel{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="overlay" id="overlay" onclick="closeNotif()"></div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <span class="notif-title">Notifications</span>
+    <button class="notif-close" onclick="closeNotif()">✕</button>
+  </div>
+  <div class="notif-list">
+    <div class="notif-item unread">
+      <div class="notif-item-type">✈ Flight Agent</div>
+      <div class="notif-item-text">Business class seats confirmed on AA169 — New York to Tokyo. Seats 3A & 3B reserved.</div>
+      <div class="notif-item-time">2 minutes ago</div>
+    </div>
+    <div class="notif-item unread">
+      <div class="notif-item-type">🏨 Hotel Agent</div>
+      <div class="notif-item-text">Tawaraya Ryokan confirmed for Oct 18–21. Garden suite with kaiseki dinner included.</div>
+      <div class="notif-item-time">8 minutes ago</div>
+    </div>
+    <div class="notif-item unread">
+      <div class="notif-item-type">🍽 Dining Agent</div>
+      <div class="notif-item-text">Sushi Saito reservation secured — Oct 17, 1:00 PM. Omakase for two.</div>
+      <div class="notif-item-time">23 minutes ago</div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-item-type">🗺 Experience Agent</div>
+      <div class="notif-item-text">Private Arashiyama morning tour confirmed. Includes bamboo grove access before public hours.</div>
+      <div class="notif-item-time">1 hour ago</div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-item-type">🚗 Transfer Agent</div>
+      <div class="notif-item-text">All ground transfers coordinated. Black car confirmed for NRT arrival and all city transfers.</div>
+      <div class="notif-item-time">2 hours ago</div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-item-type">🔐 Security</div>
+      <div class="notif-item-text">New payment method added to your vault. Visa ending 4421 encrypted and secured.</div>
+      <div class="notif-item-time">Yesterday</div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-mark">Vela</span>
+      <span class="logo-tier">Vela Member</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">J</div>
+      <div>
+        <div class="user-name">James Whitfield</div>
+        <div class="user-tier">✦ Premier Tier</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item active" onclick="showPanel('overview',this)">
+        <span class="nav-icon">◈</span> Overview
+      </div>
+      <div class="nav-item" onclick="showPanel('trips',this)">
+        <span class="nav-icon">✈</span> My Trips
+        <span class="nav-badge pulse">3</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('vault',this)">
+        <span class="nav-icon">🔐</span> Travel Vault
+      </div>
+      <div class="nav-item" onclick="showPanel('agents',this)">
+        <span class="nav-icon">◉</span> AI Agents
+        <span class="nav-badge">Live</span>
+      </div>
+      <div class="nav-section-label">Plan</div>
+      <div class="nav-item" onclick="window.location.href='vela-planner.html'">
+        <span class="nav-icon">✦</span> New Journey
+      </div>
+      <div class="nav-item" onclick="showPanel('destinations',this)">
+        <span class="nav-icon">🌍</span> Destinations
+      </div>
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item" onclick="showPanel('preferences',this)">
+        <span class="nav-icon">◎</span> Preferences
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">↗</span> <a href="vela-home.html" style="color:inherit;text-decoration:none;cursor:none">Back to Site</a>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="agent-live">
+        <div class="live-dot"></div>
+        5 Agents Active
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="panelTitle">Good evening, James.</h1>
+        <p id="panelSub">Your Japan journey is 3 days away</p>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="window.location.href='vela-planner.html'">✦ Plan New Trip</button>
+        <button class="notif-btn" onclick="openNotif()">🔔<span class="notif-dot"></span></button>
+        <button class="topbar-btn primary" onclick="showPanel('trips',document.querySelector('[onclick*=trips]'))">View Active Trip</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══ OVERVIEW ═══ -->
+      <div class="panel active" id="panel-overview">
+
+        <!-- STATS ROW -->
+        <div class="overview-grid">
+          <div class="stat-card">
+            <div class="stat-label">Trips Completed</div>
+            <div class="stat-value">7</div>
+            <div class="stat-sub">Since joining Vela</div>
+            <div class="stat-change up">↑ 3 this year</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Countries Visited</div>
+            <div class="stat-value">14</div>
+            <div class="stat-sub">Via Vela planning</div>
+            <div class="stat-change up">↑ Japan next</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Bookings</div>
+            <div class="stat-value">11</div>
+            <div class="stat-sub">For Japan trip</div>
+            <div class="stat-change pending">3 pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Agent Actions</div>
+            <div class="stat-value">847</div>
+            <div class="stat-sub">Total automated</div>
+            <div class="stat-change up">↑ 34 this week</div>
+          </div>
+        </div>
+
+        <!-- ACTIVE TRIP HERO -->
+        <div class="active-trip-hero">
+          <div>
+            <div class="trip-hero-label">Active Journey — Premier Tier</div>
+            <div class="trip-hero-name">Japan — <em>Tokyo & Ancient Kyoto</em></div>
+            <div class="trip-hero-meta">
+              <div class="trip-meta-item">📅 <span>Oct 14 – Oct 26, 2026</span></div>
+              <div class="trip-meta-item">👤 <span>2 Travelers</span></div>
+              <div class="trip-meta-item">✈ <span>AA169 — Business Class</span></div>
+              <div class="trip-meta-item">💰 <span>$9,679 total</span></div>
+            </div>
+          </div>
+          <div class="trip-hero-status">
+            <div class="countdown">
+              <div class="countdown-num" id="countdown">3</div>
+              <div class="countdown-label">Days Until Departure</div>
+            </div>
+            <div class="status-pill"><span class="dot"></span> All Systems Go</div>
+          </div>
+        </div>
+
+        <!-- TRIP PROGRESS -->
+        <div class="trip-progress">
+          <div class="progress-node done">
+            <div class="prog-circle">✓</div>
+            <div class="prog-label">Planned</div>
+          </div>
+          <div class="progress-node done">
+            <div class="prog-circle">✓</div>
+            <div class="prog-label">Flights</div>
+          </div>
+          <div class="progress-node done">
+            <div class="prog-circle">✓</div>
+            <div class="prog-label">Hotels</div>
+          </div>
+          <div class="progress-node active">
+            <div class="prog-circle">◉</div>
+            <div class="prog-label">Experiences</div>
+          </div>
+          <div class="progress-node pending">
+            <div class="prog-circle">○</div>
+            <div class="prog-label">Depart</div>
+          </div>
+        </div>
+
+        <!-- TWO COL -->
+        <div class="two-col">
+
+          <!-- AGENT ACTIVITY FEED -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Live Agent Activity</span>
+              <button class="card-action" onclick="showPanel('agents',null)">View All →</button>
+            </div>
+            <div class="activity-feed">
+              <div class="activity-item">
+                <div class="activity-icon flight">✈</div>
+                <div class="activity-text">
+                  <h4>Flight Agent — Seats Confirmed</h4>
+                  <p>AA169 JFK→NRT Business Class. Seats 3A & 3B. Check-in opens Oct 13.</p>
+                  <span class="activity-status confirmed">Confirmed</span>
+                </div>
+                <div class="activity-time">2m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon dining">🍽</div>
+                <div class="activity-text">
+                  <h4>Dining Agent — Reservation Secured</h4>
+                  <p>Sushi Saito, Akasaka. Oct 17 at 1:00 PM. Omakase for two. Reference: SS-4481.</p>
+                  <span class="activity-status confirmed">Confirmed</span>
+                </div>
+                <div class="activity-time">23m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon exp">🗺</div>
+                <div class="activity-text">
+                  <h4>Experience Agent — Searching</h4>
+                  <p>Sourcing private helicopter availability over Tokyo for Oct 16 sunset window.</p>
+                  <span class="activity-status searching">Searching</span>
+                </div>
+                <div class="activity-time">41m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon hotel">🏨</div>
+                <div class="activity-text">
+                  <h4>Hotel Agent — Ryokan Confirmed</h4>
+                  <p>Tawaraya Ryokan, Kyoto. Oct 18–21. Garden suite + kaiseki dinner nightly.</p>
+                  <span class="activity-status confirmed">Confirmed</span>
+                </div>
+                <div class="activity-time">1h ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon transfer">🚗</div>
+                <div class="activity-text">
+                  <h4>Transfer Agent — All Routes Set</h4>
+                  <p>Black car NRT arrival, Shinkansen Green Car Tokyo→Kyoto, all city transfers confirmed.</p>
+                  <span class="activity-status confirmed">Confirmed</span>
+                </div>
+                <div class="activity-time">2h ago</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="col-stack">
+
+            <!-- UPCOMING FLIGHTS -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Upcoming Flights</span>
+              </div>
+              <div class="flight-card">
+                <div>
+                  <div class="flight-city">JFK</div>
+                  <div class="flight-code">New York</div>
+                  <div class="flight-time">Oct 14 · 11:45 PM</div>
+                </div>
+                <div class="flight-arrow">
+                  <div class="flight-line"><span class="flight-plane">✈</span></div>
+                  <div class="flight-class">Business · 14h 45m</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="flight-city">NRT</div>
+                  <div class="flight-code">Tokyo</div>
+                  <div class="flight-time">Oct 16 · 04:30 AM</div>
+                </div>
+                <div class="flight-ref">✓ AA169</div>
+              </div>
+              <div class="flight-card">
+                <div>
+                  <div class="flight-city">HND</div>
+                  <div class="flight-code">Tokyo</div>
+                  <div class="flight-time">Oct 26 · 11:00 AM</div>
+                </div>
+                <div class="flight-arrow">
+                  <div class="flight-line"><span class="flight-plane">✈</span></div>
+                  <div class="flight-class">Business · 13h 20m</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="flight-city">JFK</div>
+                  <div class="flight-code">New York</div>
+                  <div class="flight-time">Oct 26 · 09:20 AM</div>
+                </div>
+                <div class="flight-ref">✓ JL006</div>
+              </div>
+            </div>
+
+            <!-- VAULT PREVIEW -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Travel Vault</span>
+                <button class="card-action" onclick="showPanel('vault',null)">Manage →</button>
+              </div>
+              <div class="vault-grid">
+                <div class="vault-item">
+                  <div class="vault-type">Passport</div>
+                  <div class="vault-name">US Passport</div>
+                  <div class="vault-detail">••••••• 7842</div>
+                  <div class="vault-status"><span class="vault-ref">Exp 2031</span><span class="vault-badge">✓ Secure</span></div>
+                </div>
+                <div class="vault-item">
+                  <div class="vault-type">Payment</div>
+                  <div class="vault-name">Visa Infinite</div>
+                  <div class="vault-detail">•••• •••• •••• 4421</div>
+                  <div class="vault-status"><span class="vault-ref">Exp 12/28</span><span class="vault-badge">✓ Secure</span></div>
+                </div>
+                <div class="vault-item">
+                  <div class="vault-type">Frequent Flyer</div>
+                  <div class="vault-name">AAdvantage</div>
+                  <div class="vault-detail">•••••••• 8821</div>
+                  <div class="vault-status"><span class="vault-ref">Exec Plat</span><span class="vault-badge">✓ Active</span></div>
+                </div>
+                <div class="vault-item" style="display:flex;align-items:center;justify-content:center;border:1px dashed rgba(201,169,110,.15);cursor:none" onclick="showPanel('vault',null)">
+                  <div style="text-align:center"><div style="font-size:1.4rem;color:var(--gold-dim)">+</div><div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-top:.3rem">Add Item</div></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MY TRIPS ═══ -->
+      <div class="panel" id="panel-trips">
+        <div class="trips-header">
+          <h2 class="trips-title">My <em>Journeys</em></h2>
+          <button class="topbar-btn primary" onclick="window.location.href='vela-planner.html'">✦ Plan New Trip</button>
+        </div>
+        <div class="trips-tabs">
+          <button class="trip-tab active" onclick="switchTripTab(this,'all')">All Trips</button>
+          <button class="trip-tab" onclick="switchTripTab(this,'upcoming')">Upcoming</button>
+          <button class="trip-tab" onclick="switchTripTab(this,'active')">Active</button>
+          <button class="trip-tab" onclick="switchTripTab(this,'past')">Past</button>
+        </div>
+        <div class="trips-list">
+          <div class="trip-row" data-cat="active">
+            <div>
+              <div class="trip-row-dest">Japan — <em>Tokyo & Kyoto</em></div>
+              <div class="trip-row-meta"><span>✈ Business Class</span><span>🏨 Park Hyatt + Tawaraya</span><span>👤 2 Travelers</span></div>
+            </div>
+            <div class="trip-row-dates">Oct 14 – Oct 26, 2026<br><span style="color:var(--gold);font-size:.6rem">Departs in 3 days</span></div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.6rem">
+              <span class="trip-row-status active-s">Active</span>
+              <div class="trip-row-actions"><button class="trip-action-btn" onclick="showPanel('overview',null)">View →</button></div>
+            </div>
+          </div>
+          <div class="trip-row" data-cat="upcoming">
+            <div>
+              <div class="trip-row-dest">Maldives — <em>Private Atoll</em></div>
+              <div class="trip-row-meta"><span>✈ Emirates Business</span><span>🏝 Overwater Villa</span><span>👤 2 Travelers</span></div>
+            </div>
+            <div class="trip-row-dates">Jan 8 – Jan 16, 2027<br><span style="color:var(--info);font-size:.6rem">In planning</span></div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.6rem">
+              <span class="trip-row-status planning">Planning</span>
+              <div class="trip-row-actions"><button class="trip-action-btn">Resume →</button></div>
+            </div>
+          </div>
+          <div class="trip-row" data-cat="past">
+            <div>
+              <div class="trip-row-dest">Amalfi Coast — <em>Italy</em></div>
+              <div class="trip-row-meta"><span>✈ Alitalia Business</span><span>🏨 Monastero Santa Rosa</span><span>👤 2 Travelers</span></div>
+            </div>
+            <div class="trip-row-dates">Jun 3 – Jun 11, 2026</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.6rem">
+              <span class="trip-row-status completed">Completed</span>
+              <div class="trip-row-actions"><button class="trip-action-btn">View →</button><button class="trip-action-btn">Rebook</button></div>
+            </div>
+          </div>
+          <div class="trip-row" data-cat="past">
+            <div>
+              <div class="trip-row-dest">Kenya — <em>Masai Mara Safari</em></div>
+              <div class="trip-row-meta"><span>✈ Private Charter</span><span>⛺ Angama Mara Camp</span><span>👤 4 Travelers</span></div>
+            </div>
+            <div class="trip-row-dates">Feb 14 – Feb 22, 2026</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.6rem">
+              <span class="trip-row-status completed">Completed</span>
+              <div class="trip-row-actions"><button class="trip-action-btn">View →</button><button class="trip-action-btn">Rebook</button></div>
+            </div>
+          </div>
+          <div class="trip-row" data-cat="past">
+            <div>
+              <div class="trip-row-dest">Iceland — <em>Ring Road &amp; Aurora</em></div>
+              <div class="trip-row-meta"><span>✈ Icelandair</span><span>🏔 Glass Cabin + Hotel Ranga</span><span>👤 2 Travelers</span></div>
+            </div>
+            <div class="trip-row-dates">Nov 28 – Dec 5, 2025</div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.6rem">
+              <span class="trip-row-status completed">Completed</span>
+              <div class="trip-row-actions"><button class="trip-action-btn">View →</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ VAULT ═══ -->
+      <div class="panel" id="panel-vault">
+        <div class="trips-header">
+          <h2 class="trips-title">Travel <em>Vault</em></h2>
+          <button class="topbar-btn primary">+ Add Credential</button>
+        </div>
+        <div class="vault-panel-grid">
+          <div class="vault-full-item">
+            <div class="vfi-type">Identity</div>
+            <div class="vfi-name">US Passport</div>
+            <div class="vfi-detail">James Alexander Whitfield<br>Date of Birth: ••/••/1987</div>
+            <div class="vfi-masked">••• ••• 7842</div>
+            <div class="vfi-footer"><span class="vfi-enc">🔐 AES-256</span><button class="vfi-action">Edit</button></div>
+          </div>
+          <div class="vault-full-item">
+            <div class="vfi-type">Payment — Primary</div>
+            <div class="vfi-name">Visa Infinite</div>
+            <div class="vfi-detail">Chase Sapphire Reserve<br>Billing: New York, NY</div>
+            <div class="vfi-masked">•••• •••• •••• 4421</div>
+            <div class="vfi-footer"><span class="vfi-enc">🔐 PCI DSS</span><button class="vfi-action">Edit</button></div>
+          </div>
+          <div class="vault-full-item">
+            <div class="vfi-type">Payment — Secondary</div>
+            <div class="vfi-name">Amex Platinum</div>
+            <div class="vfi-detail">American Express<br>Billing: New York, NY</div>
+            <div class="vfi-masked">•••• •••••• 81009</div>
+            <div class="vfi-footer"><span class="vfi-enc">🔐 PCI DSS</span><button class="vfi-action">Edit</button></div>
+          </div>
+          <div class="vault-full-item">
+            <div class="vfi-type">Frequent Flyer</div>
+            <div class="vfi-name">AAdvantage</div>
+            <div class="vfi-detail">American Airlines<br>Executive Platinum Status</div>
+            <div class="vfi-masked">•••••••• 8821</div>
+            <div class="vfi-footer"><span class="vfi-enc">✓ Active</span><button class="vfi-action">Edit</button></div>
+          </div>
+          <div class="vault-full-item">
+            <div class="vfi-type">Hotel Loyalty</div>
+            <div class="vfi-name">World of Hyatt</div>
+            <div class="vfi-detail">Globalist Status<br>142,000 points</div>
+            <div class="vfi-masked">•••••••••• 2291</div>
+            <div class="vfi-footer"><span class="vfi-enc">✓ Active</span><button class="vfi-action">Edit</button></div>
+          </div>
+          <div class="vault-full-item" style="border:1px dashed rgba(201,169,110,.15);display:flex;align-items:center;justify-content:center;cursor:none;min-height:180px">
+            <div style="text-align:center">
+              <div style="font-size:2rem;color:var(--gold-dim);margin-bottom:.75rem">+</div>
+              <div style="font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim)">Add Credential</div>
+            </div>
+          </div>
+        </div>
+        <div class="vault-security-banner">
+          <span class="sec-icon">🔐</span>
+          <div class="sec-text">
+            <h4>Vault Security — Military Grade</h4>
+            <p>All credentials are encrypted with AES-256 and stored in a zero-knowledge vault. Vela agents access them only at the moment of booking, and every access is logged in your audit trail.</p>
+          </div>
+          <div class="sec-badges">
+            <span class="sec-badge">AES-256</span>
+            <span class="sec-badge">PCI DSS</span>
+            <span class="sec-badge">Zero-Knowledge</span>
+            <span class="sec-badge">SOC 2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ AGENTS ═══ -->
+      <div class="panel" id="panel-agents">
+        <div class="trips-header">
+          <h2 class="trips-title">AI <em>Agents</em></h2>
+          <div style="display:flex;align-items:center;gap:.75rem;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--success)"><div class="live-dot"></div>5 Active Now</div>
+        </div>
+        <div class="agent-summary-card" style="margin-bottom:1px">
+          <div class="card-header" style="margin-bottom:1.25rem"><span class="card-title">Agent Performance — Japan Journey</span></div>
+          <div class="agent-summary-row">
+            <div class="asm-item"><div class="asm-icon">✈</div><div class="asm-name">Flight</div><div class="asm-stat">4</div><div class="asm-label">Bookings</div></div>
+            <div class="asm-item"><div class="asm-icon">🏨</div><div class="asm-name">Hotel</div><div class="asm-stat">3</div><div class="asm-label">Confirmed</div></div>
+            <div class="asm-item"><div class="asm-icon">🚗</div><div class="asm-name">Transfer</div><div class="asm-stat">8</div><div class="asm-label">Arranged</div></div>
+            <div class="asm-item"><div class="asm-icon">🍽</div><div class="asm-name">Dining</div><div class="asm-stat">5</div><div class="asm-label">Reserved</div></div>
+            <div class="asm-item"><div class="asm-icon">🗺</div><div class="asm-name">Experience</div><div class="asm-stat">6</div><div class="asm-label">Booked</div></div>
+          </div>
+        </div>
+        <div class="agents-panel-grid">
+          <div class="agent-detail-card">
+            <div class="adc-header">
+              <div class="adc-icon active-agent">✈</div>
+              <div><div class="adc-name">Flight Agent</div><div class="adc-status running">● Running</div></div>
+            </div>
+            <div class="adc-log">
+              <div class="log-line"><span class="log-time">09:42</span><div class="log-dot done"></div><span>AA169 JFK→NRT confirmed. Business seats 3A & 3B.</span></div>
+              <div class="log-line"><span class="log-time">09:44</span><div class="log-dot done"></div><span>Return JL006 HND→JFK confirmed. Business seats 2A & 2B.</span></div>
+              <div class="log-line"><span class="log-time">10:01</span><div class="log-dot done"></div><span>Shinkansen Green Car Tokyo→Kyoto reserved. Oct 18, 09:12 departure.</span></div>
+              <div class="log-line"><span class="log-time">Now</span><div class="log-dot active"></div><span>Monitoring seat upgrade availability on AA169...</span></div>
+            </div>
+          </div>
+          <div class="agent-detail-card">
+            <div class="adc-header">
+              <div class="adc-icon active-agent">🏨</div>
+              <div><div class="adc-name">Hotel Agent</div><div class="adc-status done">✓ Complete</div></div>
+            </div>
+            <div class="adc-log">
+              <div class="log-line"><span class="log-time">08:15</span><div class="log-dot done"></div><span>Park Hyatt Tokyo confirmed. Oct 16–18. Deluxe City View King.</span></div>
+              <div class="log-line"><span class="log-time">08:22</span><div class="log-dot done"></div><span>Tawaraya Ryokan secured. Oct 18–21. Garden suite + kaiseki.</span></div>
+              <div class="log-line"><span class="log-time">08:48</span><div class="log-dot done"></div><span>Osaka hotel: Cross Hotel confirmed. Oct 21–24. Superior room.</span></div>
+              <div class="log-line"><span class="log-time">09:10</span><div class="log-dot done"></div><span>Park Hyatt Tokyo Oct 24–26 confirmed. Final night before departure.</span></div>
+            </div>
+          </div>
+          <div class="agent-detail-card">
+            <div class="adc-header">
+              <div class="adc-icon active-agent">🗺</div>
+              <div><div class="adc-name">Experience Agent</div><div class="adc-status running">● Running</div></div>
+            </div>
+            <div class="adc-log">
+              <div class="log-line"><span class="log-time">09:00</span><div class="log-dot done"></div><span>Senso-ji private early access confirmed. Oct 17, 05:30 AM.</span></div>
+              <div class="log-line"><span class="log-time">09:18</span><div class="log-dot done"></div><span>Arashiyama private morning tour booked. Local expert guide.</span></div>
+              <div class="log-line"><span class="log-time">09:31</span><div class="log-dot done"></div><span>Tea ceremony with master confirmed. Oct 19, 14:00.</span></div>
+              <div class="log-line"><span class="log-time">Now</span><div class="log-dot active"></div><span>Sourcing private helicopter — Tokyo skyline Oct 16 at dusk...</span></div>
+            </div>
+          </div>
+          <div class="agent-detail-card">
+            <div class="adc-header">
+              <div class="adc-icon idle-agent">🍽</div>
+              <div><div class="adc-name">Dining Agent</div><div class="adc-status done">✓ Complete</div></div>
+            </div>
+            <div class="adc-log">
+              <div class="log-line"><span class="log-time">07:55</span><div class="log-dot done"></div><span>Sushi Saito reservation secured. Oct 17, 13:00. Omakase x2.</span></div>
+              <div class="log-line"><span class="log-time">08:02</span><div class="log-dot done"></div><span>New York Bar & Grill, Park Hyatt. Oct 16, 20:00. Table for 2.</span></div>
+              <div class="log-line"><span class="log-time">08:30</span><div class="log-dot done"></div><span>Ichiran Ramen private booth reserved. Oct 22, 19:30, Osaka.</span></div>
+              <div class="log-line"><span class="log-time">08:45</span><div class="log-dot done"></div><span>Kikunoi Honten kaiseki confirmed. Oct 20, 19:00, Kyoto.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PREFERENCES ═══ -->
+      <div class="panel" id="panel-preferences">
+        <div class="trips-header">
+          <h2 class="trips-title">My <em>Preferences</em></h2>
+          <button class="topbar-btn primary">Save Changes</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Travel Style</span></div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Preferred Cabin Class <span style="color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1rem">Business</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Hotel Tier <span style="color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1rem">5 Star +</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Dining Reservations <span style="color:var(--success);font-size:.65rem;letter-spacing:.15em">Always</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Private Aviation <span style="color:var(--success);font-size:.65rem;letter-spacing:.15em">Enabled</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Autonomous Booking <span style="color:var(--warning);font-size:.65rem;letter-spacing:.15em">Approval Required</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Account</span></div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Membership Tier <span style="color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1rem">Premier</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Trips This Year <span style="color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1rem">3</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Email Notifications <span style="color:var(--success);font-size:.65rem;letter-spacing:.15em">On</span></div>
+              <div style="display:flex;justify-content:space-between;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.1);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">SMS Alerts <span style="color:var(--success);font-size:.65rem;letter-spacing:.15em">On</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:.875rem 1rem;border:1px solid rgba(201,169,110,.2);font-size:.7rem;letter-spacing:.06em;color:var(--ivory-dim)">Upgrade to Elite <a href="vela-pricing.html" style="color:var(--gold);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;cursor:none">View →</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ DESTINATIONS ═══ -->
+      <div class="panel" id="panel-destinations">
+        <div class="trips-header">
+          <h2 class="trips-title">Explore <em>Destinations</em></h2>
+          <a href="vela-destinations.html" class="topbar-btn primary" style="text-decoration:none">Full Destinations →</a>
+        </div>
+        <div class="empty-state">
+          <p>Discover your next extraordinary journey</p>
+          <span>Browse all destinations curated by Vela's intelligence</span><br><br>
+          <a href="vela-destinations.html" style="display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2.5rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;text-decoration:none;cursor:none;margin-top:1.5rem">Explore Destinations →</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-3.5+'px';cur.style.top=my-3.5+'px';});
+(function a(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx-14+'px';ring.style.top=ry-14+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button,.nav-item,.vault-item,.vault-full-item,.stat-card,.trip-row,.agent-detail-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(201,169,110,.7)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='28px';ring.style.height='28px';ring.style.borderColor='rgba(201,169,110,.35)';});
+});
+
+// PANEL SWITCHING
+const panelTitles={
+  overview:{title:'Good evening, James.',sub:'Your Japan journey is 3 days away'},
+  trips:{title:'My Journeys',sub:'7 trips planned via Vela'},
+  vault:{title:'Travel Vault',sub:'5 credentials stored · AES-256 encrypted'},
+  agents:{title:'AI Agents',sub:'5 agents active on Japan journey'},
+  preferences:{title:'Preferences',sub:'Manage your travel style & account'},
+  destinations:{title:'Destinations',sub:'Curated by Vela intelligence'},
+};
+
+function showPanel(name, navEl){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name)?.classList.add('active');
+  if(navEl){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));navEl.classList.add('active');}
+  const info=panelTitles[name];
+  if(info){document.getElementById('panelTitle').textContent=info.title;document.getElementById('panelSub').textContent=info.sub;}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// TRIPS TAB
+function switchTripTab(btn,cat){
+  document.querySelectorAll('.trip-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.trip-row').forEach(r=>{
+    if(cat==='all'||r.dataset.cat===cat)r.style.display='grid';
+    else r.style.display='none';
+  });
+}
+
+// NOTIFICATIONS
+function openNotif(){document.getElementById('notifPanel').classList.add('open');document.getElementById('overlay').classList.add('show');}
+function closeNotif(){document.getElementById('notifPanel').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+
+// COUNTDOWN
+(function ticker(){
+  const el=document.getElementById('countdown');
+  if(!el)return;
+  const dep=new Date('2026-10-14T23:45:00');
+  const now=new Date();
+  const diff=Math.max(0,dep-now);
+  const days=Math.floor(diff/86400000);
+  el.textContent=days;
+  setTimeout(ticker,60000);
+})();
+
+// LIVE ACTIVITY TICKER (simulate new activity)
+const messages=[
+  {icon:'✈',cls:'flight',title:'Flight Agent — Monitoring',text:'Watching for seat upgrade on AA169 — First Class availability at +$840.'},
+  {icon:'🗺',cls:'exp',title:'Experience Agent — Found',text:'Private helicopter confirmed for Oct 16 at 18:30. 30-min Tokyo skyline tour.'},
+  {icon:'🍽',cls:'dining',title:'Dining Agent — Waitlist',text:'Added to waitlist at Narisawa, Oct 18. Will confirm if opening appears.'},
+];
+let mIdx=0;
+setInterval(()=>{
+  const feed=document.querySelector('.activity-feed');
+  if(!feed||!feed.closest('.panel').classList.contains('active'))return;
+  const m=messages[mIdx%messages.length];mIdx++;
+  const item=document.createElement('div');
+  item.className='activity-item';item.style.opacity='0';item.style.transform='translateY(-10px)';item.style.transition='all .4s ease';
+  item.innerHTML=`<div class="activity-icon ${m.cls}">${m.icon}</div><div class="activity-text"><h4>${m.title}</h4><p>${m.text}</p><span class="activity-status searching">Live</span></div><div class="activity-time">Just now</div>`;
+  feed.insertBefore(item,feed.firstChild);
+  requestAnimationFrame(()=>{item.style.opacity='1';item.style.transform='translateY(0)';});
+  const items=feed.querySelectorAll('.activity-item');
+  if(items.length>6)items[items.length-1].remove();
+},12000);
+</script>
+</body>
+</html>

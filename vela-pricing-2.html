@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELA — Pricing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--void:#050505;--obsidian:#0a0a0a;--gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;--ivory:#f5f0e8;--ivory-dim:#c8bfaa;--glass:rgba(201,169,110,0.06);--glass-border:rgba(201,169,110,0.15)}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
+.cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,169,110,.4);border-radius:50%;pointer-events:none;z-index:9998;transition:width .3s,height .3s,border-color .3s}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.75rem 4rem;background:linear-gradient(to bottom,rgba(5,5,5,.95),transparent);backdrop-filter:blur(8px)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);text-decoration:none;transition:color .3s;cursor:none}
+.nav-links a:hover,.nav-links a.active{color:var(--gold)}
+.nav-cta{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--obsidian);background:var(--gold);padding:.7rem 1.75rem;text-decoration:none;transition:background .3s;cursor:none}
+.nav-cta:hover{background:var(--gold-light)}
+
+.container{max-width:1300px;margin:0 auto;padding:0 4rem;position:relative;z-index:1}
+
+/* HERO */
+.pricing-hero{padding:14rem 0 7rem;text-align:center;position:relative;overflow:hidden}
+.pricing-hero::before{content:'PRICING';position:absolute;font-family:'Cormorant Garamond',serif;font-size:22vw;font-weight:300;color:rgba(201,169,110,.02);left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;letter-spacing:.15em;white-space:nowrap}
+.hero-eyebrow{font-size:.58rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;opacity:0;animation:fadeUp .8s .2s forwards}
+.hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,7vw,7rem);font-weight:300;color:var(--ivory);line-height:1;margin-bottom:1.5rem;opacity:0;animation:fadeUp .8s .4s forwards}
+.hero-h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{max-width:480px;margin:0 auto;font-size:.8rem;line-height:2;color:var(--ivory-dim);letter-spacing:.04em;opacity:0;animation:fadeUp .8s .6s forwards}
+
+/* TOGGLE */
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin:3rem 0;opacity:0;animation:fadeUp .8s .7s forwards}
+.toggle-label{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim)}
+.toggle-label.active{color:var(--gold)}
+.pill-toggle{position:relative;width:52px;height:28px;cursor:none}
+.pill-toggle input{opacity:0;width:0;height:0}
+.pill-slider{position:absolute;inset:0;background:rgba(201,169,110,.1);border:1px solid var(--glass-border);border-radius:28px;transition:all .3s;cursor:none}
+.pill-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:var(--gold-dim);border-radius:50%;transition:all .3s}
+.pill-toggle input:checked+.pill-slider{background:rgba(201,169,110,.15);border-color:var(--gold)}
+.pill-toggle input:checked+.pill-slider::before{transform:translateX(24px);background:var(--gold)}
+.save-badge{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void);background:var(--gold);padding:.2rem .6rem;display:none}
+.save-badge.show{display:inline-block}
+
+/* PRICING CARDS */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:6rem}
+
+.price-card{border:1px solid var(--glass-border);padding:3.5rem 3rem;position:relative;overflow:hidden;transition:transform .3s}
+.price-card:hover{transform:translateY(-5px)}
+.price-card.featured{border-color:var(--gold-dim);background:linear-gradient(160deg,rgba(201,169,110,.1) 0%,rgba(201,169,110,.04) 100%)}
+.price-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+
+.card-badge{display:inline-block;font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-dim);padding:.3rem .85rem;margin-bottom:2rem}
+.card-badge.popular{background:var(--gold);color:var(--obsidian);border-color:var(--gold)}
+
+.card-name{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--ivory);margin-bottom:.5rem;letter-spacing:.02em}
+.card-tagline{font-size:.72rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.7;margin-bottom:2.5rem}
+
+.card-price{font-family:'Cormorant Garamond',serif;font-size:4.5rem;color:var(--gold);font-weight:300;letter-spacing:-.03em;line-height:1}
+.card-price sup{font-size:1.8rem;vertical-align:super;letter-spacing:0}
+.card-price-note{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-top:.4rem;margin-bottom:2.5rem}
+.card-price.bespoke{font-size:3rem;letter-spacing:.02em}
+
+.card-divider{height:1px;background:var(--glass-border);margin:2rem 0}
+
+.card-features{list-style:none;margin-bottom:2.5rem;display:flex;flex-direction:column;gap:.1rem}
+.feature-item{display:flex;align-items:flex-start;gap:1rem;padding:.65rem 0;border-bottom:1px solid rgba(201,169,110,.05);font-size:.7rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.5}
+.feature-item:last-child{border-bottom:none}
+.feature-item .check{color:var(--gold);flex-shrink:0;margin-top:1px;font-size:.8rem}
+.feature-item .cross{color:rgba(201,169,110,.2);flex-shrink:0;margin-top:1px}
+.feature-item.highlight{color:var(--ivory)}
+
+.card-btn{display:block;text-align:center;padding:1.1rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;text-decoration:none;transition:all .3s;cursor:none}
+.card-btn.gold{background:var(--gold);color:var(--obsidian)}
+.card-btn.gold:hover{background:var(--gold-light)}
+.card-btn.outline{border:1px solid var(--gold-dim);color:var(--gold);background:transparent}
+.card-btn.outline:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
+
+/* COMPARE TABLE */
+.compare-section{padding:6rem 0;border-top:1px solid var(--glass-border)}
+.compare-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3vw,3.5rem);font-weight:300;color:var(--ivory);margin-bottom:3.5rem;text-align:center}
+.compare-title em{font-style:italic;color:var(--gold)}
+
+.compare-table{width:100%;border-collapse:collapse}
+.compare-table th{padding:1.25rem 1.5rem;text-align:center;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;border-bottom:1px solid var(--glass-border);font-weight:400}
+.compare-table th:first-child{text-align:left;color:var(--gold-dim)}
+.compare-table th.col-explorer{color:var(--ivory-dim)}
+.compare-table th.col-premier{color:var(--gold)}
+.compare-table th.col-elite{color:var(--gold-light)}
+.compare-table td{padding:1.1rem 1.5rem;font-size:.7rem;letter-spacing:.05em;border-bottom:1px solid rgba(201,169,110,.05);text-align:center;color:var(--ivory-dim)}
+.compare-table td:first-child{text-align:left;color:var(--ivory-dim)}
+.compare-table tr:hover td{background:rgba(201,169,110,.03)}
+.compare-table .section-row td{padding-top:2rem;padding-bottom:.5rem;font-size:.55rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--glass-border)}
+.compare-table .section-row td:first-child{color:var(--gold)}
+.check-gold{color:var(--gold);font-size:1rem}
+.cross-dim{color:rgba(201,169,110,.2);font-size:1rem}
+.val-gold{color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1rem}
+
+/* FAQ */
+.faq-section{padding:6rem 0;border-top:1px solid var(--glass-border)}
+.faq-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3vw,3.5rem);font-weight:300;color:var(--ivory);margin-bottom:3.5rem}
+.faq-title em{font-style:italic;color:var(--gold)}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.faq-item{padding:2rem;border:1px solid var(--glass-border);background:var(--glass);cursor:none;transition:background .3s}
+.faq-item:hover{background:rgba(201,169,110,.08)}
+.faq-q{font-size:.78rem;letter-spacing:.06em;color:var(--ivory);margin-bottom:.75rem;line-height:1.5}
+.faq-a{font-size:.7rem;color:var(--ivory-dim);line-height:1.9;letter-spacing:.04em}
+
+/* ENTERPRISE */
+.enterprise-band{background:linear-gradient(135deg,rgba(201,169,110,.08),rgba(201,169,110,.03));border:1px solid var(--glass-border);padding:5rem 4rem;display:grid;grid-template-columns:1fr auto;gap:4rem;align-items:center;margin:4rem 0;position:relative;overflow:hidden}
+.enterprise-band::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.enterprise-band h3{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,2.5vw,3rem);font-weight:300;color:var(--ivory);line-height:1.2;margin-bottom:1rem}
+.enterprise-band h3 em{font-style:italic;color:var(--gold)}
+.enterprise-band p{font-size:.76rem;line-height:2;color:var(--ivory-dim);letter-spacing:.04em;max-width:520px}
+.ent-btns{display:flex;flex-direction:column;gap:1rem;flex-shrink:0}
+.btn-gold{display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;text-decoration:none;border:none;cursor:none;transition:all .3s;white-space:nowrap}
+.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-outline{display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--gold);padding:1rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--gold-dim);text-decoration:none;cursor:none;transition:all .3s;white-space:nowrap}
+.btn-outline:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
+
+footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex;justify-content:space-between;align-items:center;background:var(--void);position:relative;z-index:1}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;letter-spacing:.4em;color:var(--gold)}
+.footer-copy{font-size:.58rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase}
+.footer-links{display:flex;gap:2rem;list-style:none}
+.footer-links a{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:color .3s;cursor:none}
+.footer-links a:hover{color:var(--gold)}
+
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:900px){
+  nav{padding:1.25rem 1.5rem}.nav-links{display:none}
+  .container{padding:0 1.5rem}
+  .pricing-grid{grid-template-columns:1fr}
+  .faq-grid{grid-template-columns:1fr}
+  .enterprise-band{grid-template-columns:1fr;gap:2rem}
+  .compare-table{font-size:.65rem}
+  footer{flex-direction:column;gap:1.5rem;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="vela-home.html" class="nav-logo">Vela</a>
+  <ul class="nav-links">
+    <li><a href="vela-planner.html">Plan a Trip</a></li>
+    <li><a href="vela-destinations.html">Destinations</a></li>
+    <li><a href="vela-how.html">How It Works</a></li>
+    <li><a href="#" class="active">Pricing</a></li>
+  </ul>
+  <a href="vela-planner.html" class="nav-cta">Begin Journey</a>
+</nav>
+
+<!-- HERO -->
+<section class="pricing-hero">
+  <div class="container">
+    <p class="hero-eyebrow">Simple, transparent pricing</p>
+    <h1 class="hero-h1">From free to<br><em>no limit.</em></h1>
+    <p class="hero-sub">Simple membership pricing. Start free, upgrade any time. No markups on bookings — ever.</p>
+    <div class="billing-toggle">
+      <span class="toggle-label active" id="label-per-trip">Per Trip</span>
+      <label class="pill-toggle"><input type="checkbox" id="billingToggle" onchange="toggleBilling()"><span class="pill-slider"></span></label>
+      <span class="toggle-label" id="label-annual">Annual Plan</span>
+      <span class="save-badge" id="saveBadge">Save 40%</span>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING CARDS -->
+<div class="container">
+  <div class="pricing-grid reveal">
+
+    <!-- EXPLORER -->
+    <div class="price-card">
+      <span class="card-badge">Explorer</span>
+      <div class="card-name">Explorer</div>
+      <div class="card-tagline">Smart AI planning for the adventure-minded. Every dollar optimized, every option considered.</div>
+      <div class="card-price" id="price-explorer">Free</div>
+      <div class="card-price-note" id="note-explorer">Or $49 per trip</div>
+      <div class="card-divider"></div>
+      <ul class="card-features">
+        <li class="feature-item highlight"><span class="check">✓</span> AI-generated full itinerary</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Flight & hotel recommendations</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Budget optimization engine</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Packing & visa checklist</li>
+        <li class="feature-item highlight"><span class="check">✓</span> PDF itinerary export</li>
+        <li class="feature-item"><span class="cross">—</span> Autonomous booking agents</li>
+        <li class="feature-item"><span class="cross">—</span> Dining reservations</li>
+        <li class="feature-item"><span class="cross">—</span> Transfer coordination</li>
+        <li class="feature-item"><span class="cross">—</span> 24/7 agent support</li>
+      </ul>
+      <a href="vela-planner.html" class="card-btn outline">Start Planning</a>
+    </div>
+
+    <!-- PREMIER -->
+    <div class="price-card featured">
+      <span class="card-badge popular">Most Popular</span>
+      <div class="card-name">Premier</div>
+      <div class="card-tagline">Full autonomous booking. Our agents handle everything while you simply anticipate.</div>
+      <div class="card-price" id="price-premier"><sup>$</sup>99</div>
+      <div class="card-price-note" id="note-premier">Per month — unlimited trips</div>
+      <div class="card-divider"></div>
+      <ul class="card-features">
+        <li class="feature-item highlight"><span class="check">✓</span> Everything in Explorer</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Autonomous booking agents</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Business & premium class flights</li>
+        <li class="feature-item highlight"><span class="check">✓</span> 4–5 star accommodation curation</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Restaurant reservations</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Airport transfers & ground transport</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Excursion booking</li>
+        <li class="feature-item highlight"><span class="check">✓</span> 24/7 agent support</li>
+        <li class="feature-item"><span class="cross">—</span> Private aviation access</li>
+        <li class="feature-item"><span class="cross">—</span> Credential vault</li>
+      </ul>
+      <a href="vela-planner.html" class="card-btn gold">Start Planning</a>
+    </div>
+
+    <!-- ELITE -->
+    <div class="price-card">
+      <span class="card-badge">Elite — No Limits</span>
+      <div class="card-name">Elite</div>
+      <div class="card-tagline">White-glove concierge intelligence. Budget is irrelevant. Experience is everything.</div>
+      <div class="card-price bespoke" id="price-elite">Bespoke</div>
+      <div class="card-price-note" id="note-elite">Per month — white glove service</div>
+      <div class="card-divider"></div>
+      <ul class="card-features">
+        <li class="feature-item highlight"><span class="check">✓</span> Everything in Premier</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Private jet sourcing & booking</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Private island & estate access</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Yacht & superyacht charter</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Dedicated human concierge</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Encrypted credential vault</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Passport & visa management</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Real-time trip modifications</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Priority emergency support</li>
+        <li class="feature-item highlight"><span class="check">✓</span> Bespoke experiences worldwide</li>
+      </ul>
+      <a href="mailto:elite@velajourneys.com" class="card-btn outline">Contact Us</a>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE TABLE -->
+<section class="compare-section">
+  <div class="container">
+    <h2 class="compare-title reveal">Full feature <em>comparison.</em></h2>
+    <table class="compare-table reveal">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="col-explorer">Explorer</th>
+          <th class="col-premier">Premier</th>
+          <th class="col-elite">Elite</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="4">Planning</td></tr>
+        <tr><td>AI Itinerary Generation</td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Multi-destination Routing</td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Budget Optimization</td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Visa & Documentation Checklist</td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Revision Rounds</td><td><span class="val-gold">2</span></td><td><span class="val-gold">Unlimited</span></td><td><span class="val-gold">Unlimited</span></td></tr>
+
+        <tr class="section-row"><td colspan="4">Booking & Agents</td></tr>
+        <tr><td>Autonomous Booking Agents</td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Flight Class</td><td><span class="val-gold">Economy</span></td><td><span class="val-gold">Business</span></td><td><span class="val-gold">First / Private</span></td></tr>
+        <tr><td>Private Aviation</td><td><span class="cross-dim">—</span></td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Hotel Tier</td><td><span class="val-gold">All</span></td><td><span class="val-gold">4–5 Star</span></td><td><span class="val-gold">Ultra-Luxury</span></td></tr>
+        <tr><td>Private Islands & Estates</td><td><span class="cross-dim">—</span></td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Restaurant Reservations</td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Transfer Coordination</td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Excursion Booking</td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Yacht & Superyacht Charter</td><td><span class="cross-dim">—</span></td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td></tr>
+
+        <tr class="section-row"><td colspan="4">Security & Support</td></tr>
+        <tr><td>Encrypted Credential Vault</td><td><span class="cross-dim">—</span></td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Passport & Visa Management</td><td><span class="cross-dim">—</span></td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Support</td><td><span class="val-gold">Email</span></td><td><span class="val-gold">24/7 Chat</span></td><td><span class="val-gold">Dedicated Concierge</span></td></tr>
+        <tr><td>Real-time Trip Modifications</td><td><span class="cross-dim">—</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+        <tr><td>Travel Insurance Sourcing</td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td><td><span class="check-gold">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ENTERPRISE -->
+<div class="container">
+  <div class="enterprise-band reveal">
+    <div>
+      <h3>Corporate &amp; <em>group travel.</em></h3>
+      <p style="margin-top:1rem">Managing travel for a team, company retreat, or group of 10+? Vela offers bespoke enterprise arrangements with volume pricing, centralized billing, dedicated account management, and custom agent configurations.</p>
+    </div>
+    <div class="ent-btns">
+      <a href="mailto:enterprise@velajourneys.com" class="btn-gold">Contact Enterprise Team</a>
+      <a href="vela-planner.html" class="btn-outline">Try Vela Free →</a>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="container">
+    <h2 class="faq-title reveal">Common <em>questions.</em></h2>
+    <div class="faq-grid">
+      <div class="faq-item reveal">
+        <div class="faq-q">Is there a subscription fee?</div>
+        <div class="faq-a">Vela offers flexible pricing — start free on Explorer, or upgrade to Premier ($99/mo) or Elite ($499/mo) for autonomous booking and full concierge service. No markups on bookings ever.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Does Vela mark up the bookings it makes?</div>
+        <div class="faq-a">Never. Vela charges only the stated service fee. All flights, hotels, and experiences are booked at market rate. We earn on the planning fee, not by inflating your trip cost.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">How does autonomous booking work?</div>
+        <div class="faq-a">For Premier and Elite clients who grant booking permission, Vela's agents confirm flights, hotels, transfers, and dining using your stored payment method — with a full log of every action taken.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">How is my passport and card information protected?</div>
+        <div class="faq-a">All sensitive credentials are stored in an AES-256 encrypted vault with zero-knowledge architecture. Vela agents access credentials only at the moment of booking and never expose them in logs.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">What if I need to change my trip after planning?</div>
+        <div class="faq-a">Explorer gets 2 revision rounds. Premier and Elite clients get unlimited modifications — including real-time changes while the trip is underway, handled by our agents or dedicated concierge.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Can I use Vela for a $500 weekend trip?</div>
+        <div class="faq-a">Absolutely. Vela's budget optimization engine excels at stretching limited budgets. Explorer tier is designed exactly for this. The same intelligence that plans a $500K yacht charter helps maximize a $1,000 city break.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Vela</div>
+  <p class="footer-copy">© 2026 Vela — AI Travel Concierge</p>
+  <ul class="footer-links">
+    <li><a href="vela-home.html">Home</a></li>
+    <li><a href="vela-planner.html">Plan a Trip</a></li>
+    <li><a href="vela-destinations.html">Destinations</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</footer>
+
+<script>
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-4+'px';cur.style.top=my-4+'px';});
+(function a(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button,label').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='48px';ring.style.height='48px';ring.style.borderColor='rgba(201,169,110,.7)';});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(201,169,110,.4)';});
+});
+function toggleBilling(){
+  const annual=document.getElementById('billingToggle').checked;
+  document.getElementById('label-per-trip').classList.toggle('active',!annual);
+  document.getElementById('label-annual').classList.toggle('active',annual);
+  document.getElementById('saveBadge').classList.toggle('show',annual);
+  document.getElementById('price-explorer').innerHTML=annual?'<sup>$</sup>399':'Free';
+  document.getElementById('note-explorer').textContent=annual?'Per year — unlimited trips':'Or $49 per trip';
+  document.getElementById('price-premier').innerHTML=annual?'<sup>$</sup>799':'<sup>$</sup>99';
+  document.getElementById('note-premier').textContent=annual?'Per year — unlimited trips':'Per month';
+}
+const obs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){en.target.classList.add('visible');obs.unobserve(en.target);}});},{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
