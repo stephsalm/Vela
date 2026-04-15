@@ -163,8 +163,8 @@ footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex
 <section class="pricing-hero">
   <div class="container">
     <p class="hero-eyebrow">Simple, transparent pricing</p>
-    <h1 class="hero-h1">From $29 to<br><em>no limit.</em></h1>
-    <p class="hero-sub">One fee per trip plan — no subscriptions, no hidden charges, no markups on bookings. Vela earns when you travel extraordinarily.</p>
+    <h1 class="hero-h1">From free to<br><em>no limit.</em></h1>
+    <p class="hero-sub">Simple membership pricing. Start free, upgrade any time. No markups on bookings — ever.</p>
     <div class="billing-toggle">
       <span class="toggle-label active" id="label-per-trip">Per Trip</span>
       <label class="pill-toggle"><input type="checkbox" id="billingToggle" onchange="toggleBilling()"><span class="pill-slider"></span></label>
@@ -183,8 +183,8 @@ footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex
       <span class="card-badge">Explorer</span>
       <div class="card-name">Explorer</div>
       <div class="card-tagline">Smart AI planning for the adventure-minded. Every dollar optimized, every option considered.</div>
-      <div class="card-price" id="price-explorer"><sup>$</sup>29</div>
-      <div class="card-price-note" id="note-explorer">Per trip plan</div>
+      <div class="card-price" id="price-explorer">Free</div>
+      <div class="card-price-note" id="note-explorer">Or $49 per trip</div>
       <div class="card-divider"></div>
       <ul class="card-features">
         <li class="feature-item highlight"><span class="check">✓</span> AI-generated full itinerary</li>
@@ -205,8 +205,8 @@ footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex
       <span class="card-badge popular">Most Popular</span>
       <div class="card-name">Premier</div>
       <div class="card-tagline">Full autonomous booking. Our agents handle everything while you simply anticipate.</div>
-      <div class="card-price" id="price-premier"><sup>$</sup>149</div>
-      <div class="card-price-note" id="note-premier">Per trip plan</div>
+      <div class="card-price" id="price-premier"><sup>$</sup>99</div>
+      <div class="card-price-note" id="note-premier">Per month — unlimited trips</div>
       <div class="card-divider"></div>
       <ul class="card-features">
         <li class="feature-item highlight"><span class="check">✓</span> Everything in Explorer</li>
@@ -229,7 +229,7 @@ footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex
       <div class="card-name">Elite</div>
       <div class="card-tagline">White-glove concierge intelligence. Budget is irrelevant. Experience is everything.</div>
       <div class="card-price bespoke" id="price-elite">Bespoke</div>
-      <div class="card-price-note" id="note-elite">Priced per engagement</div>
+      <div class="card-price-note" id="note-elite">Per month — white glove service</div>
       <div class="card-divider"></div>
       <ul class="card-features">
         <li class="feature-item highlight"><span class="check">✓</span> Everything in Premier</li>
@@ -312,7 +312,7 @@ footer{border-top:1px solid var(--glass-border);padding:3.5rem 4rem;display:flex
     <div class="faq-grid">
       <div class="faq-item reveal">
         <div class="faq-q">Is there a subscription fee?</div>
-        <div class="faq-a">No. Vela charges a flat fee per trip plan — $29 for Explorer, $149 for Premier. You only pay when you're ready to plan a trip. Elite pricing is bespoke per engagement.</div>
+        <div class="faq-a">Vela offers flexible pricing — start free on Explorer, or upgrade to Premier ($99/mo) or Elite ($499/mo) for autonomous booking and full concierge service. No markups on bookings ever.</div>
       </div>
       <div class="faq-item reveal">
         <div class="faq-q">Does Vela mark up the bookings it makes?</div>
@@ -363,10 +363,10 @@ function toggleBilling(){
   document.getElementById('label-per-trip').classList.toggle('active',!annual);
   document.getElementById('label-annual').classList.toggle('active',annual);
   document.getElementById('saveBadge').classList.toggle('show',annual);
-  document.getElementById('price-explorer').innerHTML=annual?'<sup>$</sup>199':'<sup>$</sup>29';
-  document.getElementById('note-explorer').textContent=annual?'Per year — unlimited trips':'Per trip plan';
-  document.getElementById('price-premier').innerHTML=annual?'<sup>$</sup>599':'<sup>$</sup>149';
-  document.getElementById('note-premier').textContent=annual?'Per year — unlimited trips':'Per trip plan';
+  document.getElementById('price-explorer').innerHTML=annual?'<sup>$</sup>399':'Free';
+  document.getElementById('note-explorer').textContent=annual?'Per year — unlimited trips':'Or $49 per trip';
+  document.getElementById('price-premier').innerHTML=annual?'<sup>$</sup>799':'<sup>$</sup>99';
+  document.getElementById('note-premier').textContent=annual?'Per year — unlimited trips':'Per month';
 }
 const obs=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting){en.target.classList.add('visible');obs.unobserve(en.target);}});},{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
