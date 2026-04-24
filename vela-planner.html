@@ -9,884 +9,608 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --void:#050505;--obsidian:#0a0a0a;--surface:#111;
-  --gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;
+  --void:#050505;--obsidian:#0a0a0a;--surface:#0f0f0f;
+  --gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;--gold-faint:rgba(201,169,110,0.07);
   --ivory:#f5f0e8;--ivory-dim:#c8bfaa;
-  --glass:rgba(201,169,110,0.06);--glass-border:rgba(201,169,110,0.15);
-  --success:#6eb88a;--sidebar-w:340px;
+  --glass:rgba(201,169,110,0.06);--glass-border:rgba(201,169,110,0.13);
+  --success:#6eb88a;--error:#e08080;
 }
 html{scroll-behavior:smooth}
-body{background:var(--void);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:default;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
-.cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen}
-.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,169,110,.4);border-radius:50%;pointer-events:none;z-index:9998;transition:width .3s,height .3s,border-color .3s}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.5rem 3rem;background:rgba(5,5,5,.92);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(12px)}
-.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;letter-spacing:.4em;color:var(--gold);text-decoration:none}
-.nav-back{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);text-decoration:none;display:flex;align-items:center;gap:.75rem;transition:color .3s;cursor:none}
+body{background:var(--void);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+nav{position:sticky;top:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.25rem 3rem;background:rgba(5,5,5,.95);border-bottom:1px solid var(--glass-border);backdrop-filter:blur(12px)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.nav-back{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-dim);text-decoration:none;transition:color .3s}
 .nav-back:hover{color:var(--gold)}
-
-
-
-/* LAYOUT */
-.planner-layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
-
-/* SIDEBAR */
-.sidebar{background:rgba(201,169,110,.03);border-right:1px solid var(--glass-border);padding:2.5rem 2rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;display:flex;flex-direction:column;gap:2rem}
-.sidebar-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--ivory);line-height:1.2}
-.sidebar-title em{font-style:italic;color:var(--gold)}
-.sidebar-sub{font-size:.68rem;line-height:1.9;color:var(--ivory-dim);letter-spacing:.03em;margin-top:-.5rem}
-
-/* PROGRESS */
-.progress-steps{display:flex;flex-direction:column;gap:0}
-.prog-step{display:flex;align-items:flex-start;gap:1.1rem;padding:.875rem 0;position:relative}
-.prog-step:not(:last-child)::after{content:'';position:absolute;left:13px;top:40px;width:1px;height:calc(100% - 10px);background:var(--glass-border)}
-.prog-circle{width:26px;height:26px;border:1px solid var(--glass-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;color:var(--gold-dim);flex-shrink:0;transition:all .4s;background:var(--void);position:relative;z-index:1}
-.prog-step.active .prog-circle{border-color:var(--gold);background:rgba(201,169,110,.12);color:var(--gold)}
-.prog-step.done .prog-circle{border-color:var(--success);background:rgba(110,184,138,.1);color:var(--success)}
-.prog-label{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim);padding-top:4px;transition:color .3s}
-.prog-step.active .prog-label{color:var(--gold)}
-
-/* SUMMARY */
-.summary-card{background:var(--glass);border:1px solid var(--glass-border);padding:1.5rem;position:relative}
-.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
-.sum-heading{font-size:.52rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
-.sum-item{display:flex;justify-content:space-between;align-items:baseline;padding:.45rem 0;border-bottom:1px solid rgba(201,169,110,.07)}
-.sum-item:last-child{border-bottom:none}
-.sum-key{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim)}
-.sum-val{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--ivory);font-style:italic}
-.sum-val.empty{font-size:.6rem;font-style:normal;font-family:'Montserrat',sans-serif;color:rgba(201,169,110,.25);letter-spacing:.08em}
-
-/* MAIN */
-.main-content{padding:3rem 4rem;min-height:calc(100vh - 65px);position:relative;z-index:1}
-
-/* STEP PANELS */
-.step-panel{display:none;animation:panelIn .5s ease forwards}
-.step-panel.active{display:block}
-@keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
-
-.panel-eyebrow{font-size:.55rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
-.panel-eyebrow::before{content:'';width:28px;height:1px;background:var(--gold)}
-.panel-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.5vw,3.5rem);font-weight:300;color:var(--ivory);line-height:1.1;margin-bottom:.75rem}
-.panel-title em{font-style:italic;color:var(--gold)}
-.panel-sub{font-size:.78rem;line-height:1.9;color:var(--ivory-dim);letter-spacing:.03em;max-width:540px;margin-bottom:2.5rem}
-
-/* FORM */
-.field-group{margin-bottom:1.75rem}
-.field-label{font-size:.56rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:block}
-.field-hint{font-size:.6rem;color:var(--gold-dim);letter-spacing:.05em;margin-top:.4rem}
-.dream-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;font-style:italic;padding:1.4rem;resize:none;height:150px;outline:none;transition:border-color .3s,box-shadow .3s;letter-spacing:.02em;line-height:1.7}
-.dream-input::placeholder{color:rgba(201,169,110,.3)}
-.dream-input:focus{border-color:rgba(201,169,110,.4);box-shadow:0 0 0 1px rgba(201,169,110,.08)}
-.text-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.8rem;font-weight:300;padding:.95rem 1.2rem;outline:none;transition:border-color .3s;letter-spacing:.05em}
-.text-input::placeholder{color:rgba(201,169,110,.3)}
-.text-input:focus{border-color:rgba(201,169,110,.4)}
-.input-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
-
-/* CHIPS */
-.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
-.chip{padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.1em;cursor:pointer;transition:all .25s}
-.chip:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.06)}
-.chip.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.1)}
-
-/* TIER CARDS */
-.tier-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-bottom:1.75rem}
-.tier-card{border:1px solid var(--glass-border);padding:1.75rem 1.5rem;cursor:pointer;transition:all .3s;background:transparent;text-align:left;position:relative}
-.tier-card:hover{border-color:var(--gold-dim);background:rgba(201,169,110,.04);transform:translateY(-3px)}
-.tier-card.selected{border-color:var(--gold);background:rgba(201,169,110,.08)}
-.tier-card.selected::after{content:'✓';position:absolute;top:.875rem;right:.875rem;font-size:.65rem;color:var(--gold)}
-.tier-icon{font-size:1.4rem;margin-bottom:.875rem;display:block}
-.tier-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--ivory);margin-bottom:.35rem}
-.tier-desc{font-size:.65rem;color:var(--ivory-dim);line-height:1.65;letter-spacing:.03em;margin-bottom:.875rem}
-.tier-price{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold)}
-.tier-price-note{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);margin-top:.15rem}
-
-/* BUDGET */
-.budget-display{font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:var(--gold);font-weight:300;margin:.875rem 0 .35rem;letter-spacing:-.02em}
-.budget-note{font-size:.62rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase}
-.slider-track{position:relative;height:2px;background:rgba(201,169,110,.12);margin:1.4rem 0}
+.progress-bar-wrap{height:2px;background:rgba(201,169,110,.08);position:relative;z-index:1}
+.progress-bar-fill{height:100%;background:linear-gradient(to right,var(--gold-dim),var(--gold));transition:width .6s cubic-bezier(.4,0,.2,1)}
+.planner-wrap{max-width:860px;margin:0 auto;padding:4rem 2rem 6rem;position:relative;z-index:1}
+.step{display:none;animation:stepIn .5s cubic-bezier(.16,1,.3,1) forwards}
+.step.active{display:block}
+@keyframes stepIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.step-eyebrow{font-size:.52rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem}
+.step-eyebrow::before{content:'';width:24px;height:1px;background:var(--gold)}
+.step-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:300;color:var(--ivory);line-height:1.05;margin-bottom:.75rem;letter-spacing:-.01em}
+.step-title em{font-style:italic;color:var(--gold)}
+.step-sub{font-size:.78rem;line-height:1.9;color:var(--ivory-dim);letter-spacing:.04em;margin-bottom:2.5rem;max-width:540px}
+.occasion-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:2.5rem}
+.occasion-tile{border:1px solid var(--glass-border);padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:all .3s;background:transparent;position:relative;overflow:hidden;touch-action:manipulation}
+.occasion-tile:hover,.occasion-tile.selected{border-color:var(--gold);background:var(--gold-faint)}
+.occasion-tile.selected::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--gold)}
+.occ-icon{font-size:1.6rem;display:block;margin-bottom:.6rem}
+.occ-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim)}
+.occasion-tile.selected .occ-label{color:var(--gold)}
+.dest-input-wrap{position:relative;margin-bottom:1.5rem}
+.dest-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);border-bottom:2px solid rgba(201,169,110,.3);color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;font-style:italic;padding:1.25rem 1.5rem;outline:none;transition:all .4s;letter-spacing:.02em}
+.dest-input::placeholder{color:rgba(201,169,110,.25)}
+.dest-input:focus{border-bottom-color:var(--gold);background:rgba(201,169,110,.06)}
+.dest-hint{font-size:.62rem;letter-spacing:.1em;color:var(--gold-dim);margin-top:.75rem}
+.dest-suggestions{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+.dest-chip{padding:.5rem 1.1rem;border:1px solid rgba(201,169,110,.12);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation}
+.dest-chip:hover,.dest-chip.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.07)}
+.questions-loading{display:flex;align-items:center;gap:1rem;padding:2rem 0;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim)}
+.q-spinner{width:18px;height:18px;border:1px solid rgba(201,169,110,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.questions-list{display:flex;flex-direction:column;gap:1.5rem;margin-bottom:2rem}
+.q-item{animation:stepIn .4s ease forwards;opacity:0}
+.q-item:nth-child(1){animation-delay:.05s}
+.q-item:nth-child(2){animation-delay:.12s}
+.q-item:nth-child(3){animation-delay:.19s}
+.q-item:nth-child(4){animation-delay:.26s}
+.q-label{font-size:.56rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:block}
+.q-options{display:flex;flex-wrap:wrap;gap:.5rem}
+.q-opt{padding:.55rem 1.1rem;border:1px solid rgba(201,169,110,.12);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.68rem;letter-spacing:.08em;cursor:pointer;transition:all .25s;touch-action:manipulation}
+.q-opt:hover,.q-opt.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.07)}
+.q-text-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.8rem;padding:.875rem 1.1rem;outline:none;transition:border-color .3s;letter-spacing:.04em}
+.q-text-input::placeholder{color:rgba(201,169,110,.3)}
+.q-text-input:focus{border-color:rgba(201,169,110,.35)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem}
+.field-label{font-size:.55rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.6rem}
+.field-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.8rem;padding:.875rem 1.1rem;outline:none;transition:border-color .3s;letter-spacing:.04em}
+.field-input::placeholder{color:rgba(201,169,110,.3)}
+.field-input:focus{border-color:rgba(201,169,110,.35)}
+.field-input[type="date"]{color-scheme:dark}
+.budget-display{font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:var(--gold);font-weight:300;line-height:1;margin:.75rem 0 .3rem;letter-spacing:-.02em}
+.budget-note{font-size:.6rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1.25rem}
+.slider-track{position:relative;height:2px;background:rgba(201,169,110,.1);margin-bottom:.5rem}
 .slider-fill{position:absolute;left:0;top:0;height:100%;background:var(--gold);transition:width .1s}
-input[type="range"]{position:absolute;top:-8px;left:0;width:100%;appearance:none;background:transparent;cursor:none;outline:none}
-input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--void);border:2px solid var(--gold);cursor:none;box-shadow:0 0 10px rgba(201,169,110,.3)}
+input[type="range"]{position:absolute;top:-8px;left:0;width:100%;appearance:none;background:transparent;outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--void);border:2px solid var(--gold);box-shadow:0 0 10px rgba(201,169,110,.3)}
 .slider-labels{display:flex;justify-content:space-between;font-size:.58rem;letter-spacing:.1em;color:var(--gold-dim);text-transform:uppercase;margin-top:.4rem}
-
-/* NAV BUTTONS */
-.panel-nav{display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:1.75rem;border-top:1px solid var(--glass-border)}
-.btn-next{display:inline-flex;align-items:center;gap:.875rem;background:var(--gold);color:var(--obsidian);padding:.95rem 2.25rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;border:none;cursor:pointer;transition:all .3s}
-.btn-next:hover{background:var(--gold-light);transform:translateY(-2px)}
-.btn-back{display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--ivory-dim);padding:.95rem 1.4rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;border:1px solid var(--glass-border);cursor:pointer;transition:all .3s}
+.free-note{background:rgba(201,169,110,.05);border-left:2px solid var(--gold);padding:1.1rem 1.5rem;margin:1.5rem 0;font-size:.7rem;letter-spacing:.05em;color:var(--ivory-dim);line-height:1.7}
+.free-note strong{color:var(--gold)}
+.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--glass-border)}
+.btn-back{display:inline-flex;align-items:center;gap:.6rem;background:transparent;color:var(--ivory-dim);padding:.875rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--glass-border);cursor:pointer;transition:all .3s;touch-action:manipulation}
 .btn-back:hover{border-color:var(--gold-dim);color:var(--gold)}
-.step-ind{font-size:.58rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase}
-
-/* ═══ GENERATING SCREEN ═══ */
-.generating-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;text-align:center;gap:2rem}
-.gen-orb{width:110px;height:110px;border-radius:50%;border:1px solid var(--gold-dim);position:relative;display:flex;align-items:center;justify-content:center;animation:orbSpin 3s linear infinite}
-.gen-orb::before{content:'';position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(201,169,110,.3);animation:orbSpin 2s linear infinite reverse}
-.gen-orb::after{content:'✦';font-size:1.6rem;color:var(--gold);animation:orbSpin 3s linear infinite reverse}
-@keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.gen-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory)}
-.gen-status{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);min-height:1.2em}
-.gen-agents{display:flex;flex-direction:column;gap:.4rem;width:300px}
-.gen-agent-row{display:flex;align-items:center;justify-content:space-between;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);padding:.4rem 0;border-bottom:1px solid rgba(201,169,110,.06)}
-.gen-agent-row .agent-status{color:var(--gold)}
-.gen-agent-row .agent-status.done{color:var(--success)}
-
-/* ═══ RESULT PANEL ═══ */
-#result-panel{display:none}
-#result-panel.active{display:block;animation:panelIn .6s ease forwards}
-
-.itin-header{margin-bottom:2.5rem}
-.itin-destination{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,4.5rem);font-weight:300;color:var(--ivory);line-height:1;margin-bottom:.5rem}
-.itin-destination em{font-style:italic;color:var(--gold)}
-.itin-meta{display:flex;gap:1.75rem;flex-wrap:wrap;margin-top:1rem}
-.itin-meta-item{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:.5rem}
-.itin-meta-item span{color:var(--ivory-dim)}
-
-/* AI RESPONSE */
-.ai-response{background:var(--surface);border:1px solid var(--glass-border);position:relative;overflow:hidden}
-.ai-response::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
-.ai-response-header{padding:1.25rem 2rem;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;gap:1rem}
-.ai-badge{font-size:.52rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.6rem}
-.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:livePulse 1.5s infinite}
-@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-.ai-response-body{padding:2rem;font-size:.82rem;line-height:2;color:var(--ivory-dim);letter-spacing:.03em;white-space:pre-wrap;font-family:'Montserrat',sans-serif;max-height:600px;overflow-y:auto}
-.ai-response-body::-webkit-scrollbar{width:3px}
-.ai-response-body::-webkit-scrollbar-thumb{background:var(--gold-dim)}
-
-/* STREAMING CURSOR */
+.btn-next{display:inline-flex;align-items:center;gap:.875rem;background:var(--gold);color:var(--obsidian);padding:.95rem 2.5rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;border:none;cursor:pointer;transition:all .3s;touch-action:manipulation}
+.btn-next:hover{background:var(--gold-light)}
+.btn-next:active{transform:scale(.98)}
+.step-counter{font-size:.58rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase}
+#generating{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:2rem;padding:4rem 2rem}
+.gen-ring{width:100px;height:100px;border-radius:50%;border:1px solid rgba(201,169,110,.2);position:relative;display:flex;align-items:center;justify-content:center;animation:ringRotate 4s linear infinite}
+.gen-ring::before{content:'';position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(201,169,110,.15);animation:ringRotate 3s linear infinite reverse}
+.gen-ring-mark{position:absolute;width:6px;height:6px;background:var(--gold);border-radius:50%;top:-3px;left:50%;transform:translateX(-50%)}
+.gen-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory)}
+.gen-status{font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);min-height:1.5em}
+.gen-steps{display:flex;flex-direction:column;gap:.4rem;width:280px;margin-top:.5rem}
+.gen-step-row{display:flex;justify-content:space-between;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);padding:.35rem 0;border-bottom:1px solid rgba(201,169,110,.06)}
+.gen-step-status.active{color:var(--gold)}
+.gen-step-status.done{color:var(--success)}
+@keyframes ringRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#result{display:none}
+.result-header{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--glass-border)}
+.result-eyebrow{font-size:.52rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:.875rem;display:flex;align-items:center;gap:1rem}
+.result-eyebrow::before{content:'';width:24px;height:1px;background:var(--gold)}
+.result-dest{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:300;color:var(--ivory);line-height:.95;letter-spacing:-.02em;margin-bottom:1rem}
+.result-dest em{font-style:italic;color:var(--gold)}
+.result-meta{display:flex;flex-wrap:wrap;gap:1.5rem}
+.result-meta-item{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:.4rem}
+.result-meta-item span{color:var(--ivory-dim)}
+.itinerary-card{background:var(--surface);border:1px solid var(--glass-border);position:relative;overflow:hidden;margin-bottom:1.5rem}
+.itinerary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.itinerary-header-bar{padding:1.25rem 2rem;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;gap:.875rem}
+.itinerary-badge{font-size:.52rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.5rem}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:livePulse 1.5s infinite}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+.itinerary-body{padding:2rem;font-size:.82rem;line-height:2;color:var(--ivory-dim);letter-spacing:.03em;white-space:pre-wrap;font-family:'Montserrat',sans-serif;max-height:620px;overflow-y:auto}
+.itinerary-body::-webkit-scrollbar{width:3px}
+.itinerary-body::-webkit-scrollbar-thumb{background:var(--gold-dim)}
 .stream-cursor{display:inline-block;width:2px;height:1em;background:var(--gold);margin-left:2px;animation:blink .8s infinite;vertical-align:text-bottom}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-/* ACTION ROW */
-.action-row{display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap}
-.btn-confirm{display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2.25rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;border:none;cursor:pointer;transition:all .3s}
-.btn-confirm:hover{background:var(--gold-light);transform:translateY(-2px)}
-.btn-modify{display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--gold);padding:1rem 1.75rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;border:1px solid var(--gold-dim);cursor:pointer;transition:all .3s}
-.btn-modify:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
-
-/* ERROR */
-.error-box{background:rgba(212,100,100,.08);border:1px solid rgba(212,100,100,.25);padding:1.5rem 2rem;margin-top:1.5rem}
-.error-box p{font-size:.72rem;color:#e08080;letter-spacing:.05em;line-height:1.7}
-
-
-/* EMAIL CAPTURE MODAL */
+.upsell{background:linear-gradient(135deg,rgba(201,169,110,.09),rgba(201,169,110,.03));border:1px solid var(--gold-dim);padding:2.5rem;position:relative;overflow:hidden;margin-bottom:1.5rem}
+.upsell::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.upsell-eyebrow{font-size:.52rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:.875rem}
+.upsell-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem;line-height:1.2}
+.upsell-title em{font-style:italic;color:var(--gold)}
+.upsell-desc{font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:1.75rem;max-width:540px}
+.upsell-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.75rem}
+.upsell-feat{background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1rem;text-align:center}
+.upsell-feat-icon{font-size:1.2rem;display:block;margin-bottom:.4rem}
+.upsell-feat-label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory-dim)}
+.upsell-actions{display:flex;gap:.875rem;flex-wrap:wrap}
+.btn-gold{display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:.95rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;text-decoration:none;cursor:pointer;border:none;transition:all .3s;touch-action:manipulation}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-outline{display:inline-flex;align-items:center;background:transparent;color:var(--gold);padding:.95rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--gold-dim);text-decoration:none;cursor:pointer;transition:all .3s;touch-action:manipulation}
+.btn-outline:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
+.restart-btn{display:inline-flex;align-items:center;gap:.6rem;background:transparent;color:var(--ivory-dim);padding:.75rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--glass-border);cursor:pointer;transition:all .3s;touch-action:manipulation}
+.restart-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+.error-box{background:rgba(224,128,128,.07);border:1px solid rgba(224,128,128,.2);padding:1.25rem 1.75rem;margin-top:1.25rem;display:none}
+.error-box p{font-size:.7rem;color:var(--error);letter-spacing:.05em;line-height:1.7}
 .modal-overlay{position:fixed;inset:0;background:rgba(5,5,5,.88);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .4s}
 .modal-overlay.show{opacity:1;pointer-events:all}
-.modal{background:var(--obsidian);border:1px solid var(--glass-border);padding:3rem;max-width:480px;width:90%;position:relative;overflow:hidden;animation:panelIn .5s ease forwards}
+.modal{background:var(--obsidian);border:1px solid var(--glass-border);padding:3rem;max-width:460px;width:90%;position:relative;overflow:hidden}
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory);margin-bottom:.5rem}
 .modal-title em{font-style:italic;color:var(--gold)}
-.modal-sub{font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:2rem}
-.modal-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.82rem;padding:1rem 1.25rem;outline:none;transition:border-color .3s;letter-spacing:.04em;margin-bottom:1rem}
+.modal-sub{font-size:.7rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:1.75rem}
+.modal-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.8rem;padding:.95rem 1.2rem;outline:none;transition:border-color .3s;letter-spacing:.04em;margin-bottom:.875rem}
 .modal-input:focus{border-color:var(--gold)}
 .modal-input::placeholder{color:rgba(201,169,110,.3)}
-.modal-btn{width:100%;background:var(--gold);color:var(--obsidian);border:none;padding:1.1rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.28em;text-transform:uppercase;font-weight:500;cursor:pointer;touch-action:manipulation;transition:all .3s}
+.modal-btn{width:100%;background:var(--gold);color:var(--obsidian);border:none;padding:1.05rem;font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.26em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:all .3s;touch-action:manipulation}
 .modal-btn:hover{background:var(--gold-light)}
-.modal-skip{display:block;text-align:center;margin-top:1rem;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);cursor:none;background:none;border:none;font-family:'Montserrat',sans-serif;width:100%;transition:color .3s}
+.modal-skip{display:block;text-align:center;margin-top:.875rem;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dim);cursor:pointer;background:none;border:none;font-family:'Montserrat',sans-serif;width:100%;touch-action:manipulation}
 .modal-skip:hover{color:var(--gold)}
-
-
-@media(max-width:768px){
-  .cursor,.cursor-ring{display:none!important}
-  button,a,input,textarea,select{cursor:pointer!important;touch-action:manipulation!important}
-}
-@media(max-width:900px){
-  .planner-layout{grid-template-columns:1fr}
-  .sidebar{display:none}
-  .main-content{padding:2rem 1.5rem}
-  .tier-cards{grid-template-columns:1fr}
-  nav{padding:1.25rem 1.5rem}
-  
-  .api-input{width:100%}
+@media(max-width:600px){
+  nav{padding:1rem 1.5rem}
+  .planner-wrap{padding:2rem 1.25rem 4rem}
+  .occasion-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+  .upsell-feats{grid-template-columns:1fr}
+  .step-title{font-size:2rem}
 }
 </style>
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
-<nav>
-  <a href="vela-home.html" class="nav-logo">Vela</a>
-  <a href="vela-home.html" class="nav-back">← Back to Home</a>
-</nav>
-
-
-
-<div class="planner-layout">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div>
-      <h2 class="sidebar-title">Your <em>journey</em> begins here.</h2>
-      <p class="sidebar-sub">Tell us about your dream trip and Vela will generate a personalized itinerary instantly — free.</p>
-    </div>
-    <div class="progress-steps" id="progressSteps">
-      <div class="prog-step active" data-step="1">
-        <div class="prog-circle">01</div>
-        <div class="prog-label">Describe Your Dream</div>
-      </div>
-      <div class="prog-step" data-step="2">
-        <div class="prog-circle">02</div>
-        <div class="prog-label">Dates & Budget</div>
-      </div>
-      <div class="prog-step" data-step="3">
-        <div class="prog-circle">03</div>
-        <div class="prog-label">Preferences</div>
-      </div>
-      <div class="prog-step" data-step="4">
-        <div class="prog-circle">04</div>
-        <div class="prog-label">Almost There</div>
-      </div>
-      <div class="prog-step" data-step="5">
-        <div class="prog-circle">✦</div>
-        <div class="prog-label">Your Itinerary</div>
-      </div>
-    </div>
-    <div class="summary-card">
-      <p class="sum-heading">Trip Summary</p>
-      <div class="sum-item"><span class="sum-key">Destination</span><span class="sum-val" id="sum-dest"><span class="empty">Not set</span></span></div>
-      <div class="sum-item"><span class="sum-key">Dates</span><span class="sum-val" id="sum-dates"><span class="empty">Not set</span></span></div>
-      <div class="sum-item"><span class="sum-key">Budget</span><span class="sum-val" id="sum-budget"><span class="empty">Not set</span></span></div>
-      <div class="sum-item"><span class="sum-key">Travelers</span><span class="sum-val" id="sum-travelers"><span class="empty">Not set</span></span></div>
-      <div class="sum-item"><span class="sum-key">Tier</span><span class="sum-val" id="sum-tier"><span class="empty">Not set</span></span></div>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main-content">
-
-    <!-- STEP 1 -->
-    <div class="step-panel active" id="panel-1">
-      <p class="panel-eyebrow">Step 01</p>
-      <h1 class="panel-title">Describe your<br><em>perfect journey.</em></h1>
-      <p class="panel-sub">Use your own words — the more detail you give, the more personalized your itinerary will be.</p>
-      <div class="field-group">
-        <label class="field-label">Your dream trip</label>
-        <textarea class="dream-input" id="dreamText" placeholder="I want to spend 10 days in Japan with my partner for our anniversary. Ryokans, incredible food, maybe something totally unexpected — show us the Japan most people miss..."></textarea>
-        <p class="field-hint">Be as specific or as vague as you like. Vela's AI understands context and nuance.</p>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Destination</label>
-        <input class="text-input" id="destination" type="text" placeholder="e.g. Japan, Maldives, Amalfi Coast, Surprise me...">
-        <div class="chips">
-          <button class="chip" onclick="setDest(this,'Japan')">🗾 Japan</button>
-          <button class="chip" onclick="setDest(this,'Maldives')">🏝 Maldives</button>
-          <button class="chip" onclick="setDest(this,'African Safari — Kenya')">🦁 Safari</button>
-          <button class="chip" onclick="setDest(this,'Amalfi Coast, Italy')">🍋 Amalfi Coast</button>
-          <button class="chip" onclick="setDest(this,'Bali, Indonesia')">🌺 Bali</button>
-          <button class="chip" onclick="setDest(this,'Patagonia')">🏔 Patagonia</button>
-          <button class="chip" onclick="setDest(this,'Iceland')">❄️ Iceland</button>
-          <button class="chip" onclick="setDest(this,'French Riviera')">⛵ French Riviera</button>
-          <button class="chip" onclick="setDest(this,'Morocco')">🕌 Morocco</button>
-          <button class="chip" onclick="setDest(this,'New Zealand')">🌿 New Zealand</button>
-        </div>
-      </div>
-      <div class="panel-nav">
-        <div></div>
-        <span class="step-ind">Step 1 of 4</span>
-        <button class="btn-next" onclick="goTo(2)">Continue →</button>
-      </div>
-    </div>
-
-    <!-- STEP 2 -->
-    <div class="step-panel" id="panel-2">
-      <p class="panel-eyebrow">Step 02</p>
-      <h1 class="panel-title">When, and<br><em>how much?</em></h1>
-      <p class="panel-sub">Set your travel window and total budget.</p>
-      <div class="field-group">
-        <label class="field-label">Travel Dates</label>
-        <div class="input-row">
-          <div>
-            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Departure</label>
-            <input class="text-input" type="date" id="dateFrom" onchange="updateDates()">
-          </div>
-          <div>
-            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Return</label>
-            <input class="text-input" type="date" id="dateTo" onchange="updateDates()">
-          </div>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Travelers</label>
-        <div class="input-row">
-          <div>
-            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Adults</label>
-            <input class="text-input" id="adults" type="number" min="1" max="20" value="2" onchange="updateTravelers()">
-          </div>
-          <div>
-            <label class="field-label" style="font-size:.5rem;color:var(--gold-dim)">Children</label>
-            <input class="text-input" id="children" type="number" min="0" max="10" value="0" onchange="updateTravelers()">
-          </div>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Total Budget</label>
-        <div class="budget-display" id="budgetDisplay">$10,000</div>
-        <div class="budget-note" id="budgetNote">Per trip, all-inclusive</div>
-        <div class="slider-track">
-          <div class="slider-fill" id="sliderFill" style="width:30%"></div>
-          <input type="range" id="budgetSlider" min="0" max="100" value="30" oninput="updateBudget(this.value)">
-        </div>
-        <div class="slider-labels"><span>$1K</span><span>$25K</span><span>$100K</span><span>No Limit</span></div>
-      </div>
-      <div class="panel-nav">
-        <button class="btn-back" onclick="goTo(1)">← Back</button>
-        <span class="step-ind">Step 2 of 4</span>
-        <button class="btn-next" onclick="goTo(3)">Continue →</button>
-      </div>
-    </div>
-
-    <!-- STEP 3 -->
-    <div class="step-panel" id="panel-3">
-      <p class="panel-eyebrow">Step 03</p>
-      <h1 class="panel-title">Refine the<br><em>experience.</em></h1>
-      <p class="panel-sub">Tell Vela what matters most to you.</p>
-      <div class="field-group">
-        <label class="field-label">Travel Vibe</label>
-        <div class="chips">
-          <button class="chip selected" onclick="toggleChip(this)">🌿 Relaxation</button>
-          <button class="chip" onclick="toggleChip(this)">🏔 Adventure</button>
-          <button class="chip selected" onclick="toggleChip(this)">🍽 Culinary</button>
-          <button class="chip" onclick="toggleChip(this)">🎭 Culture</button>
-          <button class="chip" onclick="toggleChip(this)">🏄 Beach</button>
-          <button class="chip selected" onclick="toggleChip(this)">💆 Wellness</button>
-          <button class="chip" onclick="toggleChip(this)">📸 Photography</button>
-          <button class="chip" onclick="toggleChip(this)">🛍 Shopping</button>
-          <button class="chip" onclick="toggleChip(this)">🌙 Nightlife</button>
-          <button class="chip" onclick="toggleChip(this)">🏛 History</button>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Accommodation Style</label>
-        <div class="chips">
-          <button class="chip" onclick="toggleChip(this)">🏨 Luxury Hotels</button>
-          <button class="chip selected" onclick="toggleChip(this)">🏡 Private Villa</button>
-          <button class="chip" onclick="toggleChip(this)">🛖 Boutique</button>
-          <button class="chip" onclick="toggleChip(this)">⛵ Yacht</button>
-          <button class="chip" onclick="toggleChip(this)">⛺ Safari Camp</button>
-          <button class="chip" onclick="toggleChip(this)">🌊 Overwater Bungalow</button>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Special Requests</label>
-        <input class="text-input" id="specialRequests" type="text" placeholder="Anniversary, dietary restrictions, accessibility needs, surprise element...">
-      </div>
-      <div class="panel-nav">
-        <button class="btn-back" onclick="goTo(2)">← Back</button>
-        <span class="step-ind">Step 3 of 4</span>
-        <button class="btn-next" onclick="goTo(4)">Continue →</button>
-      </div>
-    </div>
-
-    <!-- STEP 4 -->
-    <div class="step-panel" id="panel-4">
-      <p class="panel-eyebrow">Step 04</p>
-      <h1 class="panel-title">Almost there —<br><em>one last thing.</em></h1>
-      <p class="panel-sub">Tell us where you're flying from and we'll generate your personalized itinerary instantly. Free to start.</p>
-
-      <div class="field-group">
-        <label class="field-label">Departure City</label>
-        <input class="text-input" id="departCity" type="text" placeholder="e.g. New York (JFK), Los Angeles (LAX), Miami (MIA)...">
-      </div>
-
-      <div class="field-group">
-        <label class="field-label">Anything else we should know?</label>
-        <input class="text-input" id="specialRequests" type="text" placeholder="Anniversary trip, dietary needs, accessibility, surprise element...">
-      </div>
-
-      <div style="background:rgba(201,169,110,.06);border:1px solid var(--glass-border);padding:1.5rem 2rem;margin-top:1rem">
-        <div style="font-size:.55rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">✦ Free to generate</div>
-        <div style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.7">Your first itinerary is completely free. After you see it, we'll show you how to unlock full booking, transfers, dining reservations and more.</div>
-      </div>
-
-      <div class="panel-nav">
-        <button class="btn-back" onclick="goTo(3)">← Back</button>
-        <span class="step-ind">Step 4 of 4</span>
-        <button class="btn-next" onclick="generate()" id="generateBtn">Generate My Itinerary ✦</button>
-      </div>
-    </div>
-
-    <!-- RESULT -->
-    <div id="result-panel">
-
-      <!-- GENERATING -->
-      <div id="generating" class="generating-screen">
-        <div class="gen-orb"></div>
-        <div class="gen-title">Crafting your journey</div>
-        <div class="gen-status" id="genStatus">Initializing AI...</div>
-        <div class="gen-agents" id="genAgents">
-          <div class="gen-agent-row"><span>✈ Flight Agent</span><span class="agent-status" id="ga-1">Standby</span></div>
-          <div class="gen-agent-row"><span>🏨 Hotel Agent</span><span class="agent-status" id="ga-2">Standby</span></div>
-          <div class="gen-agent-row"><span>🚗 Transfer Agent</span><span class="agent-status" id="ga-3">Standby</span></div>
-          <div class="gen-agent-row"><span>🍽 Dining Agent</span><span class="agent-status" id="ga-4">Standby</span></div>
-          <div class="gen-agent-row"><span>🗺 Experience Agent</span><span class="agent-status" id="ga-5">Standby</span></div>
-        </div>
-      </div>
-
-      <!-- ITINERARY OUTPUT -->
-      <div id="itinerary" style="display:none">
-        <div class="itin-header">
-          <p class="panel-eyebrow">Your AI-Generated Itinerary</p>
-          <div class="itin-destination" id="itinTitle">Your Journey <em>Awaits</em></div>
-          <div class="itin-meta">
-            <div class="itin-meta-item">📅 <span id="itinDates">—</span></div>
-            <div class="itin-meta-item">👤 <span id="itinTravelers">—</span></div>
-            <div class="itin-meta-item">✦ <span id="itinTier">—</span></div>
-            <div class="itin-meta-item">💰 <span id="itinBudget">—</span></div>
-          </div>
-        </div>
-
-        <div class="ai-response">
-          <div class="ai-response-header">
-            <div class="ai-badge"><span class="ai-dot"></span> Vela AI — Live Response</div>
-          </div>
-          <div class="ai-response-body" id="aiResponseBody"></div>
-        </div>
-
-        <div id="errorBox" class="error-box" style="display:none">
-          <p id="errorMsg"></p>
-        </div>
-
-        <div class="action-row">
-          <button class="btn-modify" onclick="restart()">← Plan Another Trip</button>
-        </div>
-
-        <!-- PRICING UPSELL -->
-        <div style="margin-top:2.5rem;background:linear-gradient(135deg,rgba(201,169,110,.1),rgba(201,169,110,.04));border:1px solid var(--gold-dim);padding:2.5rem;position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)"></div>
-          <div style="font-size:.55rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">✦ Want Vela to book all of this for you?</div>
-          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem;line-height:1.2">Upgrade to Premier and our AI agents handle <em style="font-style:italic;color:var(--gold)">everything.</em></h3>
-          <p style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:2rem;max-width:580px">Flights booked. Hotels reserved. Transfers arranged. Restaurants secured. One confirmation from you — agents do the rest. $99/month, cancel any time.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-bottom:2rem">
-            <div style="background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.25rem;text-align:center">
-              <div style="font-size:1.4rem;margin-bottom:.5rem">✈</div>
-              <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-dim)">Autonomous Booking</div>
-            </div>
-            <div style="background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.25rem;text-align:center">
-              <div style="font-size:1.4rem;margin-bottom:.5rem">🍽</div>
-              <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-dim)">Dining Reservations</div>
-            </div>
-            <div style="background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.25rem;text-align:center">
-              <div style="font-size:1.4rem;margin-bottom:.5rem">🚗</div>
-              <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-dim)">All Transfers</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:1rem;flex-wrap:wrap">
-            <a href="vela-pricing.html" style="display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2.5rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;text-decoration:none;cursor:none;transition:all .3s">Upgrade to Premier — $99/mo</a>
-            <a href="vela-pricing.html" style="display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--gold);padding:1rem 2rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;border:1px solid var(--gold-dim);text-decoration:none;cursor:none;transition:all .3s">View All Plans →</a>
-          </div>
-        </div>
-      </div>
-    
-<!-- EMAIL CAPTURE MODAL -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
     <h2 class="modal-title">Your itinerary<br>is <em>ready.</em></h2>
-    <p class="modal-sub">Enter your email and we'll save it for you — plus keep you updated when Vela launches with full booking, payments, and your personal travel profile.</p>
-    <input class="modal-input" type="email" id="modalEmail" placeholder="your@email.com" autocomplete="email">
-    <input class="modal-input" type="text" id="modalName" placeholder="Your first name" style="margin-bottom:1.5rem">
+    <p class="modal-sub">Save it and get early access when Vela launches with full booking, transfers, and dining reservations.</p>
+    <input class="modal-input" type="text" id="modalName" placeholder="Your first name">
+    <input class="modal-input" type="email" id="modalEmail" placeholder="your@email.com">
     <button class="modal-btn" onclick="submitEmail()">Save My Itinerary ✦</button>
-    <button class="modal-skip" onclick="closeModal()">No thanks, just show me the itinerary</button>
+    <button class="modal-skip" onclick="closeModal()">Skip — just show me the itinerary</button>
   </div>
 </div>
 
+<nav>
+  <a href="vela-home.html" class="nav-logo">Vela</a>
+  <a href="vela-home.html" class="nav-back">← Back</a>
+</nav>
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressBar" style="width:25%"></div>
 </div>
 
-  </main>
+<div class="planner-wrap">
+
+  <!-- STEP 1 — OCCASION -->
+  <div class="step active" id="step-1">
+    <p class="step-eyebrow">Step 01 of 04</p>
+    <h1 class="step-title">What's the<br><em>occasion?</em></h1>
+    <p class="step-sub">Tell us what's behind the trip and we'll plan with that in mind.</p>
+    <div class="occasion-grid">
+      <button class="occasion-tile" onclick="selectOccasion(this,'Honeymoon')"><span class="occ-icon">💍</span><div class="occ-label">Honeymoon</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Anniversary')"><span class="occ-icon">🥂</span><div class="occ-label">Anniversary</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Birthday Trip')"><span class="occ-icon">🎂</span><div class="occ-label">Birthday</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Family Vacation')"><span class="occ-icon">👨‍👩‍👧</span><div class="occ-label">Family</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Friends Getaway')"><span class="occ-icon">👯</span><div class="occ-label">Friends</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Solo Adventure')"><span class="occ-icon">🧳</span><div class="occ-label">Solo</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Business & Leisure')"><span class="occ-icon">💼</span><div class="occ-label">Bleisure</div></button>
+      <button class="occasion-tile" onclick="selectOccasion(this,'Just Because')"><span class="occ-icon">✦</span><div class="occ-label">Just Because</div></button>
+    </div>
+    <div class="step-nav">
+      <div></div>
+      <span class="step-counter">1 of 4</span>
+      <button class="btn-next" onclick="goToStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 — DESTINATION -->
+  <div class="step" id="step-2">
+    <p class="step-eyebrow">Step 02 of 04</p>
+    <h1 class="step-title">Where are you<br><em>dreaming of?</em></h1>
+    <p class="step-sub">Type a destination and Vela will ask you the right questions for that specific place.</p>
+    <div class="dest-input-wrap">
+      <input class="dest-input" type="text" id="destinationInput" placeholder="Paris, Bali, Japan, New Zealand..." autocomplete="off" oninput="state.destination=this.value">
+      <p class="dest-hint">✦ A city, country, region, or just a vibe — Vela understands it all</p>
+    </div>
+    <div class="dest-suggestions">
+      <button class="dest-chip" onclick="setDest(this,'Japan')">🗾 Japan</button>
+      <button class="dest-chip" onclick="setDest(this,'Maldives')">🏝 Maldives</button>
+      <button class="dest-chip" onclick="setDest(this,'Kenya Safari')">🦁 Kenya Safari</button>
+      <button class="dest-chip" onclick="setDest(this,'Amalfi Coast')">🍋 Amalfi Coast</button>
+      <button class="dest-chip" onclick="setDest(this,'Bali')">🌺 Bali</button>
+      <button class="dest-chip" onclick="setDest(this,'Patagonia')">🏔 Patagonia</button>
+      <button class="dest-chip" onclick="setDest(this,'Iceland')">❄️ Iceland</button>
+      <button class="dest-chip" onclick="setDest(this,'French Riviera')">⛵ French Riviera</button>
+      <button class="dest-chip" onclick="setDest(this,'Morocco')">🕌 Morocco</button>
+      <button class="dest-chip" onclick="setDest(this,'New Zealand')">🌿 New Zealand</button>
+      <button class="dest-chip" onclick="setDest(this,'Switzerland')">🏔 Switzerland</button>
+      <button class="dest-chip" onclick="setDest(this,'Dubai')">🌆 Dubai</button>
+      <button class="dest-chip" onclick="setDest(this,'Portugal')">🐟 Portugal</button>
+      <button class="dest-chip" onclick="setDest(this,'Greece')">🏛 Greece</button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="goToStep(1)">← Back</button>
+      <span class="step-counter">2 of 4</span>
+      <button class="btn-next" onclick="goToStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 — ADAPTIVE QUESTIONS -->
+  <div class="step" id="step-3">
+    <p class="step-eyebrow">Step 03 of 04</p>
+    <h1 class="step-title">A few questions<br>about <em id="destDisplay">your trip.</em></h1>
+    <p class="step-sub">Vela wants to understand exactly what you're hoping for.</p>
+    <div id="questionsLoading" class="questions-loading">
+      <div class="q-spinner"></div>
+      <span id="loadingText">Thinking about your destination...</span>
+    </div>
+    <div id="questionsList" class="questions-list" style="display:none"></div>
+    <div id="dreamSection" style="display:none;margin-bottom:2rem">
+      <label class="field-label" style="margin-bottom:.65rem">In your own words — what would make this trip perfect?</label>
+      <textarea class="q-text-input" id="dreamText" rows="4" placeholder="Describe the feeling, the moments, anything that comes to mind..." style="resize:none;width:100%;line-height:1.7"></textarea>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="goToStep(2)">← Back</button>
+      <span class="step-counter">3 of 4</span>
+      <button class="btn-next" onclick="goToStep(4)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 — DETAILS + GENERATE -->
+  <div class="step" id="step-4">
+    <p class="step-eyebrow">Step 04 of 04</p>
+    <h1 class="step-title">Almost there —<br><em>last details.</em></h1>
+    <p class="step-sub">Set your dates and budget and Vela will generate your personalized itinerary.</p>
+    <div class="two-col">
+      <div><label class="field-label">Departure Date</label><input class="field-input" type="date" id="dateFrom"></div>
+      <div><label class="field-label">Return Date</label><input class="field-input" type="date" id="dateTo"></div>
+    </div>
+    <div class="two-col">
+      <div><label class="field-label">Adults</label><input class="field-input" type="number" id="adults" min="1" max="20" value="2"></div>
+      <div><label class="field-label">Children</label><input class="field-input" type="number" id="children" min="0" max="10" value="0"></div>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <label class="field-label">Total Budget</label>
+      <div class="budget-display" id="budgetDisplay">$10,000</div>
+      <div class="budget-note" id="budgetNote">Per trip, all-inclusive</div>
+      <div class="slider-track">
+        <div class="slider-fill" id="sliderFill" style="width:30%"></div>
+        <input type="range" id="budgetSlider" min="0" max="100" value="30" oninput="updateBudget(this.value)">
+      </div>
+      <div class="slider-labels"><span>$1K</span><span>$25K</span><span>$100K</span><span>No Limit</span></div>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <label class="field-label">Departure City</label>
+      <input class="field-input" type="text" id="departCity" placeholder="e.g. Miami (MIA), New York (JFK)...">
+    </div>
+    <div class="free-note"><strong>✦ Free to generate</strong> — Your first itinerary is on us. After you see it, we'll show you how Vela can book every element automatically.</div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="goToStep(3)">← Back</button>
+      <span class="step-counter">4 of 4</span>
+      <button class="btn-next" onclick="generate()">Generate My Itinerary ✦</button>
+    </div>
+  </div>
+
+  <!-- GENERATING -->
+  <div id="generating">
+    <div class="gen-ring"><div class="gen-ring-mark"></div></div>
+    <div class="gen-title">Crafting your journey</div>
+    <div class="gen-status" id="genStatus">Initializing...</div>
+    <div class="gen-steps">
+      <div class="gen-step-row"><span>✈ Flights</span><span class="gen-step-status" id="gs-1">—</span></div>
+      <div class="gen-step-row"><span>🏨 Accommodation</span><span class="gen-step-status" id="gs-2">—</span></div>
+      <div class="gen-step-row"><span>🚗 Transfers</span><span class="gen-step-status" id="gs-3">—</span></div>
+      <div class="gen-step-row"><span>🍽 Dining</span><span class="gen-step-status" id="gs-4">—</span></div>
+      <div class="gen-step-row"><span>🗺 Experiences</span><span class="gen-step-status" id="gs-5">—</span></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div class="result-header">
+      <p class="result-eyebrow">Your Vela Itinerary</p>
+      <div class="result-dest" id="resultDest">Your Journey <em>Awaits</em></div>
+      <div class="result-meta">
+        <div class="result-meta-item">📅 <span id="resultDates">—</span></div>
+        <div class="result-meta-item">👤 <span id="resultTravelers">—</span></div>
+        <div class="result-meta-item">💰 <span id="resultBudget">—</span></div>
+        <div class="result-meta-item">✦ <span id="resultOccasion">—</span></div>
+      </div>
+    </div>
+    <div class="itinerary-card">
+      <div class="itinerary-header-bar">
+        <div class="itinerary-badge"><span class="live-dot"></span> Vela AI — Generated for You</div>
+      </div>
+      <div class="itinerary-body" id="itineraryBody"></div>
+    </div>
+    <div class="error-box" id="errorBox"><p id="errorMsg"></p></div>
+    <div class="upsell" id="upsellSection" style="display:none">
+      <div class="upsell-eyebrow">✦ Want Vela to book all of this for you?</div>
+      <h3 class="upsell-title">Upgrade to Premier and our agents handle <em>everything.</em></h3>
+      <p class="upsell-desc">Flights booked. Hotels reserved. Transfers arranged. Dining secured. One confirmation — agents execute everything in real time. $99/month, cancel any time.</p>
+      <div class="upsell-feats">
+        <div class="upsell-feat"><span class="upsell-feat-icon">✈</span><div class="upsell-feat-label">Autonomous Booking</div></div>
+        <div class="upsell-feat"><span class="upsell-feat-icon">🍽</span><div class="upsell-feat-label">Dining Reservations</div></div>
+        <div class="upsell-feat"><span class="upsell-feat-icon">🚗</span><div class="upsell-feat-label">All Transfers</div></div>
+      </div>
+      <div class="upsell-actions">
+        <a href="vela-pricing.html" class="btn-gold">Upgrade to Premier — $99/mo</a>
+        <a href="vela-pricing.html" class="btn-outline">View All Plans →</a>
+      </div>
+    </div>
+    <div style="margin-top:1rem"><button class="restart-btn" onclick="restart()">← Plan Another Trip</button></div>
+  </div>
+
 </div>
 
 <script>
-// ─── CURSOR ───
-const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-4+'px';cur.style.top=my-4+'px';});
-(function a(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(a);})();
-document.querySelectorAll('a,button,input,textarea').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(201,169,110,.7)';});
-  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(201,169,110,.4)';});
-});
+const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
+const USED_KEY = 'vela_used';
+const EMAIL_KEY = 'vela_email';
 
-// Init
+let state = { occasion:'', destination:'', questions:[], answers:{}, dreamText:'', dateFrom:'', dateTo:'', adults:2, children:0, budget:'$10,000', departCity:'' };
 let currentStep = 1;
-let selectedTier = 'Premier';
 
-// ─── NAVIGATION ───
-function goTo(n){
-  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+n)?.classList.add('active');
-  document.querySelectorAll('.prog-step').forEach((s,i)=>{
-    s.classList.remove('active','done');
-    if(i+1<n) s.classList.add('done');
-    if(i+1===n) s.classList.add('active');
-  });
-  currentStep=n;
+function setProgress(pct){ document.getElementById('progressBar').style.width = pct + '%'; }
+
+function goToStep(n){
+  if(n===2 && !state.occasion){ alert('Please select an occasion first.'); return; }
+  if(n===3){
+    const dest = document.getElementById('destinationInput').value.trim() || state.destination;
+    if(!dest){ document.getElementById('destinationInput').focus(); return; }
+    state.destination = dest;
+    document.getElementById('destDisplay').textContent = dest + '.';
+    loadAdaptiveQuestions(dest);
+  }
+  if(n===4){ state.dreamText = document.getElementById('dreamText')?.value || ''; collectAnswers(); }
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  document.getElementById('step-'+n).classList.add('active');
+  currentStep = n;
+  const prog = {1:25,2:50,3:75,4:95};
+  setProgress(prog[n]||25);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ─── HELPERS ───
-function setDest(el,dest){
-  document.getElementById('destination').value=dest;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('sum-dest').innerHTML=dest;
+function selectOccasion(el,occasion){ document.querySelectorAll('.occasion-tile').forEach(t=>t.classList.remove('selected')); el.classList.add('selected'); state.occasion=occasion; }
+function setDest(el,dest){ document.getElementById('destinationInput').value=dest; document.querySelectorAll('.dest-chip').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); state.destination=dest; }
+
+async function loadAdaptiveQuestions(destination){
+  const loadEl=document.getElementById('questionsLoading');
+  const listEl=document.getElementById('questionsList');
+  const dreamEl=document.getElementById('dreamSection');
+  loadEl.style.display='flex'; listEl.style.display='none'; dreamEl.style.display='none'; listEl.innerHTML='';
+
+  const texts=[`Thinking about ${destination}...`,`Preparing your questions...`];
+  let ti=0;
+  const interval=setInterval(()=>{ document.getElementById('loadingText').textContent=texts[Math.min(ti++,texts.length-1)]; },1400);
+
+  try {
+    const res = await fetch(`${BACKEND}/ai/question`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        question: `You are Vela, a luxury travel concierge. A client wants to visit "${destination}" for a "${state.occasion||'trip'}".
+
+Generate exactly 3 specific questions to help plan the perfect trip for this destination. These should be questions only someone who deeply knows ${destination} would ask.
+
+Respond with ONLY valid JSON, no other text:
+{"questions":[{"id":"q1","label":"Question?","type":"options","options":["Option 1","Option 2","Option 3"]},{"id":"q2","label":"Question?","type":"options","options":["Option A","Option B","Option C","Option D"]},{"id":"q3","label":"Question?","type":"options","options":["Choice 1","Choice 2","Choice 3"]}]}
+
+Make questions specific to ${destination}. Keep option labels under 5 words.`
+      })
+    });
+    clearInterval(interval);
+    if(res.ok){
+      const data = await res.json();
+      const match = (data.answer||'').match(/\{[\s\S]*\}/);
+      if(match){ const parsed=JSON.parse(match[0]); state.questions=parsed.questions||[]; renderQuestions(state.questions); }
+      else renderFallback(destination);
+    } else renderFallback(destination);
+  } catch(e){ clearInterval(interval); renderFallback(destination); }
+
+  loadEl.style.display='none'; listEl.style.display='flex'; dreamEl.style.display='block';
 }
-function toggleChip(el){el.classList.toggle('selected');}
-function updateDates(){
-  const f=document.getElementById('dateFrom').value;
-  const t=document.getElementById('dateTo').value;
-  if(f&&t){
-    const opts={month:'short',day:'numeric'};
-    document.getElementById('sum-dates').innerHTML=new Date(f).toLocaleDateString('en-US',opts)+' – '+new Date(t).toLocaleDateString('en-US',opts);
-  }
+
+function renderQuestions(questions){
+  const listEl=document.getElementById('questionsList');
+  listEl.innerHTML='';
+  questions.forEach((q,i)=>{
+    const item=document.createElement('div');
+    item.className='q-item';
+    item.style.animationDelay=(i*.08)+'s';
+    if(q.type==='options'&&q.options){
+      item.innerHTML=`<label class="q-label">${q.label}</label><div class="q-options" id="opts-${q.id}">${q.options.map(o=>`<button class="q-opt" onclick="selectOpt(this,'${q.id}','${o.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>`;
+    } else {
+      item.innerHTML=`<label class="q-label">${q.label}</label><input class="q-text-input" id="qinput-${q.id}" placeholder="Tell us...">`;
+    }
+    listEl.appendChild(item);
+  });
 }
-function updateTravelers(){
-  const a=document.getElementById('adults').value;
-  const c=document.getElementById('children').value;
-  let s=a+' Adult'+(a>1?'s':'');
-  if(c>0) s+=', '+c+' Child'+(c>1?'ren':'');
-  document.getElementById('sum-travelers').innerHTML=s;
+
+function renderFallback(dest){
+  state.questions=[
+    {id:'pace',label:'What pace feels right for this trip?',type:'options',options:['Slow & immersive','Balanced mix','Packed & active']},
+    {id:'stay',label:'What matters most in your accommodation?',type:'options',options:['Local character','Luxury & comfort','Unique experience','Central location']},
+    {id:'priority',label:'What are you most excited about?',type:'options',options:['Food & dining','Nature & outdoors','Culture & history','Pure relaxation']}
+  ];
+  renderQuestions(state.questions);
 }
+
+function selectOpt(btn,qId,val){
+  document.querySelectorAll(`#opts-${qId} .q-opt`).forEach(o=>o.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.answers[qId]=val;
+}
+
+function collectAnswers(){
+  state.questions.forEach(q=>{
+    if(q.type!=='options'){ const el=document.getElementById('qinput-'+q.id); if(el?.value) state.answers[q.id]=el.value; }
+  });
+}
+
 function updateBudget(v){
-  const fill=document.getElementById('sliderFill');
-  fill.style.width=v+'%';
+  document.getElementById('sliderFill').style.width=v+'%';
   let d,n;
   if(v<=5){d='$1,000';n='Budget travel';}
   else if(v<=15){d='$'+Math.round(1000+(v-5)*900).toLocaleString();n='Economy travel';}
   else if(v<=30){d='$'+Math.round(10000+(v-15)*1000).toLocaleString();n='Per trip, all-inclusive';}
   else if(v<=60){d='$'+Math.round(25000+(v-30)*2500).toLocaleString();n='Premium travel';}
   else if(v<=85){d='$'+Math.round(100000+(v-60)*4000).toLocaleString();n='Luxury travel';}
-  else if(v<100){d='$'+Math.round(200000+(v-85)*15000).toLocaleString();n='Ultra-luxury travel';}
-  else{d='No Limit';n='Elite — the extraordinary awaits';}
+  else if(v<100){d='$'+Math.round(200000+(v-85)*15000).toLocaleString();n='Ultra-luxury';}
+  else{d='No Limit';n='Elite tier';}
   document.getElementById('budgetDisplay').textContent=d;
   document.getElementById('budgetNote').textContent=n;
-  document.getElementById('sum-budget').innerHTML=d;
-}
-function selectTier(el,tier){
-  document.querySelectorAll('.tier-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedTier=tier;
-  document.getElementById('sum-tier').innerHTML=tier;
+  state.budget=d;
 }
 
-// ─── BUILD PROMPT ───
-function buildPrompt(){
-  const dream = document.getElementById('dreamText').value || 'A wonderful trip';
-  const dest = document.getElementById('destination').value || 'anywhere beautiful';
-  const budget = document.getElementById('budgetDisplay').textContent;
-  const adults = document.getElementById('adults').value;
-  const children = document.getElementById('children').value;
-  const dateFrom = document.getElementById('dateFrom').value;
-  const dateTo = document.getElementById('dateTo').value;
-  const depart = document.getElementById('departCity').value || 'unspecified departure city';
-  const special = document.getElementById('specialRequests').value;
-  const vibes = [...document.querySelectorAll('.chip.selected')].map(c=>c.textContent.trim()).join(', ');
-
-  const dates = dateFrom && dateTo
-    ? `from ${new Date(dateFrom).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} to ${new Date(dateTo).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`
-    : 'dates flexible';
-
-  return `You are Vela, a world-class AI luxury travel concierge. Create a detailed, beautiful, and highly personalized travel itinerary based on the following client request.
-
-CLIENT DETAILS:
-- Dream trip description: "${dream}"
-- Destination: ${dest}
-- Travel dates: ${dates}
-- Travelers: ${adults} adult(s)${children>0?`, ${children} child(ren)`:''}
-- Departure city: ${depart}
-- Total budget: ${budget}
-- Travel tier: ${selectedTier}
-- Travel vibes & interests: ${vibes || 'open to suggestions'}
-- Special requests: ${special || 'none'}
-
-Please create a day-by-day itinerary that feels genuinely crafted for this specific client. Include:
-
-1. A brief evocative introduction (2-3 sentences) capturing the essence of this journey
-2. A complete day-by-day breakdown with:
-   - Morning, afternoon, and evening activities
-   - Specific hotel/accommodation recommendations (real properties)
-   - Restaurant recommendations (real restaurants where possible)
-   - Transportation between locations
-   - Any special experiences or unique moments
-3. Practical notes (best time to visit, what to pack, visa requirements if relevant)
-4. An estimated cost breakdown fitting the ${budget} budget
-
-Write in an elevated, inspiring tone that makes the client genuinely excited about this trip. Be specific — use real place names, real hotels, real restaurants. This should feel like it was written by someone who has actually been there.`;
-}
-
-// ─── AGENT ANIMATION ───
-function animateAgents(callback){
-  const agents=[
-    {id:'ga-1',label:'Scanning routes...'},
-    {id:'ga-2',label:'Finding properties...'},
-    {id:'ga-3',label:'Mapping transfers...'},
-    {id:'ga-4',label:'Sourcing dining...'},
-    {id:'ga-5',label:'Curating experiences...'},
-  ];
-  const statuses=['Initializing AI...','Analyzing your dream trip...','Building your itinerary...','Adding local expertise...','Finalizing details...'];
-  let i=0;
-  const statusEl=document.getElementById('genStatus');
-
-  agents.forEach((ag,idx)=>{
-    setTimeout(()=>{
-      document.getElementById(ag.id).textContent=ag.label;
-      document.getElementById(ag.id).className='agent-status';
-      if(statuses[idx]) statusEl.textContent=statuses[idx];
-    },idx*500);
-    setTimeout(()=>{
-      document.getElementById(ag.id).textContent='✓ Done';
-      document.getElementById(ag.id).className='agent-status done';
-    },idx*500+400);
-  });
-
-  setTimeout(()=>{
-    statusEl.textContent='Your itinerary is ready.';
-    setTimeout(callback, 400);
-  }, agents.length*500+300);
-}
-
-// ─── STREAM RESPONSE ───
-async function streamToElement(text, el){
-  el.textContent='';
-  const cursor=document.createElement('span');
-  cursor.className='stream-cursor';
-  el.appendChild(cursor);
-
-  const words=text.split('');
-  let i=0;
-  return new Promise(resolve=>{
-    function next(){
-      if(i<words.length){
-        cursor.before(words[i]);
-        i++;
-        el.parentElement.scrollTop=el.parentElement.scrollHeight;
-        setTimeout(next, i<50?8:i<200?4:2);
-      } else {
-        cursor.remove();
-        resolve();
-      }
-    }
-    next();
-  });
-}
-
-// ─── MAIN GENERATE ───
 async function generate(){
-  // Check usage limit
-  if(hasUsedFreeItinerary()){
-    const emailCaptured = localStorage.getItem('vela_email_captured');
-    if(!emailCaptured){
-      document.getElementById('emailModal').classList.add('show');
-      return;
-    }
-    // They've given email — show a friendly limit message
-    const alreadyUsed = confirm("You've used your free itinerary! Join our early access list for unlimited planning when Vela launches. Click OK to join the waitlist.");
-    if(alreadyUsed) window.location.href = 'vela-home.html';
-    return;
-  }
-  const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
+  if(localStorage.getItem(USED_KEY)==='true'&&!localStorage.getItem(EMAIL_KEY)){ document.getElementById('emailModal').classList.add('show'); return; }
 
-  // Hide all step panels, show result
-  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
-  const rp=document.getElementById('result-panel');
-  rp.style.display='block';
-  rp.classList.add('active');
+  state.dateFrom=document.getElementById('dateFrom').value;
+  state.dateTo=document.getElementById('dateTo').value;
+  state.adults=document.getElementById('adults').value||2;
+  state.children=document.getElementById('children').value||0;
+  state.budget=document.getElementById('budgetDisplay').textContent;
+  state.departCity=document.getElementById('departCity').value;
+
+  document.getElementById('step-4').classList.remove('active');
   document.getElementById('generating').style.display='flex';
-  document.getElementById('itinerary').style.display='none';
-  document.getElementById('errorBox').style.display='none';
-
-  // Update progress sidebar
-  document.querySelectorAll('.prog-step').forEach((s,i)=>{
-    s.classList.remove('active','done');
-    if(i<4) s.classList.add('done');
-    if(i===4) s.classList.add('active');
-  });
-
-  // Update meta
-  const dest=document.getElementById('destination').value||'Your Destination';
-  document.getElementById('itinTitle').innerHTML=dest+' <em>Awaits</em>';
-  document.getElementById('itinTier').textContent=selectedTier+' Tier';
-  document.getElementById('itinTravelers').textContent=(document.getElementById('adults').value||2)+' Traveler(s)';
-  document.getElementById('itinBudget').textContent=document.getElementById('budgetDisplay').textContent;
-  const f=document.getElementById('dateFrom').value;
-  const t=document.getElementById('dateTo').value;
-  document.getElementById('itinDates').textContent=f&&t?new Date(f).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Dates flexible';
-
+  setProgress(100);
   window.scrollTo({top:0,behavior:'smooth'});
 
-  // Animate agents then call backend
-  animateAgents(async()=>{
+  const dest=state.destination||'your destination';
+  document.getElementById('resultDest').innerHTML=dest+' <em>Awaits</em>';
+  document.getElementById('resultOccasion').textContent=state.occasion||'Trip';
+  document.getElementById('resultBudget').textContent=state.budget;
+  document.getElementById('resultTravelers').textContent=state.adults+' Traveler'+(state.adults>1?'s':'');
+  if(state.dateFrom&&state.dateTo){
+    const o={month:'short',day:'numeric'};
+    document.getElementById('resultDates').textContent=new Date(state.dateFrom).toLocaleDateString('en-US',o)+' – '+new Date(state.dateTo).toLocaleDateString('en-US',{...o,year:'numeric'});
+  } else { document.getElementById('resultDates').textContent='Dates flexible'; }
+
+  const agents=[{id:'gs-1',l:'Sourcing flights...'},{id:'gs-2',l:'Finding properties...'},{id:'gs-3',l:'Mapping transfers...'},{id:'gs-4',l:'Checking dining...'},{id:'gs-5',l:'Curating experiences...'}];
+  const statuses=['Understanding your trip...','Researching '+dest+'...','Building your itinerary...','Adding insider knowledge...','Almost ready...'];
+  agents.forEach((a,i)=>{
+    setTimeout(()=>{ document.getElementById(a.id).textContent=a.l; document.getElementById(a.id).className='gen-step-status active'; document.getElementById('genStatus').textContent=statuses[i]; },i*600);
+    setTimeout(()=>{ document.getElementById(a.id).textContent='✓'; document.getElementById(a.id).className='gen-step-status done'; },i*600+500);
+  });
+
+  const qContext=state.questions.map(q=>`${q.label} → ${state.answers[q.id]||'No preference'}`).join('\n');
+  const prompt=`You are Vela, a world-class AI luxury travel concierge with deep personal knowledge of destinations worldwide.
+
+TRIP DETAILS:
+- Occasion: ${state.occasion||'Trip'}
+- Destination: ${dest}
+- Dates: ${state.dateFrom&&state.dateTo?state.dateFrom+' to '+state.dateTo:'Flexible'}
+- Travelers: ${state.adults} adult${state.adults>1?'s':''} ${state.children>0?'+ '+state.children+' child(ren)':''}
+- Budget: ${state.budget}
+- Departing from: ${state.departCity||'Not specified'}
+
+CLIENT PREFERENCES (destination-specific):
+${qContext||'Open to expert recommendations'}
+
+CLIENT'S OWN WORDS:
+"${state.dreamText||'Create something extraordinary.'}"
+
+Create a day-by-day itinerary with:
+1. A 2-3 sentence evocative opening
+2. Full day-by-day breakdown (morning, afternoon, evening)
+3. Real specific hotel recommendations with a reason why
+4. Real restaurant names with a note on each
+5. Transfers and logistics
+6. 2-3 experiences beyond the obvious tourist trail
+7. One "Vela insider tip" per day — something only a true expert would share
+8. Cost breakdown matching ${state.budget}
+
+Write in an elevated, warm, personal tone. Make them feel the trip before they've left.`;
+
+  setTimeout(async()=>{
     document.getElementById('generating').style.display='none';
-    document.getElementById('itinerary').style.display='block';
+    document.getElementById('result').style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
 
-    const responseEl=document.getElementById('aiResponseBody');
-    responseEl.textContent='';
-
+    const bodyEl=document.getElementById('itineraryBody');
+    bodyEl.textContent='';
+    document.getElementById('errorBox').style.display='none';
     const cursor=document.createElement('span');
     cursor.className='stream-cursor';
-    responseEl.appendChild(cursor);
+    bodyEl.appendChild(cursor);
+
+    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     try {
-      const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
-
-      const tripData = {
-          dreamDescription: document.getElementById('dreamText')?.value || '',
-          destination: document.getElementById('destination').value || 'a beautiful destination',
-          departureDate: document.getElementById('dateFrom').value,
-          returnDate: document.getElementById('dateTo').value,
-          departureCity: document.getElementById('departCity')?.value || '',
-          adults: document.getElementById('adults').value || 2,
-          children: document.getElementById('children').value || 0,
-          budget: document.getElementById('budgetDisplay').textContent,
-          tier: selectedTier,
-          vibes: [...document.querySelectorAll('.chip.selected')].map(c=>c.textContent.trim()),
-          specialRequests: document.getElementById('specialRequests')?.value || ''
-        };
-
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
       if(isMobile){
-        // Mobile: use non-streaming endpoint
         cursor.remove();
-        responseEl.textContent='';
-        responseEl.textContent='Crafting your itinerary... this takes about 30 seconds on mobile.';
-
-        const response = await fetch(`${BACKEND}/ai/generate-simple`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(tripData)
+        bodyEl.textContent='Crafting your itinerary — about 30 seconds on mobile...';
+        const res=await fetch(`${BACKEND}/ai/generate-simple`,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({dreamDescription:prompt,destination:dest,departureDate:state.dateFrom,returnDate:state.dateTo,departureCity:state.departCity,adults:state.adults,children:state.children,budget:state.budget,tier:'premier'})
         });
-
-        if(!response.ok){
-          const err=await response.json().catch(()=>({error:'Generation failed'}));
-          throw new Error(err.error || 'Generation failed');
-        }
-
-        const data = await response.json();
-        responseEl.textContent = data.itinerary || 'No itinerary generated.';
-        markItineraryUsed();
-        showEmailModal();
-
+        if(!res.ok) throw new Error('Generation failed');
+        const data=await res.json();
+        bodyEl.textContent=data.itinerary||'No itinerary generated.';
       } else {
-        // Desktop: use streaming
-        const response = await fetch(`${BACKEND}/ai/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(tripData)
+        const res=await fetch(`${BACKEND}/ai/generate`,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({dreamDescription:prompt,destination:dest,departureDate:state.dateFrom,returnDate:state.dateTo,departureCity:state.departCity,adults:state.adults,children:state.children,budget:state.budget,tier:'premier'})
         });
-
-        if(!response.ok){
-          const err=await response.json().catch(()=>({error:'Generation failed'}));
-          throw new Error(err.error || 'Generation failed');
-        }
-
-        cursor.remove();
-        responseEl.textContent='';
-
-        const reader=response.body.getReader();
+        if(!res.ok) throw new Error('Generation failed');
+        cursor.remove(); bodyEl.textContent='';
+        const reader=res.body.getReader();
         const decoder=new TextDecoder();
-        let buffer='';
-
+        let buf='';
         while(true){
           const {done,value}=await reader.read();
           if(done) break;
-          buffer+=decoder.decode(value,{stream:true});
-          const lines=buffer.split('\n');
-          buffer=lines.pop();
+          buf+=decoder.decode(value,{stream:true});
+          const lines=buf.split('\n'); buf=lines.pop();
           for(const line of lines){
             if(line.startsWith('data: ')){
-              const data=line.slice(6);
-              try{
-                const parsed=JSON.parse(data);
-                if(parsed.type==='text'){
-                  responseEl.textContent+=parsed.delta?.text || parsed.text || '';
-                  responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
-                }
-                if(parsed.type==='done'){ markItineraryUsed(); showEmailModal(); }
-              } catch(e){}
+              try{ const p=JSON.parse(line.slice(6)); if(p.type==='text'){ bodyEl.textContent+=p.text||''; bodyEl.parentElement.scrollTop=bodyEl.parentElement.scrollHeight; } } catch(e){}
             }
           }
         }
-        markItineraryUsed();
-        showEmailModal();
       }
 
+      localStorage.setItem(USED_KEY,'true');
+      document.getElementById('upsellSection').style.display='block';
+      if(!localStorage.getItem(EMAIL_KEY)){ setTimeout(()=>document.getElementById('emailModal').classList.add('show'),2500); }
+
     } catch(err){
-      cursor.remove();
-      responseEl.textContent='';
+      cursor.remove(); bodyEl.textContent='';
       document.getElementById('errorBox').style.display='block';
-      document.getElementById('errorMsg').textContent=
-        err.message.includes('401') ? 'Authentication error. Please refresh and try again.' :
-        err.message.includes('Failed to fetch') ? 'Cannot connect to Vela server. Please try again in a moment.' :
-        'Error: '+err.message;
+      document.getElementById('errorMsg').textContent='Something went wrong. Please try again in a moment. If the issue continues, try refreshing the page.';
     }
-  });
+  }, agents.length*600+600);
 }
 
-
-// ─── USAGE LIMIT ───
-const USED_KEY = 'vela_itinerary_used';
-const EMAIL_KEY = 'vela_email_captured';
-
-function hasUsedFreeItinerary(){
-  return localStorage.getItem(USED_KEY) === 'true';
-}
-
-function markItineraryUsed(){
-  localStorage.setItem(USED_KEY, 'true');
-}
-
-// ─── EMAIL MODAL ───
-function showEmailModal(){
-  const alreadyCaptured = localStorage.getItem(EMAIL_KEY);
-  if(alreadyCaptured) return; // Don't show again if already captured
-  setTimeout(()=>{
-    document.getElementById('emailModal').classList.add('show');
-  }, 2000); // Show 2 seconds after itinerary appears
-}
-
-function closeModal(){
-  document.getElementById('emailModal').classList.remove('show');
-}
+function closeModal(){ document.getElementById('emailModal').classList.remove('show'); }
 
 function submitEmail(){
-  const email = document.getElementById('modalEmail').value.trim();
-  const name  = document.getElementById('modalName').value.trim();
-  if(!email){
-    document.getElementById('modalEmail').style.borderColor='rgba(224,128,128,.5)';
-    return;
-  }
-  // Save locally
-  localStorage.setItem(EMAIL_KEY, email);
-  // Send to backend
-  fetch('https://vela-backend-production-af0a.up.railway.app/api/waitlist', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ email, name, source: 'planner' })
-  }).catch(()=>{}); // Silent fail — email is saved locally regardless
-
-  // Show success and close
-  document.getElementById('emailModal').innerHTML = `
-    <div style="text-align:center;padding:1rem 0">
-      <div style="font-size:2.5rem;margin-bottom:1.25rem">✦</div>
-      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem">You're on the list.</h2>
-      <p style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.06em;line-height:1.8;margin-bottom:1.5rem">We'll notify you the moment Vela launches with full booking. Your itinerary is below.</p>
-      <button onclick="closeModal()" style="background:var(--gold);color:var(--obsidian);border:none;padding:.875rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;cursor:none;width:100%">View My Itinerary →</button>
-    </div>
-  `;
-  setTimeout(closeModal, 3000);
+  const email=document.getElementById('modalEmail').value.trim();
+  const name=document.getElementById('modalName').value.trim();
+  if(!email){ document.getElementById('modalEmail').style.borderColor='rgba(224,128,128,.4)'; return; }
+  localStorage.setItem(EMAIL_KEY,email);
+  fetch(`${BACKEND}/waitlist`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,source:'planner',destination:state.destination,occasion:state.occasion})}).catch(()=>{});
+  document.querySelector('.modal').innerHTML=`<div style="text-align:center;padding:1.5rem 0"><div style="font-size:2.5rem;margin-bottom:1.25rem">✦</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem">You're on the list.</h2><p style="font-size:.7rem;color:var(--ivory-dim);letter-spacing:.06em;line-height:1.8;margin-bottom:1.75rem">We'll reach out the moment Vela launches with full booking.</p><button onclick="closeModal()" style="background:var(--gold);color:var(--obsidian);border:none;padding:.95rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;cursor:pointer;width:100%;touch-action:manipulation">View My Itinerary →</button></div>`;
+  setTimeout(closeModal,3000);
 }
 
 function restart(){
-  document.getElementById('result-panel').style.display='none';
-  document.getElementById('result-panel').classList.remove('active');
-  goTo(1);
+  state={occasion:'',destination:'',questions:[],answers:{},dreamText:'',dateFrom:'',dateTo:'',adults:2,children:0,budget:'$10,000',departCity:''};
+  document.querySelectorAll('.occasion-tile,.dest-chip,.q-opt').forEach(e=>e.classList.remove('selected'));
+  document.getElementById('destinationInput').value='';
+  document.getElementById('result').style.display='none';
+  document.getElementById('generating').style.display='none';
+  document.getElementById('upsellSection').style.display='none';
+  document.getElementById('step-1').classList.add('active');
+  currentStep=1; setProgress(25);
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// Init
-updateTravelers();
-document.getElementById('sum-tier').innerHTML='Premier';
+updateBudget(30);
 </script>
 </body>
 </html>
