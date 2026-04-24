@@ -27,21 +27,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content
 .nav-back{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ivory-dim);text-decoration:none;display:flex;align-items:center;gap:.75rem;transition:color .3s;cursor:none}
 .nav-back:hover{color:var(--gold)}
 
-/* API KEY BANNER */
-.api-banner{background:linear-gradient(135deg,rgba(201,169,110,.1),rgba(201,169,110,.04));border:1px solid var(--glass-border);padding:1rem 2rem;display:flex;align-items:center;gap:1.5rem;margin:0;position:relative;z-index:1;margin-top:65px}
-.api-banner-text{font-size:.68rem;letter-spacing:.06em;color:var(--ivory-dim);flex:1}
-.api-banner-text strong{color:var(--gold)}
-.api-input{background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.72rem;padding:.6rem 1rem;outline:none;width:340px;letter-spacing:.04em;transition:border-color .3s}
-.api-input:focus{border-color:var(--gold)}
-.api-input::placeholder{color:var(--gold-dim)}
-.api-save-btn{background:var(--gold);color:var(--obsidian);border:none;padding:.6rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;cursor:none;transition:all .3s;white-space:nowrap}
-.api-save-btn:hover{background:var(--gold-light)}
-.api-status{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
-.api-status.set{color:var(--success)}
-.api-status.unset{color:var(--gold-dim)}
+
 
 /* LAYOUT */
-.planner-layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:calc(100vh - 65px)}
+.planner-layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
 
 /* SIDEBAR */
 .sidebar{background:rgba(201,169,110,.03);border-right:1px solid var(--glass-border);padding:2.5rem 2rem;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;display:flex;flex-direction:column;gap:2rem}
@@ -180,13 +169,30 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
 .error-box{background:rgba(212,100,100,.08);border:1px solid rgba(212,100,100,.25);padding:1.5rem 2rem;margin-top:1.5rem}
 .error-box p{font-size:.72rem;color:#e08080;letter-spacing:.05em;line-height:1.7}
 
+
+/* EMAIL CAPTURE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,5,5,.88);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .4s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--obsidian);border:1px solid var(--glass-border);padding:3rem;max-width:480px;width:90%;position:relative;overflow:hidden;animation:panelIn .5s ease forwards}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory);margin-bottom:.5rem}
+.modal-title em{font-style:italic;color:var(--gold)}
+.modal-sub{font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:2rem}
+.modal-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.82rem;padding:1rem 1.25rem;outline:none;transition:border-color .3s;letter-spacing:.04em;margin-bottom:1rem}
+.modal-input:focus{border-color:var(--gold)}
+.modal-input::placeholder{color:rgba(201,169,110,.3)}
+.modal-btn{width:100%;background:var(--gold);color:var(--obsidian);border:none;padding:1.1rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.28em;text-transform:uppercase;font-weight:500;cursor:none;transition:all .3s}
+.modal-btn:hover{background:var(--gold-light)}
+.modal-skip{display:block;text-align:center;margin-top:1rem;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);cursor:none;background:none;border:none;font-family:'Montserrat',sans-serif;width:100%;transition:color .3s}
+.modal-skip:hover{color:var(--gold)}
+
 @media(max-width:900px){
   .planner-layout{grid-template-columns:1fr}
   .sidebar{display:none}
   .main-content{padding:2rem 1.5rem}
   .tier-cards{grid-template-columns:1fr}
   nav{padding:1.25rem 1.5rem}
-  .api-banner{flex-wrap:wrap;gap:1rem}
+  
   .api-input{width:100%}
 }
 </style>
@@ -454,7 +460,20 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
           <button class="btn-modify" onclick="restart()">← Modify Journey</button>
         </div>
       </div>
-    </div>
+    
+<!-- EMAIL CAPTURE MODAL -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <h2 class="modal-title">Your itinerary<br>is <em>ready.</em></h2>
+    <p class="modal-sub">Enter your email and we'll save it for you — plus keep you updated when Vela launches with full booking, payments, and your personal travel profile.</p>
+    <input class="modal-input" type="email" id="modalEmail" placeholder="your@email.com" autocomplete="email">
+    <input class="modal-input" type="text" id="modalName" placeholder="Your first name" style="margin-bottom:1.5rem">
+    <button class="modal-btn" onclick="submitEmail()">Save My Itinerary ✦</button>
+    <button class="modal-skip" onclick="closeModal()">No thanks, just show me the itinerary</button>
+  </div>
+</div>
+
+</div>
 
   </main>
 </div>
@@ -635,6 +654,18 @@ async function streamToElement(text, el){
 
 // ─── MAIN GENERATE ───
 async function generate(){
+  // Check usage limit
+  if(hasUsedFreeItinerary()){
+    const emailCaptured = localStorage.getItem('vela_email_captured');
+    if(!emailCaptured){
+      document.getElementById('emailModal').classList.add('show');
+      return;
+    }
+    // They've given email — show a friendly limit message
+    const alreadyUsed = confirm("You've used your free itinerary! Join our early access list for unlimited planning when Vela launches. Click OK to join the waitlist.");
+    if(alreadyUsed) window.location.href = 'vela-home.html';
+    return;
+  }
   const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
 
   // Hide all step panels, show result
@@ -726,6 +757,7 @@ async function generate(){
                 responseEl.textContent+=parsed.text;
                 responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
               }
+              if(parsed.type==='done'){ markItineraryUsed(); showEmailModal(); }
               if(parsed.type==='error') throw new Error(parsed.message);
             } catch(e){ if(e.message && e.message !== 'Unexpected end of JSON input') throw e; }
           }
@@ -742,6 +774,60 @@ async function generate(){
         'Error: '+err.message;
     }
   });
+}
+
+
+// ─── USAGE LIMIT ───
+const USED_KEY = 'vela_itinerary_used';
+const EMAIL_KEY = 'vela_email_captured';
+
+function hasUsedFreeItinerary(){
+  return localStorage.getItem(USED_KEY) === 'true';
+}
+
+function markItineraryUsed(){
+  localStorage.setItem(USED_KEY, 'true');
+}
+
+// ─── EMAIL MODAL ───
+function showEmailModal(){
+  const alreadyCaptured = localStorage.getItem(EMAIL_KEY);
+  if(alreadyCaptured) return; // Don't show again if already captured
+  setTimeout(()=>{
+    document.getElementById('emailModal').classList.add('show');
+  }, 2000); // Show 2 seconds after itinerary appears
+}
+
+function closeModal(){
+  document.getElementById('emailModal').classList.remove('show');
+}
+
+function submitEmail(){
+  const email = document.getElementById('modalEmail').value.trim();
+  const name  = document.getElementById('modalName').value.trim();
+  if(!email){
+    document.getElementById('modalEmail').style.borderColor='rgba(224,128,128,.5)';
+    return;
+  }
+  // Save locally
+  localStorage.setItem(EMAIL_KEY, email);
+  // Send to backend
+  fetch('https://vela-backend-production-af0a.up.railway.app/api/waitlist', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email, name, source: 'planner' })
+  }).catch(()=>{}); // Silent fail — email is saved locally regardless
+
+  // Show success and close
+  document.getElementById('emailModal').innerHTML = `
+    <div style="text-align:center;padding:1rem 0">
+      <div style="font-size:2.5rem;margin-bottom:1.25rem">✦</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem">You're on the list.</h2>
+      <p style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.06em;line-height:1.8;margin-bottom:1.5rem">We'll notify you the moment Vela launches with full booking. Your itinerary is below.</p>
+      <button onclick="closeModal()" style="background:var(--gold);color:var(--obsidian);border:none;padding:.875rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;cursor:none;width:100%">View My Itinerary →</button>
+    </div>
+  `;
+  setTimeout(closeModal, 3000);
 }
 
 function restart(){
