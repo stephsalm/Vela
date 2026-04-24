@@ -730,10 +730,7 @@ async function generate(){
     try {
       const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
 
-      const response = await fetch(`${BACKEND}/ai/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const tripData = {
           dreamDescription: document.getElementById('dreamText')?.value || '',
           destination: document.getElementById('destination').value || 'a beautiful destination',
           departureDate: document.getElementById('dateFrom').value,
@@ -745,43 +742,75 @@ async function generate(){
           tier: selectedTier,
           vibes: [...document.querySelectorAll('.chip.selected')].map(c=>c.textContent.trim()),
           specialRequests: document.getElementById('specialRequests')?.value || ''
-        })
-      });
+        };
 
-      if(!response.ok){
-        const err=await response.json();
-        throw new Error(err.error || 'Generation failed');
-      }
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-      cursor.remove();
-      responseEl.textContent='';
+      if(isMobile){
+        // Mobile: use non-streaming endpoint
+        cursor.remove();
+        responseEl.textContent='';
+        responseEl.textContent='Crafting your itinerary... this takes about 30 seconds on mobile.';
 
-      const reader=response.body.getReader();
-      const decoder=new TextDecoder();
-      let buffer='';
+        const response = await fetch(`${BACKEND}/ai/generate-simple`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tripData)
+        });
 
-      while(true){
-        const {done,value}=await reader.read();
-        if(done) break;
-        buffer+=decoder.decode(value,{stream:true});
-        const lines=buffer.split('\n');
-        buffer=lines.pop();
-        for(const line of lines){
-          if(line.startsWith('data: ')){
-            const data=line.slice(6);
-            try{
-              const parsed=JSON.parse(data);
-              if(parsed.type==='text'){
-                responseEl.textContent+=parsed.delta?.text || parsed.text || '';
-                responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
-              }
-              if(parsed.type==='done'){ markItineraryUsed(); showEmailModal(); }
-            } catch(e){}
+        if(!response.ok){
+          const err=await response.json().catch(()=>({error:'Generation failed'}));
+          throw new Error(err.error || 'Generation failed');
+        }
+
+        const data = await response.json();
+        responseEl.textContent = data.itinerary || 'No itinerary generated.';
+        markItineraryUsed();
+        showEmailModal();
+
+      } else {
+        // Desktop: use streaming
+        const response = await fetch(`${BACKEND}/ai/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tripData)
+        });
+
+        if(!response.ok){
+          const err=await response.json().catch(()=>({error:'Generation failed'}));
+          throw new Error(err.error || 'Generation failed');
+        }
+
+        cursor.remove();
+        responseEl.textContent='';
+
+        const reader=response.body.getReader();
+        const decoder=new TextDecoder();
+        let buffer='';
+
+        while(true){
+          const {done,value}=await reader.read();
+          if(done) break;
+          buffer+=decoder.decode(value,{stream:true});
+          const lines=buffer.split('\n');
+          buffer=lines.pop();
+          for(const line of lines){
+            if(line.startsWith('data: ')){
+              const data=line.slice(6);
+              try{
+                const parsed=JSON.parse(data);
+                if(parsed.type==='text'){
+                  responseEl.textContent+=parsed.delta?.text || parsed.text || '';
+                  responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
+                }
+                if(parsed.type==='done'){ markItineraryUsed(); showEmailModal(); }
+              } catch(e){}
+            }
           }
         }
+        markItineraryUsed();
+        showEmailModal();
       }
-      markItineraryUsed();
-      showEmailModal();
 
     } catch(err){
       cursor.remove();
