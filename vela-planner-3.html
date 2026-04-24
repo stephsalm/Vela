@@ -201,15 +201,7 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
   <a href="vela-home.html" class="nav-back">← Back to Home</a>
 </nav>
 
-<!-- API KEY BANNER -->
-<div class="api-banner">
-  <div class="api-banner-text">
-    <strong>Connect your AI</strong> — Enter your Anthropic API key to activate real itinerary generation. Your key is stored locally and never sent anywhere except directly to Anthropic.
-  </div>
-  <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
-  <button class="api-save-btn" onclick="saveApiKey()">Save Key</button>
-  <span class="api-status unset" id="apiStatus">● Not set</span>
-</div>
+
 
 <div class="planner-layout">
 
@@ -478,22 +470,7 @@ document.querySelectorAll('a,button,input,textarea').forEach(el=>{
   el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(201,169,110,.4)';});
 });
 
-// ─── API KEY ───
-let API_KEY = localStorage.getItem('vela_api_key') || '';
-if(API_KEY){
-  document.getElementById('apiKeyInput').value = API_KEY;
-  document.getElementById('apiStatus').textContent = '● Connected';
-  document.getElementById('apiStatus').className = 'api-status set';
-}
-function saveApiKey(){
-  API_KEY = document.getElementById('apiKeyInput').value.trim();
-  if(!API_KEY){return;}
-  localStorage.setItem('vela_api_key', API_KEY);
-  document.getElementById('apiStatus').textContent = '● Connected';
-  document.getElementById('apiStatus').className = 'api-status set';
-}
-
-// ─── STATE ───
+// Init
 let currentStep = 1;
 let selectedTier = 'Premier';
 
@@ -658,10 +635,7 @@ async function streamToElement(text, el){
 
 // ─── MAIN GENERATE ───
 async function generate(){
-  if(!API_KEY){
-    alert('Please enter your Anthropic API key in the banner at the top of the page first.');
-    return;
-  }
+  const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
 
   // Hide all step panels, show result
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
@@ -691,7 +665,7 @@ async function generate(){
 
   window.scrollTo({top:0,behavior:'smooth'});
 
-  // Animate agents then call API
+  // Animate agents then call backend
   animateAgents(async()=>{
     document.getElementById('generating').style.display='none';
     document.getElementById('itinerary').style.display='block';
@@ -699,40 +673,40 @@ async function generate(){
     const responseEl=document.getElementById('aiResponseBody');
     responseEl.textContent='';
 
-    // Add streaming cursor
     const cursor=document.createElement('span');
     cursor.className='stream-cursor';
     responseEl.appendChild(cursor);
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(`${BACKEND}/ai/generate`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          stream: true,
-          messages: [{
-            role: 'user',
-            content: buildPrompt()
-          }]
+          dreamDescription: document.getElementById('dreamText')?.value || '',
+          destination: document.getElementById('destination').value,
+          departureDate: document.getElementById('dateFrom').value,
+          returnDate: document.getElementById('dateTo').value,
+          departureCity: document.getElementById('departCity')?.value || '',
+          adults: document.getElementById('adults').value || 2,
+          children: document.getElementById('children').value || 0,
+          budget: document.getElementById('budgetDisplay').textContent,
+          tier: selectedTier,
+          vibes: [...document.querySelectorAll('.chip.selected')].map(c=>c.textContent.trim()),
+          specialRequests: document.getElementById('specialRequests')?.value || ''
         })
       });
 
       if(!response.ok){
         const err=await response.json();
-        throw new Error(err.error?.message || 'API error '+response.status);
+        throw new Error(err.error || 'Generation failed');
       }
 
       cursor.remove();
       responseEl.textContent='';
 
-      // Handle streaming
+      // Handle streaming from backend
       const reader=response.body.getReader();
       const decoder=new TextDecoder();
       let buffer='';
@@ -740,22 +714,20 @@ async function generate(){
       while(true){
         const {done,value}=await reader.read();
         if(done) break;
-
         buffer+=decoder.decode(value,{stream:true});
         const lines=buffer.split('\n');
         buffer=lines.pop();
-
         for(const line of lines){
           if(line.startsWith('data: ')){
             const data=line.slice(6);
-            if(data==='[DONE]') continue;
             try{
               const parsed=JSON.parse(data);
-              if(parsed.type==='content_block_delta' && parsed.delta?.type==='text_delta'){
-                responseEl.textContent+=parsed.delta.text;
+              if(parsed.type==='text'){
+                responseEl.textContent+=parsed.text;
                 responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
               }
-            } catch(e){}
+              if(parsed.type==='error') throw new Error(parsed.message);
+            } catch(e){ if(e.message && e.message !== 'Unexpected end of JSON input') throw e; }
           }
         }
       }
@@ -765,9 +737,8 @@ async function generate(){
       responseEl.textContent='';
       document.getElementById('errorBox').style.display='block';
       document.getElementById('errorMsg').textContent=
-        err.message.includes('401') ? 'Invalid API key. Please check your Anthropic API key and try again.' :
-        err.message.includes('429') ? 'Rate limit reached. Please wait a moment and try again.' :
-        err.message.includes('Failed to fetch') ? 'Connection error. Make sure you\'re running this from a local server (not just opening the file directly). Try: npx serve . in your project folder.' :
+        err.message.includes('401') ? 'Authentication error. Please refresh and try again.' :
+        err.message.includes('Failed to fetch') ? 'Cannot connect to Vela server. Please try again in a moment.' :
         'Error: '+err.message;
     }
   });
