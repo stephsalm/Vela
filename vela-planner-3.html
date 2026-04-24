@@ -215,7 +215,7 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
   <aside class="sidebar">
     <div>
       <h2 class="sidebar-title">Your <em>journey</em> begins here.</h2>
-      <p class="sidebar-sub">Complete each step and Vela's AI will craft your perfect itinerary in real time.</p>
+      <p class="sidebar-sub">Tell us about your dream trip and Vela will generate a personalized itinerary instantly — free.</p>
     </div>
     <div class="progress-steps" id="progressSteps">
       <div class="prog-step active" data-step="1">
@@ -232,7 +232,7 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
       </div>
       <div class="prog-step" data-step="4">
         <div class="prog-circle">04</div>
-        <div class="prog-label">Choose Your Tier</div>
+        <div class="prog-label">Almost There</div>
       </div>
       <div class="prog-step" data-step="5">
         <div class="prog-circle">✦</div>
@@ -378,39 +378,28 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
     <!-- STEP 4 -->
     <div class="step-panel" id="panel-4">
       <p class="panel-eyebrow">Step 04</p>
-      <h1 class="panel-title">Choose your<br><em>tier.</em></h1>
-      <p class="panel-sub">Every tier generates a full AI itinerary. Higher tiers unlock autonomous booking and dedicated support.</p>
-      <div class="tier-cards">
-        <button class="tier-card" onclick="selectTier(this,'Explorer')">
-          <span class="tier-icon">🌍</span>
-          <div class="tier-name">Explorer</div>
-          <p class="tier-desc">AI itinerary + recommendations. You handle the bookings yourself.</p>
-          <div class="tier-price">Free</div>
-          <div class="tier-price-note">Or $49 per trip</div>
-        </button>
-        <button class="tier-card selected" onclick="selectTier(this,'Premier')">
-          <span class="tier-icon">✈</span>
-          <div class="tier-name">Premier</div>
-          <p class="tier-desc">Full autonomous booking. Agents handle everything for you.</p>
-          <div class="tier-price">$99</div>
-          <div class="tier-price-note">Per month</div>
-        </button>
-        <button class="tier-card" onclick="selectTier(this,'Elite')">
-          <span class="tier-icon">💎</span>
-          <div class="tier-name">Elite</div>
-          <p class="tier-desc">Premier + private aviation + dedicated human concierge.</p>
-          <div class="tier-price">$499</div>
-          <div class="tier-price-note">Per month</div>
-        </button>
-      </div>
+      <h1 class="panel-title">Almost there —<br><em>one last thing.</em></h1>
+      <p class="panel-sub">Tell us where you're flying from and we'll generate your personalized itinerary instantly. Free to start.</p>
+
       <div class="field-group">
         <label class="field-label">Departure City</label>
         <input class="text-input" id="departCity" type="text" placeholder="e.g. New York (JFK), Los Angeles (LAX), Miami (MIA)...">
       </div>
+
+      <div class="field-group">
+        <label class="field-label">Anything else we should know?</label>
+        <input class="text-input" id="specialRequests" type="text" placeholder="Anniversary trip, dietary needs, accessibility, surprise element...">
+      </div>
+
+      <div style="background:rgba(201,169,110,.06);border:1px solid var(--glass-border);padding:1.5rem 2rem;margin-top:1rem">
+        <div style="font-size:.55rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">✦ Free to generate</div>
+        <div style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.7">Your first itinerary is completely free. After you see it, we'll show you how to unlock full booking, transfers, dining reservations and more.</div>
+      </div>
+
       <div class="panel-nav">
         <button class="btn-back" onclick="goTo(3)">← Back</button>
         <span class="step-ind">Step 4 of 4</span>
-        <button class="btn-next" onclick="generate()" id="generateBtn">Summon Vela ✦</button>
+        <button class="btn-next" onclick="generate()" id="generateBtn">Generate My Itinerary ✦</button>
       </div>
     </div>
 
@@ -456,8 +445,33 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
         </div>
 
         <div class="action-row">
-          <button class="btn-confirm" onclick="alert('In the live product this would connect to booking APIs and confirm all reservations autonomously.')">Confirm & Book All ✦</button>
-          <button class="btn-modify" onclick="restart()">← Modify Journey</button>
+          <button class="btn-modify" onclick="restart()">← Plan Another Trip</button>
+        </div>
+
+        <!-- PRICING UPSELL -->
+        <div style="margin-top:2.5rem;background:linear-gradient(135deg,rgba(201,169,110,.1),rgba(201,169,110,.04));border:1px solid var(--gold-dim);padding:2.5rem;position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)"></div>
+          <div style="font-size:.55rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">✦ Want Vela to book all of this for you?</div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem;line-height:1.2">Upgrade to Premier and our AI agents handle <em style="font-style:italic;color:var(--gold)">everything.</em></h3>
+          <p style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:2rem;max-width:580px">Flights booked. Hotels reserved. Transfers arranged. Restaurants secured. One confirmation from you — agents do the rest. $99/month, cancel any time.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-bottom:2rem">
+            <div style="background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.25rem;text-align:center">
+              <div style="font-size:1.4rem;margin-bottom:.5rem">✈</div>
+              <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-dim)">Autonomous Booking</div>
+            </div>
+            <div style="background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.25rem;text-align:center">
+              <div style="font-size:1.4rem;margin-bottom:.5rem">🍽</div>
+              <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-dim)">Dining Reservations</div>
+            </div>
+            <div style="background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.25rem;text-align:center">
+              <div style="font-size:1.4rem;margin-bottom:.5rem">🚗</div>
+              <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ivory-dim)">All Transfers</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap">
+            <a href="vela-pricing.html" style="display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:1rem 2.5rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;text-decoration:none;cursor:none;transition:all .3s">Upgrade to Premier — $99/mo</a>
+            <a href="vela-pricing.html" style="display:inline-flex;align-items:center;gap:.75rem;background:transparent;color:var(--gold);padding:1rem 2rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;border:1px solid var(--gold-dim);text-decoration:none;cursor:none;transition:all .3s">View All Plans →</a>
+          </div>
         </div>
       </div>
     
