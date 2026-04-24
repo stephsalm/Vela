@@ -709,14 +709,14 @@ async function generate(){
     responseEl.appendChild(cursor);
 
     try {
+      const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
+
       const response = await fetch(`${BACKEND}/ai/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dreamDescription: document.getElementById('dreamText')?.value || '',
-          destination: document.getElementById('destination').value,
+          destination: document.getElementById('destination').value || 'a beautiful destination',
           departureDate: document.getElementById('dateFrom').value,
           returnDate: document.getElementById('dateTo').value,
           departureCity: document.getElementById('departCity')?.value || '',
@@ -737,7 +737,6 @@ async function generate(){
       cursor.remove();
       responseEl.textContent='';
 
-      // Handle streaming from backend
       const reader=response.body.getReader();
       const decoder=new TextDecoder();
       let buffer='';
@@ -754,15 +753,16 @@ async function generate(){
             try{
               const parsed=JSON.parse(data);
               if(parsed.type==='text'){
-                responseEl.textContent+=parsed.text;
+                responseEl.textContent+=parsed.delta?.text || parsed.text || '';
                 responseEl.parentElement.scrollTop=responseEl.parentElement.scrollHeight;
               }
               if(parsed.type==='done'){ markItineraryUsed(); showEmailModal(); }
-              if(parsed.type==='error') throw new Error(parsed.message);
-            } catch(e){ if(e.message && e.message !== 'Unexpected end of JSON input') throw e; }
+            } catch(e){}
           }
         }
       }
+      markItineraryUsed();
+      showEmailModal();
 
     } catch(err){
       cursor.remove();
