@@ -391,6 +391,440 @@ function selectOccasion(el,occasion){ document.querySelectorAll('.occasion-tile'
 function setDest(el,dest){ document.getElementById('destinationInput').value=dest; document.querySelectorAll('.dest-chip').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); state.destination=dest; }
 
 
+
+// ── REGIONAL DESTINATIONS ──
+const REGIONS = {
+  'new zealand': {
+    label: 'New Zealand has two dramatically different islands. Which calls to you?',
+    options: [
+      { value: 'North Island only', label: 'North Island', desc: 'Auckland, Rotorua geothermal, Hobbiton, Bay of Islands, Wellington. More cosmopolitan, Māori culture, volcanic landscapes.' },
+      { value: 'South Island only', label: 'South Island', desc: 'Queenstown, Fiordland, Milford Sound, Glacier Country, Marlborough wine region. More dramatic — mountains, fjords, adventure.' },
+      { value: 'Both islands — split evenly', label: 'Both Islands', desc: 'Experience the full picture. Split your time between the culture and warmth of the North and the raw drama of the South.' },
+      { value: 'South Island focus with a day or two in Auckland', label: 'Mostly South', desc: 'Fly into Auckland, spend a night, then head south for the dramatic landscapes most people come to NZ for.' },
+    ]
+  },
+  'japan': {
+    label: 'Japan is vast with distinct regions. Where does your heart pull you?',
+    options: [
+      { value: 'Tokyo and surrounds', label: 'Tokyo Region', desc: 'Ultra-modern Tokyo, Nikko temples, Hakone and Mt Fuji, Kamakura. The pulse of Japan.' },
+      { value: 'Kyoto, Osaka and the Kansai region', label: 'Kansai (Kyoto & Osaka)', desc: 'Ancient temples, tea ceremonies, geisha districts, the world\'s best street food. Traditional Japan.' },
+      { value: 'Classic Japan route — Tokyo to Kyoto', label: 'Classic Route', desc: 'Tokyo → Hakone → Kyoto → Osaka by Shinkansen. The journey most first-timers take for good reason.' },
+      { value: 'Off the beaten path — Hokkaido or Tohoku', label: 'Rural Japan', desc: 'Snow festivals in Hokkaido, ryokans with no other foreigners, Japan as it was before tourism. For the adventurous.' },
+      { value: 'All of Japan — multiple regions', label: 'Full Japan', desc: 'A longer trip covering multiple regions. Requires at least 14 days to do justice.' },
+    ]
+  },
+  'bali': {
+    label: 'Bali means something different depending on where you are. What are you looking for?',
+    options: [
+      { value: 'Seminyak and Canggu', label: 'Seminyak & Canggu', desc: 'Beach clubs, world-class restaurants, surf, boutique shopping, vibrant nightlife. The stylish side of Bali.' },
+      { value: 'Ubud and the rice terraces', label: 'Ubud', desc: 'Jungle, rice terraces, yoga retreats, spiritual healing, arts and culture. The soul of Bali.' },
+      { value: 'Nusa Penida and the islands', label: 'The Islands', desc: 'Raw, dramatic cliffs, pristine diving, Kelingking Beach. Less developed and more adventurous.' },
+      { value: 'All of Bali — south, Ubud and the islands', label: 'All of Bali', desc: 'The complete experience — beach, culture, and island adventure. Best with 10+ days.' },
+    ]
+  },
+  'greece': {
+    label: 'Greece has dozens of islands and a rich mainland. Which experience speaks to you?',
+    options: [
+      { value: 'Santorini and Mykonos', label: 'Santorini & Mykonos', desc: 'The iconic Greek islands — caldera views, white-washed villages, luxury, and nightlife. The postcard version.' },
+      { value: 'Athens and the mainland', label: 'Athens & Mainland', desc: 'Ancient history, the Acropolis, Delphi, Meteora monasteries, authentic Greek culture.' },
+      { value: 'The lesser-known islands — Crete, Milos, or Naxos', label: 'Hidden Islands', desc: 'Fewer tourists, more authentic, stunning landscapes. Crete alone could fill two weeks.' },
+      { value: 'Islands and mainland combined', label: 'Full Greece', desc: 'Athens, a classic island or two, and perhaps a lesser-known gem. Needs at least 10 days.' },
+    ]
+  },
+  'italy': {
+    label: 'Italy rewards those who choose their region with intention. What draws you?',
+    options: [
+      { value: 'Rome and Ancient Italy', label: 'Rome', desc: 'The Colosseum, Vatican, Trastevere, ancient history layered over centuries. Italy\'s eternal city.' },
+      { value: 'Florence and Tuscany', label: 'Tuscany', desc: 'Renaissance art, rolling vineyards, Chianti, medieval hill towns, the most beautiful countryside in Europe.' },
+      { value: 'Amalfi Coast and Naples', label: 'Amalfi & Naples', desc: 'Dramatic cliffside villages, Positano, Ravello, the best pizza on earth in Naples, Pompeii.' },
+      { value: 'Venice and the North', label: 'Venice & North', desc: 'Canals, gondolas, Dolomites, Lake Como, Milan. Italy\'s sophisticated north.' },
+      { value: 'A grand tour of Italy', label: 'Grand Tour', desc: 'Rome → Florence → Venice (or Amalfi). The classic route. Needs 12+ days to breathe.' },
+    ]
+  },
+  'thailand': {
+    label: 'Thailand offers completely different experiences by region. Which calls to you?',
+    options: [
+      { value: 'Bangkok and the city', label: 'Bangkok', desc: 'Temples, street food, rooftop bars, markets, the most dynamic city in Southeast Asia.' },
+      { value: 'Chiang Mai and the North', label: 'Chiang Mai & North', desc: 'Elephant sanctuaries, mountain tribes, night markets, Thai cooking classes, cooler temps.' },
+      { value: 'Phuket, Krabi and the South', label: 'Southern Islands', desc: 'Stunning limestone karsts, crystal water, island hopping, world-class diving, beach life.' },
+      { value: 'Bangkok and the islands combined', label: 'City + Beach', desc: 'The classic Thailand — a few days in Bangkok then south to the islands. Best of both.' },
+    ]
+  },
+  'spain': {
+    label: 'Spain\'s regions are almost like different countries. What experience do you want?',
+    options: [
+      { value: 'Barcelona and Catalonia', label: 'Barcelona', desc: 'Gaudí architecture, beach, tapas, world-class restaurants, vibrant nightlife. A city unlike any other.' },
+      { value: 'Madrid and Castile', label: 'Madrid', desc: 'The Prado, flamenco, the best food scene in Spain, day trips to Toledo and Segovia.' },
+      { value: 'Andalusia — Seville, Granada, Córdoba', label: 'Andalusia', desc: 'The Alhambra, flamenco in its birthplace, Moorish architecture, olive groves, the real Spain.' },
+      { value: 'San Sebastián and the Basque Country', label: 'Basque Country', desc: 'The highest concentration of Michelin stars anywhere. Pintxos, surf, and extraordinary food culture.' },
+      { value: 'Multiple regions of Spain', label: 'Full Spain', desc: 'Combine regions for a complete picture. Barcelona + Andalusia is the most popular pairing.' },
+    ]
+  },
+  'south africa': {
+    label: 'South Africa is a country of distinct worlds. Which experience are you seeking?',
+    options: [
+      { value: 'Cape Town and the Cape Peninsula', label: 'Cape Town', desc: 'Table Mountain, the most beautiful city in Africa, wine country, penguin colonies, dramatic coastline.' },
+      { value: 'Safari — Kruger or private reserves', label: 'Safari', desc: 'The Big Five in their natural habitat. Private reserves offer the most exclusive and intimate experience.' },
+      { value: 'The Garden Route', label: 'Garden Route', desc: 'A spectacular coastal drive through forests, lagoons, and whale-watching spots between Cape Town and Johannesburg.' },
+      { value: 'Cape Town combined with safari', label: 'Cape Town + Safari', desc: 'The perfect South Africa trip — city, wine, and wildlife. Most popular combination for good reason.' },
+    ]
+  },
+  'australia': {
+    label: 'Australia is a continent. Where would you like to focus?',
+    options: [
+      { value: 'Sydney and New South Wales', label: 'Sydney', desc: 'The Opera House, Bondi Beach, Blue Mountains, Hunter Valley wine country. The most iconic Australian city.' },
+      { value: 'Queensland — Great Barrier Reef and Whitsundays', label: 'Queensland', desc: 'The Great Barrier Reef, Whitsunday Islands, Daintree Rainforest. Australia\'s tropical north.' },
+      { value: 'Uluru and the Red Centre', label: 'Red Centre', desc: 'Uluru at sunrise, the ancient desert landscape, Aboriginal culture. Spiritual and unforgettable.' },
+      { value: 'Melbourne and Victoria', label: 'Melbourne', desc: 'Coffee culture, food scene, Great Ocean Road, Phillip Island penguins. Australia\'s most liveable city.' },
+      { value: 'East Coast road trip', label: 'East Coast', desc: 'Sydney → Byron Bay → Brisbane → Cairns. The classic Australian adventure.' },
+    ]
+  },
+  'morocco': {
+    label: 'Morocco contains multitudes. What kind of experience are you after?',
+    options: [
+      { value: 'Marrakech and the Atlas Mountains', label: 'Marrakech', desc: 'The medina, souks, riads, hammams, day trips to the Atlas. The most sensory city on earth.' },
+      { value: 'Fes and the ancient cities', label: 'Fes & Ancient Morocco', desc: 'The world\'s oldest university city, medieval medina, leather tanneries, authentic and overwhelming.' },
+      { value: 'The Sahara Desert', label: 'Sahara', desc: 'Merzouga dunes, camel trekking, sleeping under the stars, the silence of the desert. Life-changing.' },
+      { value: 'Essaouira and the coast', label: 'Coastal Morocco', desc: 'Charming port city, Atlantic winds, seafood, blue and white streets, the artist\'s Morocco.' },
+      { value: 'A grand Moroccan circuit', label: 'Full Morocco', desc: 'Marrakech → Atlas → Sahara → Fes → Essaouira. The complete journey. Needs 10+ days.' },
+    ]
+  },
+};
+
+function getRegionData(destination) {
+  const dest = destination.toLowerCase();
+  for (const [key, data] of Object.entries(REGIONS)) {
+    if (dest.includes(key)) return data;
+  }
+  return null;
+}
+
+function renderRegionSelector(destination, container) {
+  const data = getRegionData(destination);
+  if (!data) return false;
+
+  const html = `
+    <div style="margin-bottom:2rem;animation:stepIn .4s ease forwards">
+      <label class="q-label" style="margin-bottom:.875rem;display:block">${data.label}</label>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        ${data.options.map(opt => `
+          <button class="region-opt" onclick="selectRegion(this,'${opt.value.replace(/'/g, "\'")}')"
+            style="text-align:left;padding:1rem 1.25rem;border:1px solid rgba(201,169,110,.12);background:transparent;cursor:pointer;touch-action:manipulation;transition:all .25s;font-family:'Montserrat',sans-serif">
+            <div style="font-size:.68rem;font-weight:400;color:var(--ivory);letter-spacing:.06em;margin-bottom:.25rem">${opt.label}</div>
+            <div style="font-size:.62rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.6">${opt.desc}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  container.insertAdjacentHTML('afterbegin', html);
+  return true;
+}
+
+function selectRegion(btn, value) {
+  document.querySelectorAll('.region-opt').forEach(b => {
+    b.style.borderColor = 'rgba(201,169,110,.12)';
+    b.style.background = 'transparent';
+  });
+  btn.style.borderColor = 'var(--gold)';
+  btn.style.background = 'rgba(201,169,110,.07)';
+  state.answers['region'] = value;
+  state.destination = state.destination + ' — ' + value;
+}
+
+
+// ── HOTEL PHILOSOPHY ──
+const HOTEL_PHILOSOPHY = {
+  question: 'What role does the hotel play in this trip for you?',
+  id: 'hotel_philosophy',
+  options: [
+    { value: 'The hotel is the experience — I want the best property on earth for this destination', label: 'The hotel IS the experience', desc: 'You know that certain properties are non-negotiable. Aman Tokyo. Singita. Tawaraya. You want Vela to make those calls.' },
+    { value: 'Comfortable, well-located, and reliable', label: 'Comfortable & well-located', desc: 'A great bed, a great location, and great service. You sleep there, you don\'t live there.' },
+    { value: 'Something completely unique that nobody else has stayed in', label: 'Unique & off the beaten path', desc: 'A converted lighthouse. A tented camp on a private concession. A ryokan that\'s been operating since 1709. Something with a story.' },
+    { value: 'Show me what Vela would choose — I trust your taste completely', label: 'Surprise me — I trust Vela', desc: 'Vela defaults to its own taste. Which means the property that genuinely deserves to be there, not the one with the best marketing.' },
+  ]
+};
+
+// ── SAFARI DISCOVERY ──
+const SAFARI_DISCOVERY = {
+  experienceQuestion: {
+    label: 'Most people say safari and mean very different things. What are you actually looking for?',
+    id: 'safari_experience',
+    options: [
+      { value: 'Classic Big Five game drives — lions, elephants, leopards, rhinos, buffalo', label: 'Big Five Game Drives', desc: 'The classic safari. Open vehicle, expert guide, tracking the Big Five at dawn and dusk. Kenya, Tanzania, and South Africa do this best.' },
+      { value: 'Gorilla trekking — tracking mountain gorillas on foot through the forest', label: 'Gorilla Trekking', desc: 'One of the most profound wildlife experiences on earth. You hike through jungle, find a gorilla family, and spend one hour face to face. Rwanda (luxury) or Uganda (more affordable, adds chimps).' },
+      { value: 'The Great Migration — witnessing the wildebeest river crossings', label: 'The Great Migration', desc: 'One million wildebeest crossing the Mara River. Crocodiles. Drama. July–October in Kenya\'s Masai Mara. The greatest wildlife spectacle on earth.' },
+      { value: 'Safari combined with a beach — wildlife then white sand', label: 'Safari + Beach', desc: 'Kenya + Zanzibar. Tanzania + Zanzibar. South Africa + Mozambique. The perfect Africa trip — game drives, then collapse on pristine coastline.' },
+      { value: 'The most exclusive, most remote, most private safari experience possible', label: 'Most Exclusive — Private Concession', desc: 'No other vehicles at your sighting. Off-road driving. Night drives. Walking safaris. Singita, Wilderness, &Beyond on private land. The difference is like private jet vs commercial.' },
+      { value: 'I don\'t know — I've never been on safari and I need Vela to guide me', label: 'First Safari — Guide Me', desc: 'Tell Vela your budget and how adventurous you are. We\'ll recommend the right country, the right operator, and the right experience for a first timer.' },
+    ]
+  },
+  publicVsPrivate: {
+    label: 'Public reserve or private concession — this changes everything.',
+    id: 'safari_type',
+    options: [
+      { value: 'Private concession — exclusive land, no other vehicles, off-road access', label: 'Private Concession', desc: 'You share the land only with your camp. When you find a leopard, no other vehicles arrive. You can follow it off-road. Night drives allowed. Walking safaris. This is what Singita, &Beyond, and Wilderness offer.' },
+      { value: 'Public reserve — larger national park, more wildlife variety, more accessible', label: 'National Park / Public Reserve', desc: 'The Masai Mara, Serengeti, Kruger. Still extraordinary. Larger land, more wildlife variety. You share the roads with other vehicles but the animals are remarkable.' },
+      { value: 'I don\'t know — recommend what\'s right for my budget', label: 'Guide My Decision', desc: 'Private concessions cost more but deliver dramatically more. Vela will recommend based on your budget and what will matter most to you.' },
+    ]
+  },
+  countryPairing: {
+    label: 'Safari country — each one offers something the others don\'t.',
+    id: 'safari_country',
+    options: [
+      { value: 'Kenya — Masai Mara, Laikipia, Amboseli with Kilimanjaro views', label: 'Kenya', desc: 'The Great Migration, Masai culture, Kilimanjaro as a backdrop at Amboseli, and Laikipia for private conservancy experiences. The most classic East Africa safari.' },
+      { value: 'Tanzania — Serengeti, Ngorongoro Crater, Zanzibar for the beach finish', label: 'Tanzania', desc: 'The Serengeti is larger and wilder than the Mara. Ngorongoro Crater has the highest density of predators on earth. Zanzibar is 45 minutes away for the perfect beach ending.' },
+      { value: 'Rwanda — gorilla trekking in Volcanoes National Park', label: 'Rwanda', desc: 'Mountain gorillas only exist here and in Uganda. Rwanda is the luxury option — smaller groups, shorter treks, extraordinary lodges like Singita Kwitonda and One&Only Gorilla\'s Nest.' },
+      { value: 'Uganda — gorillas and chimpanzee trekking, more affordable than Rwanda', label: 'Uganda', desc: 'Both gorilla AND chimpanzee trekking. More rugged and adventurous than Rwanda. Significantly more affordable permits. Bwindi Impenetrable Forest is one of the last wild places.' },
+      { value: 'Botswana — Okavango Delta, most exclusive safari on earth', label: 'Botswana', desc: 'The Okavango Delta — a river that disappears into the Kalahari Desert, creating a wildlife oasis. The most exclusive safari destination on earth. Fly-in only camps. Wilderness Safaris territory.' },
+      { value: 'South Africa — Sabi Sand, Kruger, combine with Cape Town', label: 'South Africa', desc: 'Sabi Sand private reserve borders Kruger and has the highest leopard density in Africa. Combine with Cape Town — the most cosmopolitan city on the continent. No malaria in many areas.' },
+      { value: 'Zimbabwe — Victoria Falls combined with Hwange or Mana Pools', label: 'Zimbabwe', desc: 'Victoria Falls — one of the seven natural wonders — combined with world-class walking safaris at Mana Pools. The most underrated safari destination in Africa.' },
+      { value: 'Namibia — desert safari, completely different to anything else', label: 'Namibia', desc: 'Desert-adapted elephants, the Namib dunes meeting the Atlantic Ocean at Skeleton Coast, Etosha\'s white salt pan. Not the Big Five experience — something far more unusual and dramatic.' },
+    ]
+  }
+};
+
+// ── OPERATOR INTELLIGENCE ──
+const SAFARI_OPERATORS = {
+  'Singita': 'The most awarded safari company on earth. 350,000 acres in Tanzania and South Africa. Conservation-first — they lease land from communities and reinvest profits into wildlife. The lodges are extraordinary. If you\'re going once and want the definitive experience, Singita is the answer.',
+  '&Beyond': 'The pioneer of the private concession model. Strong conservation credentials, exceptional guides, slightly more accessible than Singita. Incredible properties across East and Southern Africa.',
+  'Wilderness Safaris': 'Botswana specialists. The Okavango Delta, Linyanti, mobile camps that move with the wildlife. The most remote and pristine experiences in Africa. Their guides are extraordinary.',
+  'One&Only': 'Ultra-luxury lodges including Gorilla\'s Nest in Rwanda — arguably the finest gorilla trekking property on earth. Small, intimate, extraordinary service.',
+  'Robin Pope Safaris': 'Zambia specialists. Walking safaris only — no vehicles. The most authentic and raw bush experience available. For the serious traveler.',
+  'Great Plains Conservation': 'Dereck and Beverly Joubert\'s lodges in Kenya and Botswana. Conservation-led, extraordinary wildlife photography, intimate camps.',
+};
+
+// ── MUST-STAY HOTELS BY DESTINATION ──
+const MUST_STAY_HOTELS = {
+  'tokyo': {
+    hotel: 'Aman Tokyo',
+    why: 'The greatest urban hotel on earth. 33 floors above the Imperial Palace. The largest hotel rooms in Tokyo. The onsen on floor 38 overlooking the city at dawn is an experience that cannot be described adequately. Not staying here if you\'re in Tokyo is like going to Paris and skipping it entirely.',
+    alternative: 'The Peninsula Tokyo — the only hotel with a rooftop helicopter pad. The bar at night, the city from above.',
+    price_signal: 'from $1,500/night'
+  },
+  'kyoto': {
+    hotel: 'Tawaraya Ryokan',
+    why: 'Operating since 1709. The most famous ryokan on earth — Obama, the Rockefellers, every dignitary who visits Kyoto stays here. 18 rooms. The check-in ceremony takes 20 minutes and includes tea. The building has barely changed in 300 years. This is not a hotel stay — it is a time machine.',
+    alternative: 'Suiran, a Luxury Collection Hotel — on the Oi River in Arashiyama. Quieter and more modern than Tawaraya but equally extraordinary location.',
+    price_signal: 'from $1,200/night'
+  },
+  'maldives': {
+    hotel: 'Soneva Fushi',
+    why: 'World\'s 50 Best Hotels 2024 #8. No shoes policy. Your own private beach. A chef who knows your dietary preferences before you arrive. The open-air bathroom under the stars. The house reef is one of the finest in the Maldives.',
+    alternative: 'Cheval Blanc Randheli — LVMH's Maldives property. The service standard is different to anything else on the island nation.',
+    price_signal: 'from $3,000/night'
+  },
+  'paris': {
+    hotel: 'Cheval Blanc Paris',
+    why: 'World\'s 50 Best Hotels 2024 #4. On the Seine. LVMH's flagship urban hotel. Dior spa. The only hotel in Paris where the building, the service, and the food all operate at the same extraordinary level simultaneously.',
+    alternative: 'Hotel de Crillon — Place de la Concorde. 18th century palace. One of the most storied addresses in the world.',
+    price_signal: 'from $2,500/night'
+  },
+  'bali': {
+    hotel: 'Capella Ubud',
+    why: 'Tented villas suspended above the jungle canopy of Ubud. Not a hotel with a jungle view — you live inside the jungle. The arrival on foot through the rice terraces is part of the experience. Breakfast delivered to your tent by a butler who crosses a rope bridge. This exists.',
+    alternative: 'Como Shambhala Estate — the most respected wellness retreat in Bali. If health and restoration is the goal.',
+    price_signal: 'from $1,800/night'
+  },
+  'south africa': {
+    hotel: 'Singita Boulders Lodge',
+    why: 'Sabi Sand private reserve, bordering Kruger. The highest leopard density in Africa. No other vehicles at your sighting. A guide who has tracked these same animals for twenty years and knows them by name. This is what a safari should be.',
+    alternative: 'Singita Lebombo — on a rocky outcrop above the Lebombo mountains. More modern aesthetic, equally extraordinary.',
+    price_signal: 'from $3,500/night all-inclusive'
+  },
+  'safari': {
+    hotel: 'Singita Sabora Tented Camp',
+    why: '1920s colonial safari aesthetic. Private concession in the Serengeti — 350,000 acres with no other camps. Breakfast wherever you want including at a watering hole. The guide who will change how you see Africa forever.',
+    alternative: '&Beyond Ngorongoro Crater Lodge — suspended on the rim of the crater. Masai blankets, butler service, crater views at dawn.',
+    price_signal: 'from $2,500/night all-inclusive'
+  },
+  'new zealand': {
+    hotel: 'Fiordland Lodge',
+    why: 'Eight suites overlooking Lake Te Anau in a UNESCO World Heritage Site. Weka birds at dawn. The morning mist off the lake between 6 and 6:45am. Zero light pollution — the Southern Hemisphere sky at night is overwhelming. This is not a hotel with a view — it is the view.',
+    alternative: 'Matakauri Lodge, Queenstown — six lodges on the shore of Lake Wakatipu. The Remarkables as a backdrop. Private heated outdoor bath facing the mountains.',
+    price_signal: 'from $2,200/night'
+  },
+  'amalfi': {
+    hotel: 'Il San Pietro di Positano',
+    why: 'Carved into the cliffside above Positano. Private beach accessible only by elevator through the rock. Every room faces the sea. The garden is impossible — bougainvillea and lemon trees on a vertical cliff. The most beautiful hotel on the Amalfi Coast.',
+    alternative: 'Palazzo Avino, Ravello — a 12th century palace at 350m above the coast. The view from the pool deck makes you question whether Italy is real.',
+    price_signal: 'from $1,500/night'
+  },
+  'iceland': {
+    hotel: 'The Retreat at Blue Lagoon',
+    why: 'Inside the lava field. The Blue Lagoon is your private amenity — accessible 24 hours through a lava tunnel from your suite. The Northern Lights reflect in the milky blue water at 2am. Nothing else like it on earth.',
+    alternative: 'Ion Adventure Hotel — glass-walled aurora suite. Positioned for Northern Lights with a thermal pool outside.',
+    price_signal: 'from $2,000/night'
+  },
+  'morocco': {
+    hotel: 'La Mamounia',
+    why: 'World\'s 50 Best Hotels. Operating since 1923. Winston Churchill painted in the garden. The pool is Morocco\'s most iconic. Three restaurants, a casino, an extraordinary spa. The grande dame of Marrakech that every other hotel is measured against.',
+    alternative: 'Royal Mansour — built by the King of Morocco. Each of the 53 riads is a private house with butler, private pool, and rooftop. The most intimate luxury property in Africa.',
+    price_signal: 'from $1,200/night'
+  },
+  'switzerland': {
+    hotel: 'Badrutt\'s Palace, St Moritz',
+    why: 'Open since 1896. The hotel that invented the concept of winter tourism. The King\'s Club is the most exclusive nightclub in the Alps. The polo, the Cresta Run, the lake. St Moritz exists because of this hotel.',
+    alternative: 'The Chedi Andermatt — more modern, extraordinary spa, at the foot of the Gotthard Pass.',
+    price_signal: 'from $1,500/night'
+  },
+};
+
+function getMustStayHotel(destination) {
+  const dest = destination.toLowerCase();
+  for (const [key, data] of Object.entries(MUST_STAY_HOTELS)) {
+    if (dest.includes(key)) return data;
+  }
+  return null;
+}
+
+function renderHotelPhilosophyQuestion(container) {
+  const html = `
+    <div class="q-item" style="animation-delay:.05s;opacity:1;transform:none">
+      <label class="q-label">${HOTEL_PHILOSOPHY.question}</label>
+      <div style="display:flex;flex-direction:column;gap:.5rem" id="hotel-philosophy-opts">
+        ${HOTEL_PHILOSOPHY.options.map(opt => `
+          <button class="q-opt hotel-phil-opt" onclick="selectHotelPhilosophy(this,'${opt.value.replace(/'/g, "\'")}')"
+            style="text-align:left;padding:1rem 1.25rem;border:1px solid rgba(201,169,110,.12);background:transparent;cursor:pointer;touch-action:manipulation;transition:all .25s;font-family:'Montserrat',sans-serif;width:100%">
+            <div style="font-size:.68rem;font-weight:400;color:var(--ivory);letter-spacing:.06em;margin-bottom:.25rem">${opt.label}</div>
+            <div style="font-size:.62rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.6">${opt.desc}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', html);
+}
+
+function selectHotelPhilosophy(btn, value) {
+  document.querySelectorAll('.hotel-phil-opt').forEach(b => {
+    b.style.borderColor = 'rgba(201,169,110,.12)';
+    b.style.background = 'transparent';
+  });
+  btn.style.borderColor = 'var(--gold)';
+  btn.style.background = 'rgba(201,169,110,.07)';
+  state.answers['hotel_philosophy'] = value;
+
+  // If hotel snob — show must-stay insight
+  if (value.includes('experience') || value.includes('Vela')) {
+    const hotel = getMustStayHotel(state.destination);
+    if (hotel) {
+      showMustStayInsight(hotel);
+    }
+  } else {
+    hideMustStayInsight();
+  }
+}
+
+function showMustStayInsight(hotel) {
+  let el = document.getElementById('mustStayInsight');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mustStayInsight';
+    el.style.cssText = 'background:rgba(201,169,110,.07);border:1px solid var(--gold-dim);border-left:3px solid var(--gold);padding:1.25rem 1.5rem;margin-top:1rem;animation:stepIn .4s ease forwards';
+    const list = document.getElementById('questionsList');
+    if (list) list.appendChild(el);
+  }
+  el.innerHTML = `
+    <div style="font-size:.48rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">✦ Vela — Must Stay</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ivory);margin-bottom:.4rem;font-weight:300">${hotel.hotel}</div>
+    <div style="font-size:.68rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.75;margin-bottom:.5rem">${hotel.why}</div>
+    <div style="font-size:.62rem;color:var(--gold-dim);letter-spacing:.06em">Also consider: ${hotel.alternative}</div>
+    <div style="font-size:.58rem;color:rgba(201,169,110,.5);letter-spacing:.1em;margin-top:.4rem">${hotel.price_signal}</div>
+  `;
+  el.style.display = 'block';
+}
+
+function hideMustStayInsight() {
+  const el = document.getElementById('mustStayInsight');
+  if (el) el.style.display = 'none';
+}
+
+// ── SAFARI DISCOVERY FLOW ──
+function isSafariDestination(destination) {
+  const dest = destination.toLowerCase();
+  return dest.includes('safari') || dest.includes('kenya') || dest.includes('tanzania') || 
+         dest.includes('rwanda') || dest.includes('uganda') || dest.includes('botswana') || 
+         dest.includes('zimbabwe') || dest.includes('namibia') || dest.includes('south africa') ||
+         dest.includes('zambia') || dest.includes('africa');
+}
+
+function renderSafariDiscovery(container) {
+  // Experience question
+  const experienceHtml = `
+    <div class="q-item" style="opacity:1;transform:none;margin-bottom:1.5rem">
+      <label class="q-label">${SAFARI_DISCOVERY.experienceQuestion.label}</label>
+      <div style="display:flex;flex-direction:column;gap:.5rem" id="safari-exp-opts">
+        ${SAFARI_DISCOVERY.experienceQuestion.options.map(opt => `
+          <button class="q-opt safari-exp-opt" onclick="selectSafariOpt(this,'safari_experience','${opt.value.replace(/'/g, "\'")}')"
+            style="text-align:left;padding:1rem 1.25rem;border:1px solid rgba(201,169,110,.12);background:transparent;cursor:pointer;touch-action:manipulation;transition:all .25s;font-family:'Montserrat',sans-serif;width:100%">
+            <div style="font-size:.68rem;font-weight:400;color:var(--ivory);letter-spacing:.06em;margin-bottom:.25rem">${opt.label}</div>
+            <div style="font-size:.62rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.6">${opt.desc}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // Public vs Private
+  const pvpHtml = `
+    <div class="q-item" style="opacity:1;transform:none;margin-bottom:1.5rem">
+      <label class="q-label">${SAFARI_DISCOVERY.publicVsPrivate.label}</label>
+      <div style="display:flex;flex-direction:column;gap:.5rem" id="safari-pvp-opts">
+        ${SAFARI_DISCOVERY.publicVsPrivate.options.map(opt => `
+          <button class="q-opt safari-pvp-opt" onclick="selectSafariOpt(this,'safari_type','${opt.value.replace(/'/g, "\'")}')"
+            style="text-align:left;padding:1rem 1.25rem;border:1px solid rgba(201,169,110,.12);background:transparent;cursor:pointer;touch-action:manipulation;transition:all .25s;font-family:'Montserrat',sans-serif;width:100%">
+            <div style="font-size:.68rem;font-weight:400;color:var(--ivory);letter-spacing:.06em;margin-bottom:.25rem">${opt.label}</div>
+            <div style="font-size:.62rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.6">${opt.desc}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // Country pairing
+  const countryHtml = `
+    <div class="q-item" style="opacity:1;transform:none;margin-bottom:1.5rem">
+      <label class="q-label">${SAFARI_DISCOVERY.countryPairing.label}</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem" id="safari-country-opts">
+        ${SAFARI_DISCOVERY.countryPairing.options.map(opt => `
+          <button class="q-opt safari-country-opt" onclick="selectSafariOpt(this,'safari_country','${opt.value.replace(/'/g, "\'")}')"
+            style="text-align:left;padding:1rem 1.25rem;border:1px solid rgba(201,169,110,.12);background:transparent;cursor:pointer;touch-action:manipulation;transition:all .25s;font-family:'Montserrat',sans-serif">
+            <div style="font-size:.68rem;font-weight:400;color:var(--ivory);letter-spacing:.06em;margin-bottom:.25rem">${opt.label}</div>
+            <div style="font-size:.62rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.6">${opt.desc}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = experienceHtml + pvpHtml + countryHtml;
+}
+
+function selectSafariOpt(btn, key, value) {
+  const groupMap = {
+    'safari_experience': 'safari-exp-opts',
+    'safari_type': 'safari-pvp-opts',
+    'safari_country': 'safari-country-opts',
+  };
+  const groupId = groupMap[key];
+  if (groupId) {
+    document.querySelectorAll('#' + groupId + ' .q-opt').forEach(b => {
+      b.style.borderColor = 'rgba(201,169,110,.12)';
+      b.style.background = 'transparent';
+    });
+  }
+  btn.style.borderColor = 'var(--gold)';
+  btn.style.background = 'rgba(201,169,110,.07)';
+  state.answers[key] = value;
+
+  // Update destination to include country choice
+  if (key === 'safari_country') {
+    state.destination = value.split(' — ')[0];
+  }
+}
+
 // ── SEASONAL INSIGHTS ──
 const SEASONAL = {
   'japan': '🌸 Spring (Mar–May): Cherry blossom season — the most iconic and sought-after time. Mild weather, stunning scenery. Book far ahead. ☀️ Summer (Jun–Aug): Hot and humid, typhoon risk, but lush green landscapes and festivals. 🍁 Autumn (Sep–Nov): Equally stunning as spring — fiery red and orange foliage, cooler temps, fewer crowds. ❄️ Winter (Dec–Feb): Cold but beautiful. Snow in Hokkaido, quieter temples, world-class skiing in Niseko.',
@@ -468,7 +902,21 @@ Make questions specific to ${destination}. Keep option labels under 5 words.`
     } else renderFallback(destination);
   } catch(e){ clearInterval(interval); renderFallback(destination); }
 
-  loadEl.style.display='none'; listEl.style.display='flex'; dreamEl.style.display='block';
+  loadEl.style.display='none'; dreamEl.style.display='block';
+
+  // SAFARI: special discovery flow
+  if(isSafariDestination(destination)){
+    listEl.style.display='flex';
+    renderSafariDiscovery(listEl);
+    // Still add hotel question after
+    renderHotelPhilosophyQuestion(listEl);
+  } else {
+    listEl.style.display='flex';
+    // Add region selector if destination needs it
+    renderRegionSelector(destination, listEl);
+    // Always add hotel philosophy question
+    renderHotelPhilosophyQuestion(listEl);
+  }
 }
 
 function renderQuestions(questions){
@@ -556,7 +1004,30 @@ async function generate(){
   });
 
   const qContext=state.questions.map(q=>`${q.label} → ${state.answers[q.id]||'No preference'}`).join('\n');
-  const prompt=`You are Vela, a world-class AI luxury travel concierge with deep personal knowledge of destinations worldwide.
+  // Build intelligence context
+const hotelPhil = state.answers['hotel_philosophy'] || '';
+const safariExp = state.answers['safari_experience'] || '';
+const safariType = state.answers['safari_type'] || '';
+const safariCountry = state.answers['safari_country'] || '';
+const regionChoice = state.answers['region'] || '';
+
+const mustStay = getMustStayHotel(dest);
+const mustStayNote = (hotelPhil.includes('experience') || hotelPhil.includes('Vela')) && mustStay
+  ? `MUST-STAY PROPERTY: ${mustStay.hotel} — ${mustStay.why} Alternative: ${mustStay.alternative}`
+  : '';
+
+const safariNote = safariExp ? `SAFARI PREFERENCES:
+- Experience sought: ${safariExp}
+- Reserve type: ${safariType}
+- Country/region: ${safariCountry}
+SAFARI INTELLIGENCE: Distinguish clearly between public reserves and private concessions. If client selected private concession, recommend Singita, &Beyond, or Wilderness Safaris specifically and explain WHY private is different — no other vehicles, off-road access, night drives, walking safaris. If gorilla trekking selected, explain the experience fully — the hike, the hour with the gorilla family, why it\'s one of the most profound wildlife experiences on earth. For country pairings, proactively suggest complementary destinations (Kenya + Zanzibar, Rwanda + Uganda, Botswana + Zimbabwe).` : '';
+
+const regionNote = regionChoice ? `CLIENT REGION PREFERENCE: ${regionChoice}. Build the entire itinerary around this specific region — do not give a generic country overview.` : '';
+
+const hotelNote = hotelPhil ? `HOTEL PHILOSOPHY: "${hotelPhil}". ${mustStayNote}
+If the client wants the hotel to be the experience — recommend properties that are genuinely worth traveling for. Explain WHY each property deserves to be there. What you would miss by not staying there. The specific detail — the onsen at dawn, the check-in ceremony, the rooftop view — that makes it irreplaceable.` : '';
+
+const prompt=\`You are Vela, a world-class AI luxury travel concierge with deep personal knowledge of destinations worldwide.
 
 TRIP DETAILS:
 - Occasion: ${state.occasion||'Trip'}
@@ -571,6 +1042,10 @@ ${qContext||'Open to expert recommendations'}
 
 CLIENT'S OWN WORDS:
 "${state.dreamText||'Create something extraordinary.'}"
+
+${regionNote ? 'REGION FOCUS: ' + regionNote : ''}
+${hotelNote ? 'HOTEL INTELLIGENCE: ' + hotelNote : ''}
+${safariNote ? 'SAFARI INTELLIGENCE: ' + safariNote : ''}
 
 Create a day-by-day itinerary with:
 1. A 2-3 sentence evocative opening
