@@ -1030,7 +1030,16 @@ Create a day-by-day itinerary with:
 
 Write in an elevated, warm, personal tone. Make them feel the trip before they've left.`;
 
+  // Global timeout — if nothing happens in 45 seconds, show error
+  const globalTimeout = setTimeout(()=>{
+    document.getElementById('generating').style.display='none';
+    document.getElementById('result').style.display='flex';
+    document.getElementById('errorBox').style.display='block';
+    document.getElementById('errorMsg').textContent='Generation is taking longer than expected. This can happen with complex destinations. Please try again — it usually works on the second attempt.';
+  }, 45000);
+
   setTimeout(async()=>{
+    clearTimeout(globalTimeout);
     document.getElementById('generating').style.display='none';
     document.getElementById('result').style.display='flex';
     document.getElementById('result').style.flexDirection='column';
@@ -1049,18 +1058,26 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
       if(isMobile){
         cursor.remove();
         bodyEl.textContent='Crafting your itinerary — about 30 seconds on mobile...';
+        const mobileController = new AbortController();
+        const mobileTimeout = setTimeout(() => mobileController.abort(), 60000);
         const res=await fetch(`${BACKEND}/ai/generate-simple`,{
           method:'POST',headers:{'Content-Type':'application/json'},
+          signal: mobileController.signal,
           body:JSON.stringify({dreamDescription:prompt,destination:dest,departureDate:state.dateFrom,returnDate:state.dateTo,departureCity:state.departCity,adults:state.adults,children:state.children,budget:state.budget,tier:'premier'})
         });
+        clearTimeout(mobileTimeout);
         if(!res.ok) throw new Error('Generation failed');
         const data=await res.json();
         bodyEl.textContent=data.itinerary||'No itinerary generated.';
       } else {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
         const res=await fetch(`${BACKEND}/ai/generate`,{
           method:'POST',headers:{'Content-Type':'application/json'},
+          signal: controller.signal,
           body:JSON.stringify({dreamDescription:prompt,destination:dest,departureDate:state.dateFrom,returnDate:state.dateTo,departureCity:state.departCity,adults:state.adults,children:state.children,budget:state.budget,tier:'premier'})
         });
+        clearTimeout(timeout);
         if(!res.ok) throw new Error('Generation failed');
         cursor.remove(); bodyEl.textContent='';
         const reader=res.body.getReader();
