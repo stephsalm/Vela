@@ -1070,30 +1070,19 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
         const data=await res.json();
         bodyEl.textContent=data.itinerary||'No itinerary generated.';
       } else {
+        // Simple endpoint - no streaming, reliable
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
-        const res=await fetch(`${BACKEND}/ai/generate`,{
+        const timeout = setTimeout(() => controller.abort(), 55000);
+        const res=await fetch(`${BACKEND}/ai/generate-simple`,{
           method:'POST',headers:{'Content-Type':'application/json'},
           signal: controller.signal,
           body:JSON.stringify({dreamDescription:prompt,destination:dest,departureDate:state.dateFrom,returnDate:state.dateTo,departureCity:state.departCity,adults:state.adults,children:state.children,budget:state.budget,tier:'premier'})
         });
         clearTimeout(timeout);
         if(!res.ok) throw new Error('Generation failed');
-        cursor.remove(); bodyEl.textContent='';
-        const reader=res.body.getReader();
-        const decoder=new TextDecoder();
-        let buf='';
-        while(true){
-          const {done,value}=await reader.read();
-          if(done) break;
-          buf+=decoder.decode(value,{stream:true});
-          const lines=buf.split('\n'); buf=lines.pop();
-          for(const line of lines){
-            if(line.startsWith('data: ')){
-              try{ const p=JSON.parse(line.slice(6)); if(p.type==='text'){ bodyEl.textContent+=p.text||''; bodyEl.parentElement.scrollTop=bodyEl.parentElement.scrollHeight; } } catch(e){}
-            }
-          }
-        }
+        const data=await res.json();
+        cursor.remove();
+        bodyEl.textContent=data.itinerary||'No itinerary generated.';
       }
 
       // Save everything
