@@ -85,6 +85,8 @@ footer{padding:3rem 4rem;border-top:1px solid var(--glass-border);display:flex;j
 
 @media(max-width:900px){
   .nav{padding:1.25rem 1.5rem}.nav-links{display:none}
+  #miniGlobe{max-width:280px!important;height:280px!important}
+  #globeGrid{grid-template-columns:1fr!important;gap:2.5rem!important}
   .hero-content{padding:0 1.5rem 3.5rem}
   .hero-headline{font-size:3rem}
   .carousel-section{height:50vh}
@@ -142,8 +144,8 @@ footer{padding:3rem 4rem;border-top:1px solid var(--glass-border);display:flex;j
 <!-- HERO VIDEO -->
 <section class="hero">
   <video class="hero-video" autoplay muted loop playsinline>
-    <source src="maldivesactual2.mov" type="video/quicktime"><source src="maldivesactual2.mov" type="video/mp4">
-    <img src="maldivesactual2.mov" style="width:100%;height:100%;object-fit:cover">
+    <source src="maldivesactual2.mp4" type="video/mp4">
+    <img src="venice.jpg" style="width:100%;height:100%;object-fit:cover">
   </video>
   <div class="hero-overlay"></div>
   <div class="hero-content">
@@ -158,32 +160,47 @@ footer{padding:3rem 4rem;border-top:1px solid var(--glass-border);display:flex;j
   <div class="scroll-hint"><div class="scroll-line"></div><span class="scroll-text">Scroll</span></div>
 </section>
 
-<!-- CAROUSEL -->
-<section class="carousel-section">
-  <div class="carousel-track" id="carouselTrack">
-    <div class="carousel-slide active">
-      <img class="slide-img" src="venice.jpg" alt="Venice">
-      <div class="slide-overlay"></div>
-      <div class="slide-content"><div class="slide-label">Europe · Italy</div><div class="slide-title">Venice</div><div class="slide-sub">The city that exists nowhere else on earth</div></div>
+<!-- GLOBE + DESTINATION -->
+<section style="padding:5rem 4rem;background:var(--void);border-top:1px solid var(--glass-border)">
+  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center">
+
+    <!-- LEFT: COMPACT GLOBE -->
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <canvas id="miniGlobe" style="width:100%;max-width:420px;height:420px;cursor:grab;border-radius:50%;box-shadow:0 0 80px rgba(201,169,110,0.08),0 0 140px rgba(201,169,110,0.04)"></canvas>
+      <p style="font-size:.56rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);margin-top:1.25rem">Drag to spin</p>
     </div>
-    <div class="carousel-slide">
-      <img class="slide-img" src="louvrefrance.webp" alt="Paris">
-      <div class="slide-overlay"></div>
-      <div class="slide-content"><div class="slide-label">Europe · France</div><div class="slide-title">Paris</div><div class="slide-sub">The city that never needs an introduction</div></div>
-    </div>
-    <div class="carousel-slide">
-      <img class="slide-img" src="japanspring.jpg" alt="Japan">
-      <div class="slide-overlay"></div>
-      <div class="slide-content"><div class="slide-label">Asia Pacific · Japan</div><div class="slide-title">Japan</div><div class="slide-sub">Ancient temples. Modern wonder. Unforgettable.</div></div>
-    </div>
-    
-    </div>
-    
+
+    <!-- RIGHT: DESTINATION INPUT -->
+    <div>
+      <p style="font-size:.55rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem"><span style="width:24px;height:1px;background:var(--gold);display:inline-block"></span>Where to?</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.5vw,3rem);font-weight:300;color:var(--ivory);line-height:1.1;margin-bottom:.75rem">You don't have to know<br>where you want to go.<br><em style="font-style:italic;color:var(--gold)">Just how you want to feel.</em></h2>
+      <p style="font-size:.75rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-bottom:2rem">Type a destination or pick a vibe — Vela will ask the right questions and do the rest.</p>
+
+      <!-- SEARCH INPUT -->
+      <div style="position:relative;margin-bottom:1.5rem">
+        <input type="text" id="destSearch" placeholder="Paris, Bali, New Zealand, Tokyo..." 
+          style="width:100%;background:rgba(201,169,110,.05);border:none;border-bottom:1px solid rgba(201,169,110,.3);color:var(--ivory);font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;font-style:italic;padding:.875rem 0;outline:none;letter-spacing:.02em;transition:border-color .3s"
+          oninput="onDestSearch(this.value)"
+          onfocus="this.style.borderBottomColor='var(--gold)'"
+          onblur="this.style.borderBottomColor='rgba(201,169,110,.3)'"
+          autocomplete="off">
+      </div>
+
+      <!-- DESTINATION CHIPS -->
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2rem" id="destChips">
+        <button onclick="pickDest(this,'Maldives')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🏝 Maldives</button>
+        <button onclick="pickDest(this,'Japan')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🗾 Japan</button>
+        <button onclick="pickDest(this,'Paris')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🗼 Paris</button>
+        <button onclick="pickDest(this,'Bali')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🌺 Bali</button>
+        <button onclick="pickDest(this,'Safari')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🦁 Safari</button>
+        <button onclick="pickDest(this,'Amalfi Coast')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🍋 Amalfi</button>
+        <button onclick="pickDest(this,'New Zealand')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🌿 New Zealand</button>
+        <button onclick="pickDest(this,'Morocco')" style="padding:.45rem 1rem;border:1px solid rgba(201,169,110,.15);background:transparent;color:var(--ivory-dim);font-family:'Montserrat',sans-serif;font-size:.63rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;touch-action:manipulation" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="resetChip(this)">🕌 Morocco</button>
+      </div>
+
+      <a href="vela-planner.html" id="planBtn" style="display:inline-flex;align-items:center;gap:.875rem;background:var(--gold);color:var(--obsidian);padding:1rem 2.5rem;font-family:'Montserrat',sans-serif;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;text-decoration:none;transition:all .3s;touch-action:manipulation" onmouseover="this.style.background='var(--gold-light)'" onmouseout="this.style.background='var(--gold)'">Plan My Trip ✦</a>
     </div>
   </div>
-  <button class="carousel-arrow prev" onclick="moveCarousel(-1)">←</button>
-  <button class="carousel-arrow next" onclick="moveCarousel(1)">→</button>
-  <div class="carousel-controls" id="carouselDots"></div>
 </section>
 
 <!-- TRUST -->
@@ -207,34 +224,258 @@ footer{padding:3rem 4rem;border-top:1px solid var(--glass-border);display:flex;j
 </footer>
 
 <script>
-// CAROUSEL
-let cur=0;
-const slides=document.querySelectorAll('.carousel-slide');
-const track=document.getElementById('carouselTrack');
-const dotsEl=document.getElementById('carouselDots');
-slides.forEach((_,i)=>{const d=document.createElement('div');d.className='carousel-dot'+(i===0?' active':'');d.onclick=()=>goTo(i);dotsEl.appendChild(d);});
-function goTo(n){slides[cur].classList.remove('active');dotsEl.children[cur].classList.remove('active');cur=(n+slides.length)%slides.length;slides[cur].classList.add('active');dotsEl.children[cur].classList.add('active');track.style.transform=`translateX(-${cur*100}%)`;}
-function moveCarousel(d){goTo(cur+d);}
-setInterval(()=>moveCarousel(1),5000);
+// Carousel removed
 
-// READ OCCASION FROM URL and pass to planner
-document.querySelectorAll('.occ-tile').forEach(tile=>{
-  tile.addEventListener('click',e=>{
-    const url=new URL(tile.href);
-    const occasion=url.searchParams.get('occasion');
-    if(occasion) sessionStorage.setItem('vela_occasion',occasion);
-  });
-});
+
 
 // REVEAL
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
 // PRIVACY POPUP
-function acceptPrivacy(){ localStorage.setItem('vela_privacy','accepted'); document.getElementById('privacyPopup').classList.add('hidden'); }
-function declinePrivacy(){ localStorage.setItem('vela_privacy','declined'); document.getElementById('privacyPopup').classList.add('hidden'); }
-if(localStorage.getItem('vela_privacy')){ document.getElementById('privacyPopup').classList.add('hidden'); }
+function acceptPrivacy(){ localStorage.setItem('vela_privacy','accepted'); const el=document.getElementById('privacyPopup'); if(el) el.classList.add('hidden'); }
+function declinePrivacy(){ localStorage.setItem('vela_privacy','declined'); const el=document.getElementById('privacyPopup'); if(el) el.classList.add('hidden'); }
+const privacyEl=document.getElementById('privacyPopup'); if(localStorage.getItem('vela_privacy') && privacyEl){ privacyEl.classList.add('hidden'); }
 
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── MINI GLOBE ───
+(function(){
+  const canvas = document.getElementById('miniGlobe');
+  if(!canvas || typeof THREE === 'undefined') return;
+
+  const W = 420, H = 420;
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.z = 2.5;
+
+  // Load real Earth texture from NASA (public domain)
+  const loader = new THREE.TextureLoader();
+  
+  // Use a reliable public domain earth texture
+  const earthTexUrl = 'https://unpkg.com/three-globe/example/img/earth-dark.jpg';
+  
+  const tex = loader.load(earthTexUrl, 
+    () => { console.log('Globe texture loaded'); },
+    undefined,
+    () => {
+      // Fallback: create a nicer canvas texture
+      const tc = document.createElement('canvas');
+      tc.width = 1024; tc.height = 512;
+      const ctx = tc.getContext('2d');
+      
+      // Deep ocean
+      const grad = ctx.createLinearGradient(0,0,0,512);
+      grad.addColorStop(0,'#071525');
+      grad.addColorStop(0.5,'#0d1f3c');
+      grad.addColorStop(1,'#071525');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,1024,512);
+
+      // Grid lines
+      ctx.strokeStyle='rgba(201,169,110,0.1)';
+      ctx.lineWidth=0.8;
+      for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(i*128,0);ctx.lineTo(i*128,512);ctx.stroke();}
+      for(let i=0;i<=4;i++){ctx.beginPath();ctx.moveTo(0,i*128);ctx.lineTo(1024,i*128);ctx.stroke();}
+
+      // Better continent shapes with more detail
+      ctx.fillStyle='rgba(20,50,35,0.95)';
+      ctx.strokeStyle='rgba(201,169,110,0.25)';
+      ctx.lineWidth=1.5;
+
+      // North America
+      const na = [[120,80],[190,65],[240,80],[265,110],[270,155],[255,195],[230,215],[195,230],[160,220],[130,195],[110,160],[105,125]];
+      ctx.beginPath();ctx.moveTo(na[0][0],na[0][1]);na.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // South America
+      const sa = [[200,240],[255,230],[275,280],[280,340],[270,400],[245,430],[215,435],[195,400],[188,340],[190,280]];
+      ctx.beginPath();ctx.moveTo(sa[0][0],sa[0][1]);sa.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // Europe
+      const eu = [[450,70],[520,60],[560,80],[565,115],[545,145],[510,155],[475,150],[450,130],[440,100]];
+      ctx.beginPath();ctx.moveTo(eu[0][0],eu[0][1]);eu.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // Africa
+      const af = [[460,160],[550,145],[590,180],[610,240],[600,320],[575,385],[530,410],[485,400],[455,360],[440,290],[445,215],[455,175]];
+      ctx.beginPath();ctx.moveTo(af[0][0],af[0][1]);af.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // Asia
+      const as = [[560,60],[720,45],[840,65],[900,100],[920,155],[880,205],[820,225],[740,235],[680,215],[630,190],[600,155],[575,120],[560,85]];
+      ctx.beginPath();ctx.moveTo(as[0][0],as[0][1]);as.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // Australia
+      const au = [[760,295],[870,280],[920,315],[930,370],[890,400],[820,405],[770,385],[750,345]];
+      ctx.beginPath();ctx.moveTo(au[0][0],au[0][1]);au.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // Greenland
+      const gl = [[270,30],[330,20],[360,45],[350,75],[300,80],[265,60]];
+      ctx.beginPath();ctx.moveTo(gl[0][0],gl[0][1]);gl.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+
+      // UK/Ireland
+      ctx.fillRect(460,90,18,25);ctx.strokeRect(460,90,18,25);
+      
+      // Japan islands
+      ctx.fillRect(870,120,12,35);ctx.strokeRect(870,120,12,35);
+
+      const fallbackTex = new THREE.CanvasTexture(tc);
+      mat.map = fallbackTex;
+      mat.needsUpdate = true;
+    }
+  );
+
+  const geo = new THREE.SphereGeometry(1, 64, 64);
+  const mat = new THREE.MeshPhongMaterial({
+    map: tex,
+    shininess: 15,
+    specular: new THREE.Color(0x1a3a5c),
+  });
+  const globe = new THREE.Mesh(geo, mat);
+  scene.add(globe);
+
+  // Atmosphere glow
+  const atmGeo = new THREE.SphereGeometry(1.04, 32, 32);
+  const atmMat = new THREE.MeshPhongMaterial({
+    color: 0x1a5a9a,
+    transparent: true,
+    opacity: 0.1,
+    side: THREE.BackSide
+  });
+  scene.add(new THREE.Mesh(atmGeo, atmMat));
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const sun = new THREE.DirectionalLight(0xfff4e0, 1.1);
+  sun.position.set(5, 2, 5);
+  scene.add(sun);
+  const rim = new THREE.DirectionalLight(0xc9a96e, 0.25);
+  rim.position.set(-5, 0, -3);
+  scene.add(rim);
+
+  // Destination pins
+  function latLngToVec3(lat, lng, r){
+    const phi = (90-lat) * Math.PI/180;
+    const theta = (lng+180) * Math.PI/180;
+    return new THREE.Vector3(
+      -r * Math.sin(phi) * Math.cos(theta),
+       r * Math.cos(phi),
+       r * Math.sin(phi) * Math.sin(theta)
+    );
+  }
+
+  const pinCoords = [
+    {lat:3.2,lng:73.2},{lat:35.7,lng:139.7},{lat:48.9,lng:2.4},
+    {lat:-8.3,lng:115.1},{lat:-1.3,lng:36.8},{lat:40.6,lng:14.6},
+    {lat:-41,lng:174.9},{lat:31.8,lng:-7.1},{lat:25.2,lng:55.3},
+    {lat:36.4,lng:25.5},{lat:-51.6,lng:-72.1},{lat:64.9,lng:-19.0},
+  ];
+
+  pinCoords.forEach(coord => {
+    const pos = latLngToVec3(coord.lat, coord.lng, 1.02);
+    const pinGeo = new THREE.SphereGeometry(0.022, 8, 8);
+    const pinMat = new THREE.MeshBasicMaterial({color: 0xc9a96e});
+    const pin = new THREE.Mesh(pinGeo, pinMat);
+    pin.position.copy(pos);
+    globe.add(pin);
+  });
+
+  // Drag controls
+  let drag = false, prev = {x:0,y:0}, velX = 0, velY = 0;
+  
+  canvas.addEventListener('mousedown', e => {
+    drag = true;
+    prev = {x: e.clientX, y: e.clientY};
+    canvas.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', e => {
+    if(!drag) return;
+    velX = (e.clientY - prev.y) * 0.006;
+    velY = (e.clientX - prev.x) * 0.006;
+    globe.rotation.x += velX;
+    globe.rotation.y += velY;
+    prev = {x: e.clientX, y: e.clientY};
+  });
+  window.addEventListener('mouseup', () => { drag = false; canvas.style.cursor = 'grab'; });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    drag = true;
+    prev = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+  }, {passive: false});
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if(!drag) return;
+    const t = e.touches[0];
+    globe.rotation.x += (t.clientY - prev.y) * 0.006;
+    globe.rotation.y += (t.clientX - prev.x) * 0.006;
+    prev = {x: t.clientX, y: t.clientY};
+  }, {passive: false});
+  canvas.addEventListener('touchend', () => { drag = false; });
+
+  // Spin to destination
+  const DEST_MAP = {
+    'Maldives':{lat:3.2,lng:73.2},'Japan':{lat:35.7,lng:139.7},'Paris':{lat:48.9,lng:2.4},
+    'Bali':{lat:-8.3,lng:115.1},'Safari':{lat:-1.3,lng:36.8},'Amalfi Coast':{lat:40.6,lng:14.6},
+    'New Zealand':{lat:-41,lng:174.9},'Morocco':{lat:31.8,lng:-7.1},'Dubai':{lat:25.2,lng:55.3},
+    'Santorini':{lat:36.4,lng:25.5},'Patagonia':{lat:-51.6,lng:-72.1},'Iceland':{lat:64.9,lng:-19.0},
+  };
+
+  window.spinGlobeTo = function(name) {
+    const c = DEST_MAP[name];
+    if(!c) return;
+    const tY = -(c.lng * Math.PI/180);
+    const tX = -(c.lat * Math.PI/180) * 0.3;
+    const sY = globe.rotation.y % (Math.PI*2);
+    const sX = globe.rotation.x;
+    let t = 0;
+    const iv = setInterval(() => {
+      t += 0.035;
+      if(t >= 1){ globe.rotation.y=tY; globe.rotation.x=tX; clearInterval(iv); return; }
+      const e = 1 - Math.pow(1-t,3);
+      globe.rotation.y = sY + (tY-sY)*e;
+      globe.rotation.x = sX + (tX-sX)*e;
+    }, 16);
+  };
+
+  // Animate
+  (function tick(){
+    requestAnimationFrame(tick);
+    if(!drag){
+      velX *= 0.94;
+      velY *= 0.94;
+      globe.rotation.x += velX;
+      globe.rotation.y += velY + 0.0025;
+    }
+    renderer.render(scene, camera);
+  })();
+})();
+
+// Destination search
+function onDestSearch(val){
+  const btn = document.getElementById('planBtn');
+  if(val.trim()){
+    sessionStorage.setItem('vela_destination', val.trim());
+    btn.href = 'vela-planner.html';
+    if(window.spinGlobeTo) spinGlobeTo(val);
+  }
+}
+
+function pickDest(el, dest){
+  document.getElementById('destSearch').value = dest;
+  sessionStorage.setItem('vela_destination', dest);
+  document.getElementById('planBtn').href = 'vela-planner.html';
+  if(window.spinGlobeTo) spinGlobeTo(dest);
+}
+
+function resetChip(el){
+  el.style.borderColor='rgba(201,169,110,.15)';
+  el.style.color='var(--ivory-dim)';
+}
 </script>
 </body>
 </html>
