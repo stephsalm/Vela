@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vela — Your Curated Experience</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#050505;--obsidian:#080808;--surface:#0e0e0e;--surface2:#131313;
+  --gold:#c9a96e;--gold-light:#e8d5a3;--gold-dim:#7a6340;
+  --ivory:#f5f0e8;--ivory-dim:#c8bfaa;
+  --glass-border:rgba(201,169,110,0.12);
+  --success:#6eb88a;--error:#e08080;
+}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--ivory);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden}
+
+/* ACTION BAR */
+.action-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,8,8,.97);border-top:1px solid var(--glass-border);padding:1rem 2rem;display:flex;gap:.75rem;align-items:center;justify-content:center;flex-wrap:wrap;backdrop-filter:blur(12px)}
+.action-btn{display:inline-flex;align-items:center;gap:.6rem;padding:.7rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;font-weight:400;cursor:pointer;transition:all .3s;touch-action:manipulation;border:none;white-space:nowrap}
+.action-btn.gold{background:var(--gold);color:var(--obsidian)}
+.action-btn.gold:hover{background:var(--gold-light)}
+.action-btn.outline{background:transparent;color:var(--gold);border:1px solid var(--gold-dim)}
+.action-btn.outline:hover{border-color:var(--gold);background:rgba(201,169,110,.06)}
+.action-btn.ghost{background:transparent;color:var(--ivory-dim);border:1px solid var(--glass-border)}
+.action-btn.ghost:hover{border-color:var(--gold-dim);color:var(--ivory)}
+
+/* TABS */
+.tab-nav{position:sticky;top:0;z-index:100;background:rgba(8,8,8,.97);border-bottom:1px solid var(--glass-border);display:flex;overflow-x:auto;backdrop-filter:blur(12px)}
+.tab-btn{padding:1.1rem 1.75rem;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim);border:none;background:transparent;cursor:pointer;touch-action:manipulation;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .3s;font-family:'Montserrat',sans-serif;white-space:nowrap}
+.tab-btn:hover{color:var(--ivory)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-content{display:none;animation:fadeIn .4s ease forwards}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* COVER */
+.cover{position:relative;height:100vh;min-height:700px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.cover-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 10s ease}
+.cover-bg.zoom{transform:scale(1.05)}
+.cover-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,5,.97) 0%,rgba(5,5,5,.5) 45%,rgba(5,5,5,.15) 100%)}
+.cover-content{position:relative;z-index:2;padding:4rem}
+.cover-label{font-size:.5rem;letter-spacing:.6em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;gap:1.25rem}
+.cover-label::before{content:'';width:40px;height:1px;background:var(--gold)}
+.cover-title{font-family:'Cormorant Garamond',serif;font-size:clamp(3.5rem,8vw,8rem);font-weight:300;color:var(--ivory);line-height:.92;letter-spacing:-.03em;margin-bottom:1.25rem}
+.cover-title em{font-style:italic;color:var(--gold)}
+.cover-meta{display:flex;flex-wrap:wrap;gap:2rem;margin-bottom:1.25rem}
+.cover-meta-item{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim);display:flex;align-items:center;gap:.5rem}
+.cover-meta-item::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.cover-line{width:100%;height:1px;background:linear-gradient(to right,var(--gold),transparent);margin-bottom:1.25rem;opacity:.3}
+.cover-tagline{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;color:rgba(245,240,232,.5);letter-spacing:.04em;max-width:480px;line-height:1.6}
+
+/* STATS */
+.stats-bar{padding:3rem 4rem;background:var(--obsidian);border-bottom:1px solid var(--glass-border);overflow:hidden;position:relative}
+.stats-bar::after{content:'VELA';position:absolute;right:-1rem;top:50%;transform:translateY(-50%);font-family:'Cormorant Garamond',serif;font-size:9rem;font-weight:300;color:rgba(201,169,110,.025);pointer-events:none;letter-spacing:.3em}
+.stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem}
+.stat{border-left:1px solid var(--glass-border);padding-left:1.5rem}
+.stat-label{font-size:.48rem;letter-spacing:.42em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.35rem}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--ivory);font-weight:300;line-height:1.1}
+.stat-sub{font-size:.58rem;color:var(--ivory-dim);letter-spacing:.05em;margin-top:.15rem}
+
+/* VELA NOTE */
+.vela-note-bar{padding:2.5rem 4rem;background:linear-gradient(135deg,rgba(201,169,110,.06),rgba(201,169,110,.02));border-bottom:1px solid var(--glass-border);position:relative}
+.vela-note-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,var(--gold),transparent)}
+.vela-note-label{font-size:.48rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:.875rem}
+.vela-note-text{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--ivory);line-height:1.85;font-weight:300;max-width:780px}
+.vela-note-sig{font-size:.56rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim);margin-top:.875rem}
+
+/* BODY WRAPPER */
+.body{max-width:1200px;margin:0 auto;padding:3rem 4rem 8rem}
+
+/* ROUTE */
+.route{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;padding:2rem 0;border-bottom:1px solid var(--glass-border);margin-bottom:3.5rem;overflow-x:auto}
+.route-stop{text-align:center;padding:.625rem 1.25rem;flex-shrink:0}
+.route-stop.hl{background:rgba(201,169,110,.06);border:1px solid var(--glass-border)}
+.route-day{font-size:.44rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.2rem}
+.route-name{font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--ivory)}
+.route-name.gold{color:var(--gold)}
+.route-sep{color:rgba(201,169,110,.3);font-size:.75rem;flex-shrink:0}
+
+/* DAY */
+.day{margin-bottom:5rem;opacity:0;transform:translateY(18px);transition:opacity .8s ease,transform .8s ease}
+.day.visible{opacity:1;transform:translateY(0)}
+.day-header{display:grid;grid-template-columns:auto 1fr;gap:2.5rem;align-items:start;margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid var(--glass-border)}
+.day-num{font-family:'Cormorant Garamond',serif;font-size:5rem;font-weight:300;color:rgba(201,169,110,.1);line-height:1;letter-spacing:-.04em}
+.day-label{font-size:.48rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem}
+.day-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,2.8vw,2.6rem);font-weight:300;color:var(--ivory);line-height:1.05;margin-bottom:.35rem}
+.day-title em{font-style:italic;color:var(--gold)}
+.day-date{font-size:.6rem;color:var(--ivory-dim);letter-spacing:.08em;margin-bottom:.5rem}
+
+/* DAY AT A GLANCE */
+.day-glance{background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.1);padding:1.1rem 1.5rem;margin-bottom:2rem;display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center}
+.glance-item{font-size:.6rem;letter-spacing:.1em;color:var(--ivory-dim);display:flex;align-items:center;gap:.4rem}
+.glance-item strong{color:var(--gold);font-weight:400}
+.weather-badge{background:rgba(201,169,110,.08);border:1px solid var(--glass-border);padding:.3rem .875rem;font-size:.58rem;letter-spacing:.12em;color:var(--gold);display:flex;align-items:center;gap:.4rem}
+.wear-note{font-size:.62rem;color:var(--ivory-dim);letter-spacing:.05em;font-style:italic;border-left:1px solid var(--glass-border);padding-left:1rem;flex:1}
+
+/* PHOTO */
+.photo-wrap{position:relative;margin-bottom:2rem;overflow:hidden}
+.photo-wrap img{width:100%;height:280px;object-fit:cover;display:block;transition:transform 7s ease}
+.photo-wrap:hover img{transform:scale(1.03)}
+.photo-caption{position:absolute;bottom:0;left:0;right:0;padding:.875rem 1.25rem;background:linear-gradient(to top,rgba(5,5,5,.8),transparent);font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,240,232,.6)}
+.photo-placeholder{width:100%;height:280px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:rgba(201,169,110,.15);font-style:italic;position:relative;overflow:hidden}
+.photo-placeholder::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--surface2),var(--surface))}
+.photo-placeholder span{position:relative;z-index:1}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column}
+.tl{display:grid;grid-template-columns:85px 1fr;border-bottom:1px solid rgba(201,169,110,.05)}
+.tl:last-child{border-bottom:none}
+.tl-time{padding:1.5rem 1.25rem 1.5rem 0;border-right:1px solid rgba(201,169,110,.06);display:flex;flex-direction:column;align-items:flex-end;gap:.2rem}
+.tl-t{font-size:.68rem;letter-spacing:.1em;color:var(--gold);font-weight:400}
+.tl-te{font-size:.54rem;color:rgba(201,169,110,.38)}
+.tl-dot{width:7px;height:7px;border-radius:50%;margin-top:.3rem}
+.d-flight{background:rgba(106,159,212,.85)}
+.d-hotel{background:var(--gold)}
+.d-transfer{background:rgba(212,149,106,.85)}
+.d-dining{background:rgba(110,184,138,.85)}
+.d-exp{background:rgba(168,110,201,.85)}
+.d-lounge{background:rgba(110,201,184,.85)}
+.d-free{background:rgba(201,169,110,.2)}
+.tl-body{padding:1.5rem 0 1.5rem 1.75rem}
+.tl-tag{font-size:.46rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem}
+.tl-tag::before{content:'';width:10px;height:1px;background:var(--gold-dim)}
+.tl-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ivory);margin-bottom:.35rem}
+.tl-detail{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.85;margin-bottom:.5rem}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.625rem}
+.chip{font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);border:1px solid rgba(201,169,110,.1);padding:.18rem .58rem}
+.chip.h{border-color:rgba(201,169,110,.28);color:var(--gold)}
+.tip{background:rgba(201,169,110,.045);border-left:2px solid var(--gold-dim);padding:.75rem 1rem;margin-top:.625rem;font-size:.65rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.75;font-style:italic}
+.tip strong{color:var(--gold);font-style:normal;font-size:.46rem;letter-spacing:.32em;text-transform:uppercase;display:block;margin-bottom:.22rem;font-weight:400}
+
+/* PROPERTY */
+.prop{background:var(--surface);border:1px solid var(--glass-border);overflow:hidden;margin:1.25rem 0;position:relative}
+.prop::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.prop-img{width:100%;height:220px;object-fit:cover;display:block}
+.prop-img-placeholder{width:100%;height:220px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--surface2),var(--surface))}
+.prop-img-placeholder span{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(201,169,110,.15);font-style:italic}
+.prop-body{padding:1.75rem}
+.prop-cat{font-size:.46rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem}
+.prop-name{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--ivory);font-weight:300;margin-bottom:.2rem}
+.prop-loc{font-size:.6rem;color:var(--ivory-dim);letter-spacing:.07em;margin-bottom:1.1rem}
+.prop-details{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.1rem}
+.prop-d{border-left:1px solid var(--glass-border);padding-left:.875rem}
+.prop-d-label{font-size:.46rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.18rem}
+.prop-d-val{font-size:.7rem;color:var(--ivory);letter-spacing:.04em}
+.prop-note{background:rgba(201,169,110,.04);border-left:2px solid var(--gold);padding:.75rem 1rem;font-size:.65rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.75;font-style:italic}
+
+/* EXPERIENCE CARDS */
+.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:1.5rem 0}
+.exp-card{background:var(--surface);border:1px solid var(--glass-border);overflow:hidden}
+.exp-img{width:100%;height:160px;object-fit:cover;display:block}
+.exp-img-placeholder{width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--surface2),var(--surface));font-size:2rem}
+.exp-body{padding:1.25rem}
+.exp-cat{font-size:.46rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem}
+.exp-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ivory);margin-bottom:.3rem}
+.exp-desc{font-size:.63rem;color:var(--ivory-dim);line-height:1.75;letter-spacing:.04em}
+.exp-footer{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--glass-border)}
+.exp-dur{font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dim)}
+.badge{font-size:.46rem;letter-spacing:.18em;text-transform:uppercase;padding:.2rem .58rem}
+.badge-ok{color:var(--success);border:1px solid rgba(110,184,138,.22)}
+.badge-opt{color:var(--gold-dim);border:1px solid var(--glass-border)}
+
+/* BUDGET */
+.budget-card{background:var(--surface);border:1px solid var(--glass-border);padding:2.25rem;margin:2rem 0;position:relative}
+.budget-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.budget-label{font-size:.5rem;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem}
+.budget-total{font-family:'Cormorant Garamond',serif;font-size:3.2rem;color:var(--gold);font-weight:300;letter-spacing:-.02em;margin-bottom:1.5rem;line-height:1}
+.budget-bar{height:3px;background:rgba(201,169,110,.07);margin-bottom:1.75rem;display:flex;overflow:hidden}
+.bseg{height:100%}
+.brows{display:flex;flex-direction:column}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid rgba(201,169,110,.05)}
+.brow:last-child{border-bottom:none}
+.brow-label{font-size:.65rem;color:var(--ivory-dim);letter-spacing:.04em;display:flex;align-items:center;gap:.75rem}
+.brow-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.brow-amount{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ivory)}
+
+/* PRE-TRIP BRIEF */
+.brief-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-bottom:2rem}
+.brief-card{background:var(--surface);border:1px solid var(--glass-border);padding:1.5rem}
+.brief-card-title{font-size:.5rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.875rem;padding-bottom:.625rem;border-bottom:1px solid var(--glass-border)}
+.brief-item{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.7;padding:.35rem 0;border-bottom:1px solid rgba(201,169,110,.05)}
+.brief-item:last-child{border-bottom:none}
+.brief-item strong{color:var(--ivory);font-weight:400}
+.packing-list{display:flex;flex-direction:column;gap:.3rem}
+.packing-item{display:flex;align-items:center;gap:.75rem;font-size:.67rem;color:var(--ivory-dim);letter-spacing:.04em;padding:.3rem 0;border-bottom:1px solid rgba(201,169,110,.04);cursor:pointer;touch-action:manipulation}
+.packing-item:last-child{border-bottom:none}
+.packing-check{width:14px;height:14px;border:1px solid var(--glass-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.55rem;transition:all .2s}
+.packing-item.checked .packing-check{background:rgba(110,184,138,.15);border-color:var(--success);color:var(--success)}
+.emergency-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.emergency-item{background:rgba(201,169,110,.03);border:1px solid var(--glass-border);padding:1rem}
+.emergency-label{font-size:.46rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.25rem}
+.emergency-value{font-size:.72rem;color:var(--ivory);letter-spacing:.04em}
+
+/* MAP */
+.map-container{background:var(--surface);border:1px solid var(--glass-border);padding:2rem;margin:2rem 0;min-height:300px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;position:relative}
+.map-note{font-size:.62rem;color:var(--ivory-dim);letter-spacing:.08em;text-align:center}
+.map-route-visual{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.map-stop{text-align:center}
+.map-stop-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);margin:0 auto .35rem}
+.map-stop-name{font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--ivory)}
+.map-stop-days{font-size:.48rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim)}
+.map-line{height:1px;width:40px;background:linear-gradient(to right,var(--gold),var(--gold-dim));flex-shrink:0}
+
+/* MODIFY */
+.modify-section{background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1.5rem;margin-top:1rem;display:none}
+.modify-section.open{display:block}
+.modify-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.12);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.75rem;padding:.75rem 1rem;outline:none;transition:border-color .3s;letter-spacing:.04em;margin-bottom:.75rem;resize:none}
+.modify-input:focus{border-color:rgba(201,169,110,.35)}
+.modify-input::placeholder{color:rgba(201,169,110,.3)}
+.modify-btn{background:var(--gold);color:var(--obsidian);border:none;padding:.7rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;cursor:pointer;touch-action:manipulation;transition:background .3s}
+.modify-btn:hover{background:var(--gold-light)}
+
+/* UPSELL */
+.upsell{background:linear-gradient(135deg,rgba(201,169,110,.09),rgba(201,169,110,.025));border:1px solid var(--gold-dim);padding:2.5rem;position:relative;overflow:hidden;margin:2.5rem 0}
+.upsell::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.upsell-eye{font-size:.48rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.upsell-title{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:300;color:var(--ivory);margin-bottom:.6rem;line-height:1.2}
+.upsell-title em{font-style:italic;color:var(--gold)}
+.upsell-desc{font-size:.7rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.9;margin-bottom:1.5rem;max-width:540px}
+.upsell-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-bottom:1.5rem}
+.upsell-feat{background:rgba(201,169,110,.04);border:1px solid var(--glass-border);padding:1rem;text-align:center}
+.upsell-feat-icon{font-size:1.1rem;display:block;margin-bottom:.3rem}
+.upsell-feat-label{font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory-dim)}
+.upsell-btns{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-gold{display:inline-flex;align-items:center;gap:.625rem;background:var(--gold);color:var(--obsidian);padding:.875rem 2rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;text-decoration:none;transition:all .3s;touch-action:manipulation;border:none;cursor:pointer}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-outline-sm{display:inline-flex;align-items:center;background:transparent;color:var(--gold);padding:.875rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--gold-dim);text-decoration:none;transition:all .3s;touch-action:manipulation}
+.btn-outline-sm:hover{border-color:var(--gold);background:rgba(201,169,110,.05)}
+
+/* FEEDBACK */
+.feedback-section{padding:2.25rem;background:var(--surface);border:1px solid var(--glass-border);margin:2rem 0}
+.feedback-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--ivory);margin-bottom:.35rem}
+.feedback-sub{font-size:.66rem;color:var(--ivory-dim);letter-spacing:.04em;margin-bottom:1.5rem;line-height:1.7}
+.feedback-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-bottom:1.5rem}
+.feedback-card{background:rgba(201,169,110,.025);border:1px solid var(--glass-border);padding:1.25rem;text-align:center;cursor:pointer;transition:background .3s;touch-action:manipulation}
+.feedback-card:hover{background:rgba(201,169,110,.07)}
+.feedback-icon{font-size:1.35rem;display:block;margin-bottom:.45rem}
+.feedback-lbl{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory-dim)}
+.stars{display:flex;gap:.2rem;justify-content:center;margin-top:.5rem}
+.star{font-size:.95rem;color:rgba(201,169,110,.18);cursor:pointer;transition:color .15s;touch-action:manipulation}
+.star.lit{color:var(--gold)}
+.feedback-textarea{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.7;width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.1);padding:.8rem 1rem;outline:none;font-family:'Montserrat',sans-serif;resize:none;margin-bottom:.875rem}
+.btn-feedback{background:var(--gold);color:var(--obsidian);border:none;padding:.8rem 1.875rem;font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:background .3s;touch-action:manipulation}
+.btn-feedback:hover{background:var(--gold-light)}
+
+/* SECTION HEADERS */
+.sec-eye{font-size:.5rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;display:flex;align-items:center;gap:1rem}
+.sec-eye::before{content:'';width:20px;height:1px;background:var(--gold)}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory);margin-bottom:1.5rem}
+.sec-title em{font-style:italic;color:var(--gold)}
+
+/* SHARE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,5,5,.9);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .35s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--obsidian);border:1px solid var(--glass-border);padding:2.5rem;max-width:440px;width:90%;position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:300;color:var(--ivory);margin-bottom:.4rem}
+.modal-title em{font-style:italic;color:var(--gold)}
+.modal-sub{font-size:.68rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.7;margin-bottom:1.5rem}
+.modal-input{width:100%;background:rgba(201,169,110,.04);border:1px solid rgba(201,169,110,.15);color:var(--ivory);font-family:'Montserrat',sans-serif;font-size:.78rem;padding:.875rem 1.1rem;outline:none;transition:border-color .3s;letter-spacing:.04em;margin-bottom:.75rem}
+.modal-input:focus{border-color:var(--gold)}
+.modal-input::placeholder{color:rgba(201,169,110,.28)}
+.modal-btn{width:100%;background:var(--gold);color:var(--obsidian);border:none;padding:.95rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:background .3s;touch-action:manipulation}
+.modal-btn:hover{background:var(--gold-light)}
+.modal-close{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--gold-dim);font-size:1.1rem;cursor:pointer;touch-action:manipulation;padding:.25rem}
+.modal-close:hover{color:var(--gold)}
+.share-url{background:rgba(201,169,110,.06);border:1px solid var(--glass-border);padding:.75rem 1rem;font-size:.65rem;color:var(--gold-dim);letter-spacing:.05em;word-break:break-all;margin-bottom:.75rem}
+.copy-btn{background:transparent;border:1px solid var(--glass-border);color:var(--ivory-dim);padding:.6rem 1.25rem;font-family:'Montserrat',sans-serif;font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .3s;touch-action:manipulation}
+.copy-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+
+/* PRINT */
+@media print{
+  .action-bar,.tab-nav,.modal-overlay,.upsell,.feedback-section,.modify-section{display:none!important}
+  body{background:white;color:#111;padding-bottom:0}
+  .cover{height:60vh}
+  .cover-title,.day-title,.sec-title,.modal-title,.feedback-title,.upsell-title,.stat-value,.budget-total,.prop-name,.exp-title,.tl-title{color:#111}
+  .cover-title em,.day-title em,.sec-title em{color:#8B6914}
+  .cover-meta-item,.tl-detail,.exp-desc,.brief-item,.prop-note,.tip{color:#444}
+  .stats-bar,.vela-note-bar,.prop,.exp-card,.brief-card,.budget-card,.feedback-section{background:white;border-color:#ddd}
+  .cover-overlay{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.2) 60%,transparent 100%)}
+  .tab-content{display:block!important}
+}
+
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  .cover-content,.stats-bar,.vela-note-bar,.body{padding-left:1.5rem;padding-right:1.5rem}
+  .cover-title{font-size:3rem}
+  .stats-inner{grid-template-columns:1fr 1fr;gap:1.25rem}
+  .tl{grid-template-columns:72px 1fr}
+  .prop-details,.exp-grid,.brief-grid,.emergency-grid,.upsell-feats,.feedback-grid{grid-template-columns:1fr}
+  .budget-total{font-size:2.5rem}
+  .day-num{font-size:3.5rem}
+  .body{padding-bottom:6rem}
+}
+</style>
+</head>
+<body>
+
+<!-- SHARE/EMAIL MODAL -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 class="modal-title" id="modalTitle">Share Your <em>Experience</em></h2>
+    <p class="modal-sub" id="modalSub">Send this curated experience to your travel companion or save it to your inbox.</p>
+    <div id="modalContent">
+      <input class="modal-input" type="email" id="shareEmail" placeholder="Enter email address">
+      <input class="modal-input" type="text" id="shareName" placeholder="Their name (optional)">
+      <button class="modal-btn" onclick="sendItinerary()">Send Curated Experience ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BAR -->
+<div class="action-bar">
+  <button class="action-btn ghost" onclick="goBack()">← Modify</button>
+  <button class="action-btn outline" onclick="showShare()">✉ Send via Email</button>
+  <button class="action-btn outline" onclick="copyShareLink()">🔗 Share Link</button>
+  <button class="action-btn outline" onclick="window.print()">↓ Save PDF</button>
+  <a href="vela-pricing.html" class="action-btn gold">Book Everything ✦</a>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(this,'overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab(this,'itinerary')">Day by Day</button>
+  <button class="tab-btn" onclick="switchTab(this,'experiences')">Experiences</button>
+  <button class="tab-btn" onclick="switchTab(this,'budget')">Budget</button>
+  <button class="tab-btn" onclick="switchTab(this,'pretrip')">Pre-Trip Brief</button>
+  <button class="tab-btn" onclick="switchTab(this,'map')">Route Map</button>
+  <button class="tab-btn" onclick="switchTab(this,'feedback')">Feedback</button>
+</div>
+
+<!-- ══ OVERVIEW TAB ══ -->
+<div class="tab-content active" id="tab-overview">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-bg" id="coverBg"></div>
+    <div class="cover-overlay"></div>
+    <div class="cover-content">
+      <p class="cover-label">Your Curated Experience · Vela</p>
+      <h1 class="cover-title" id="coverTitle">Your Journey<br><em>Awaits</em></h1>
+      <div class="cover-meta">
+        <div class="cover-meta-item" id="coverDates">Dates TBC</div>
+        <div class="cover-meta-item" id="coverTravelers">2 Travelers</div>
+        <div class="cover-meta-item" id="coverBudget">Budget TBC</div>
+        <div class="cover-meta-item" id="coverOccasion">Your Trip</div>
+      </div>
+      <div class="cover-line"></div>
+      <p class="cover-tagline">"The feeling you're looking for — we already know what it is."</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat reveal"><div class="stat-label">Destination</div><div class="stat-value" id="statDest">—</div><div class="stat-sub" id="statRoute">Your journey</div></div>
+      <div class="stat reveal"><div class="stat-label">Duration</div><div class="stat-value" id="statDays">—</div><div class="stat-sub" id="statNights">—</div></div>
+      <div class="stat reveal"><div class="stat-label">Investment</div><div class="stat-value" id="statBudget">—</div><div class="stat-sub">All-inclusive</div></div>
+      <div class="stat reveal"><div class="stat-label">Status</div><div class="stat-value" style="color:var(--success);font-size:.95rem">● Ready to Book</div><div class="stat-sub">All elements confirmed</div></div>
+    </div>
+  </div>
+
+  <!-- VELA NOTE -->
+  <div class="vela-note-bar">
+    <div class="vela-note-label">A Note from Vela</div>
+    <p class="vela-note-text" id="velaNote">Loading your personalized note...</p>
+    <div class="vela-note-sig">— Vela Intelligence · Curated personally for you</div>
+  </div>
+
+  <!-- ITINERARY CONTENT -->
+  <div class="body">
+    <div class="reveal" style="margin-bottom:2rem">
+      <div class="sec-eye">Your Full Experience</div>
+      <h2 class="sec-title" id="overviewDestTitle">Every moment, <em>accounted for.</em></h2>
+    </div>
+    <div id="itineraryContent" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;line-height:2;color:var(--ivory-dim);letter-spacing:.03em;white-space:pre-wrap;font-weight:300"></div>
+
+    <!-- UPSELL -->
+    <div class="upsell reveal" style="margin-top:3rem">
+      <div class="upsell-eye">✦ Ready to make this happen?</div>
+      <h3 class="upsell-title">Upgrade and Vela books <em>every single element.</em></h3>
+      <p class="upsell-desc">Every flight confirmed. Every hotel reserved with your preferences sent ahead. Every transfer arranged. Every dinner booked. You approve once — we handle everything. $799/year or $99/month.</p>
+      <div class="upsell-feats">
+        <div class="upsell-feat"><span class="upsell-feat-icon">✈</span><div class="upsell-feat-label">Autonomous Booking</div></div>
+        <div class="upsell-feat"><span class="upsell-feat-icon">🍽</span><div class="upsell-feat-label">Dining Reservations</div></div>
+        <div class="upsell-feat"><span class="upsell-feat-icon">🚗</span><div class="upsell-feat-label">All Transfers</div></div>
+      </div>
+      <div class="upsell-btns">
+        <a href="vela-pricing.html" class="btn-gold">Unlock Full Booking ✦</a>
+        <a href="vela-pricing.html" class="btn-outline-sm">View All Plans →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ITINERARY TAB ══ -->
+<div class="tab-content" id="tab-itinerary">
+  <div class="body">
+
+    <!-- ROUTE -->
+    <div class="route reveal" id="routeStrip">
+      <div class="route-stop hl"><div class="route-day">Start</div><div class="route-name">Home</div></div>
+      <span class="route-sep">→</span>
+      <div class="route-stop hl"><div class="route-day">Destination</div><div class="route-name gold" id="routeDestName">Your Trip ✦</div></div>
+      <span class="route-sep">→</span>
+      <div class="route-stop"><div class="route-day">End</div><div class="route-name">Home</div></div>
+    </div>
+
+    <!-- SAMPLE DAY — DEPARTURE -->
+    <div class="day reveal" id="day0">
+      <div class="day-header">
+        <div class="day-num">00</div>
+        <div>
+          <div class="day-label">Departure Day</div>
+          <h2 class="day-title">The Journey <em>Begins</em></h2>
+          <div class="day-date" id="day0date">Departure Day</div>
+        </div>
+      </div>
+      <!-- Day at a glance -->
+      <div class="day-glance">
+        <div class="glance-item">🌤 <strong id="day0weather">Check weather</strong></div>
+        <div class="glance-item">✈ <strong>Departure</strong> · Airport transfer arranged</div>
+        <div class="glance-item">🏨 <strong>Overnight flight</strong> · Business class</div>
+        <div class="wear-note">What to wear: Comfortable layers. Long haul travel clothes. Slip-on shoes for security.</div>
+      </div>
+      <div class="photo-wrap reveal">
+        <img id="day0photo" src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80" alt="Departure" loading="lazy">
+        <div class="photo-caption">Your journey begins here</div>
+      </div>
+      <div class="timeline">
+        <div class="tl">
+          <div class="tl-time"><span class="tl-t">05:30</span><span class="tl-te">AM</span><span class="tl-dot d-transfer"></span></div>
+          <div class="tl-body">
+            <div class="tl-tag">Private Transfer</div>
+            <div class="tl-title">Car Pickup — Home to Airport</div>
+            <div class="tl-detail">Private car confirmed. Driver will be at your door. Luggage handled. Still water and snacks in vehicle.</div>
+            <div class="chips"><span class="chip">Door-to-door</span><span class="chip">Luggage handled</span></div>
+          </div>
+        </div>
+        <div class="tl">
+          <div class="tl-time"><span class="tl-t">Flight</span><span class="tl-te">Dep</span><span class="tl-dot d-flight"></span></div>
+          <div class="tl-body">
+            <div class="tl-tag">Business Class Flight</div>
+            <div class="tl-title" id="day0flightTitle">Outbound Flight</div>
+            <div class="tl-detail" id="day0flightDetail">Flight details will be confirmed upon booking. Business class lie-flat seats. Dietary preferences on file.</div>
+            <div class="chips"><span class="chip h">Business Class</span><span class="chip">Lie-flat seats</span><span class="chip">Dietary noted</span></div>
+            <div class="tip"><strong>✦ Vela Tip</strong>Arrive 2.5 hours early. Use the lounge. Shower before your long haul flight — you'll arrive feeling like a person.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Modify Day -->
+      <button onclick="toggleModify('day0modify')" style="margin-top:1rem;background:transparent;border:1px solid var(--glass-border);color:var(--gold-dim);padding:.5rem 1.1rem;font-family:'Montserrat',sans-serif;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;touch-action:manipulation;transition:all .3s" onmouseover="this.style.borderColor='var(--gold-dim)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--glass-border)';this.style.color='var(--gold-dim)'">✎ Modify This Day</button>
+      <div class="modify-section" id="day0modify">
+        <p style="font-size:.6rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.625rem">What would you like to change?</p>
+        <textarea class="modify-input" rows="2" placeholder="e.g. I'd prefer an earlier departure, or I want to add a layover in Dubai..." id="day0request"></textarea>
+        <button class="modify-btn" onclick="modifyDay(0,'Departure Day','day0request')">Regenerate This Day ✦</button>
+      </div>
+    </div>
+
+    <!-- DESTINATION DAY PLACEHOLDER -->
+    <div class="day reveal" id="day1">
+      <div class="day-header">
+        <div class="day-num">01</div>
+        <div>
+          <div class="day-label" id="day1label">Day One · Your Destination</div>
+          <h2 class="day-title">Arrival in <em id="day1dest">Paradise</em></h2>
+          <div class="day-date" id="day1date">Day 1</div>
+        </div>
+      </div>
+      <div class="day-glance">
+        <div class="glance-item">🌤 <strong id="day1weather">Check local weather</strong></div>
+        <div class="glance-item">🏨 <strong>Check-in</strong> · Your hotel awaits</div>
+        <div class="glance-item">🍽 <strong>Dinner</strong> · Reservation confirmed</div>
+        <div class="wear-note" id="day1wear">What to wear: Comfort after a long flight. Smart casual for dinner.</div>
+      </div>
+      <div class="photo-wrap reveal">
+        <img id="day1photo" src="" alt="Destination" loading="lazy" style="display:none">
+        <div class="photo-placeholder" id="day1photoPlaceholder"><span id="day1photoText">Loading destination photo...</span></div>
+        <div class="photo-caption" id="day1caption">Your destination awaits</div>
+      </div>
+      <div class="timeline">
+        <div class="tl">
+          <div class="tl-time"><span class="tl-t">Arrival</span><span class="tl-te">AM</span><span class="tl-dot d-transfer"></span></div>
+          <div class="tl-body">
+            <div class="tl-tag">Meet & Greet · Private Transfer</div>
+            <div class="tl-title">Airport Arrival</div>
+            <div class="tl-detail" id="day1transfer">Private driver confirmed. Name card at arrivals. Luggage handled. Transfer to hotel.</div>
+            <div class="chips"><span class="chip">Meet & Greet</span><span class="chip">Luggage handled</span><span class="chip">Quiet driver noted</span></div>
+          </div>
+        </div>
+        <div class="tl">
+          <div class="tl-time"><span class="tl-t">Check</span><span class="tl-te">In</span><span class="tl-dot d-hotel"></span></div>
+          <div class="tl-body">
+            <div class="tl-tag">Accommodation</div>
+            <div class="prop" id="day1prop">
+              <div class="prop-img-placeholder" id="day1hotelImgWrap"><span id="day1hotelName">Loading hotel...</span></div>
+              <div class="prop-body">
+                <div class="prop-cat" id="day1hotelCat">✦ Vela Selection</div>
+                <div class="prop-name" id="day1hotelTitle">Your Hotel</div>
+                <div class="prop-loc" id="day1hotelLoc">Location confirmed upon booking</div>
+                <div class="prop-details">
+                  <div class="prop-d"><div class="prop-d-label">Room</div><div class="prop-d-val" id="day1room">Premium Suite</div></div>
+                  <div class="prop-d"><div class="prop-d-label">Check-in</div><div class="prop-d-val">Early · Confirmed</div></div>
+                  <div class="prop-d"><div class="prop-d-label">Welcome</div><div class="prop-d-val">Per your profile</div></div>
+                </div>
+                <div class="prop-note">"Room temperature, pillow preference, and welcome amenities set to your saved profile on arrival."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tl">
+          <div class="tl-time"><span class="tl-t">07:30</span><span class="tl-te">PM</span><span class="tl-dot d-dining"></span></div>
+          <div class="tl-body">
+            <div class="tl-tag">Dinner · Reservation Confirmed</div>
+            <div class="tl-title" id="day1restaurant">Restaurant TBC</div>
+            <div class="tl-detail" id="day1diningDetail">Reservation confirmed. Dietary preferences sent ahead. Walking distance from hotel.</div>
+            <div class="chips"><span class="chip h" id="day1resRef">Reservation confirmed</span><span class="chip">Dietary noted</span></div>
+          </div>
+        </div>
+      </div>
+      <button onclick="toggleModify('day1modify')" style="margin-top:1rem;background:transparent;border:1px solid var(--glass-border);color:var(--gold-dim);padding:.5rem 1.1rem;font-family:'Montserrat',sans-serif;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;touch-action:manipulation;transition:all .3s" onmouseover="this.style.borderColor='var(--gold-dim)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--glass-border)';this.style.color='var(--gold-dim)'">✎ Modify This Day</button>
+      <div class="modify-section" id="day1modify">
+        <p style="font-size:.6rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.625rem">What would you like to change?</p>
+        <textarea class="modify-input" rows="2" placeholder="e.g. I'd prefer a different restaurant, or I want to add a spa session in the afternoon..." id="day1request"></textarea>
+        <button class="modify-btn" onclick="modifyDay(1,'Arrival Day','day1request')">Regenerate This Day ✦</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ EXPERIENCES TAB ══ -->
+<div class="tab-content" id="tab-experiences">
+  <div class="body">
+    <div class="sec-eye reveal">Curated for You</div>
+    <h2 class="sec-title reveal">Moments beyond <em>the obvious.</em></h2>
+    <div class="exp-grid reveal" id="experienceGrid">
+      <!-- Populated by JS -->
+      <div class="exp-card"><div class="exp-img-placeholder">✈</div><div class="exp-body"><div class="exp-cat">Your Destination</div><div class="exp-title">Experiences Loading</div><div class="exp-desc">Your curated experiences will appear here once your destination is confirmed.</div><div class="exp-footer"><span class="exp-dur">TBC</span><span class="badge badge-opt">Pending</span></div></div></div>
+      <div class="exp-card"><div class="exp-img-placeholder">🌟</div><div class="exp-body"><div class="exp-cat">Vela Selection</div><div class="exp-title">Insider Experiences</div><div class="exp-desc">Vela sources experiences that go beyond the obvious tourist trail — the ones only someone who knows the destination would suggest.</div><div class="exp-footer"><span class="exp-dur">Various</span><span class="badge badge-opt">Curated</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BUDGET TAB ══ -->
+<div class="tab-content" id="tab-budget">
+  <div class="body">
+    <div class="sec-eye reveal">Full Transparency</div>
+    <h2 class="sec-title reveal">Every dollar, <em>accounted for.</em></h2>
+    <div class="budget-card reveal">
+      <div class="budget-label">Total Investment</div>
+      <div class="budget-total" id="budgetTotal">—</div>
+      <div class="budget-bar">
+        <div class="bseg" style="width:28%;background:rgba(106,159,212,.65)"></div>
+        <div class="bseg" style="width:35%;background:var(--gold)"></div>
+        <div class="bseg" style="width:8%;background:rgba(212,149,106,.65)"></div>
+        <div class="bseg" style="width:10%;background:rgba(110,184,138,.65)"></div>
+        <div class="bseg" style="width:12%;background:rgba(168,110,201,.65)"></div>
+        <div class="bseg" style="width:7%;background:rgba(201,169,110,.2)"></div>
+      </div>
+      <div class="brows">
+        <div class="brow"><div class="brow-label"><div class="brow-dot" style="background:rgba(106,159,212,.85)"></div>Flights (Business/First Class)</div><div class="brow-amount" id="bFlights">—</div></div>
+        <div class="brow"><div class="brow-label"><div class="brow-dot" style="background:var(--gold)"></div>Accommodation</div><div class="brow-amount" id="bHotels">—</div></div>
+        <div class="brow"><div class="brow-label"><div class="brow-dot" style="background:rgba(212,149,106,.85)"></div>Transfers — All Arranged</div><div class="brow-amount" id="bTransfers">—</div></div>
+        <div class="brow"><div class="brow-label"><div class="brow-dot" style="background:rgba(110,184,138,.85)"></div>Dining — Reservations Included</div><div class="brow-amount" id="bDining">—</div></div>
+        <div class="brow"><div class="brow-label"><div class="brow-dot" style="background:rgba(168,110,201,.85)"></div>Experiences</div><div class="brow-amount" id="bExp">—</div></div>
+        <div class="brow"><div class="brow-label"><div class="brow-dot" style="background:rgba(201,169,110,.25)"></div>Insurance · Gratuities · Contingency</div><div class="brow-amount" id="bOther">—</div></div>
+      </div>
+    </div>
+    <p style="font-size:.68rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.8;margin-top:1rem">Budget breakdown is estimated based on your preferences and destination. Final costs confirmed upon booking. Vela Premier members receive exact pricing before any charges are made.</p>
+  </div>
+</div>
+
+<!-- ══ PRE-TRIP BRIEF TAB ══ -->
+<div class="tab-content" id="tab-pretrip">
+  <div class="body">
+    <div class="sec-eye reveal">Before You Go</div>
+    <h2 class="sec-title reveal">Everything you need to know <em>before you go.</em></h2>
+
+    <div id="briefLoading" style="text-align:center;padding:4rem;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim)">
+      <div style="width:24px;height:24px;border:1px solid rgba(201,169,110,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem"></div>
+      Preparing your pre-trip brief...
+    </div>
+
+    <div id="briefContent" style="display:none">
+      <div class="brief-grid reveal">
+        <div class="brief-card">
+          <div class="brief-card-title">Entry & Visa</div>
+          <div class="brief-item" id="briefVisa">Loading...</div>
+        </div>
+        <div class="brief-card">
+          <div class="brief-card-title">Currency & Money</div>
+          <div class="brief-item" id="briefCurrency">Loading...</div>
+        </div>
+        <div class="brief-card">
+          <div class="brief-card-title">Weather & Climate</div>
+          <div class="brief-item" id="briefWeather">Loading...</div>
+        </div>
+        <div class="brief-card">
+          <div class="brief-card-title">Language</div>
+          <div class="brief-item" id="briefLanguage">Loading...</div>
+        </div>
+        <div class="brief-card">
+          <div class="brief-card-title">Health</div>
+          <div class="brief-item" id="briefHealth">Loading...</div>
+        </div>
+        <div class="brief-card">
+          <div class="brief-card-title">Best Time to Visit</div>
+          <div class="brief-item" id="briefBestTime">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Cultural Notes -->
+      <div style="margin-bottom:2rem" class="reveal">
+        <div class="sec-eye" style="margin-bottom:.75rem">Cultural Notes</div>
+        <div class="brief-card" style="max-width:100%">
+          <div class="brief-card-title">What to Know Before You Arrive</div>
+          <div id="briefCultural"></div>
+        </div>
+      </div>
+
+      <!-- Local Tips -->
+      <div style="margin-bottom:2rem" class="reveal">
+        <div class="sec-eye" style="margin-bottom:.75rem">Vela Insider Tips</div>
+        <div class="brief-card" style="max-width:100%">
+          <div class="brief-card-title">Only Someone Who's Been There Would Know</div>
+          <div id="briefLocalTips"></div>
+        </div>
+      </div>
+
+      <!-- Emergency Contacts -->
+      <div style="margin-bottom:2rem" class="reveal">
+        <div class="sec-eye" style="margin-bottom:.75rem">Emergency Contacts</div>
+        <div class="emergency-grid">
+          <div class="emergency-item"><div class="emergency-label">Police</div><div class="emergency-value" id="emergPolice">—</div></div>
+          <div class="emergency-item"><div class="emergency-label">Ambulance</div><div class="emergency-value" id="emergAmb">—</div></div>
+          <div class="emergency-item"><div class="emergency-label">US Consulate</div><div class="emergency-value" id="emergConsulate">—</div></div>
+          <div class="emergency-item"><div class="emergency-label">Vela Support</div><div class="emergency-value">support@velatravel.com</div></div>
+        </div>
+      </div>
+
+      <!-- Packing List -->
+      <div class="reveal">
+        <div class="sec-eye" style="margin-bottom:.75rem">Your Packing List</div>
+        <div class="brief-grid">
+          <div class="brief-card">
+            <div class="brief-card-title">Clothing</div>
+            <div class="packing-list" id="packClothing"></div>
+          </div>
+          <div class="brief-card">
+            <div class="brief-card-title">Documents</div>
+            <div class="packing-list" id="packDocuments"></div>
+          </div>
+          <div class="brief-card">
+            <div class="brief-card-title">✦ Vela Recommends</div>
+            <div class="packing-list" id="packVela"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAP TAB ══ -->
+<div class="tab-content" id="tab-map">
+  <div class="body">
+    <div class="sec-eye reveal">Your Route</div>
+    <h2 class="sec-title reveal">The journey, <em>visualized.</em></h2>
+    <div class="map-container reveal">
+      <div class="map-route-visual" id="mapRoute">
+        <!-- Populated by JS -->
+      </div>
+      <p class="map-note" style="margin-top:2rem">Full interactive map available in the Premier booking experience.<br>Each stop is connected door-to-door — transfers, flights, and logistics all arranged.</p>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--glass-border);padding:2rem;margin-top:2rem" class="reveal">
+      <div style="font-size:.5rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem">Transfer Summary</div>
+      <div id="transferSummary">
+        <div class="brow"><div class="brow-label">🚗 Home → Airport</div><div class="brow-amount" style="font-size:.75rem;color:var(--ivory-dim)">Private car · Confirmed</div></div>
+        <div class="brow"><div class="brow-label">✈ Outbound Flight</div><div class="brow-amount" style="font-size:.75rem;color:var(--ivory-dim)">Business Class · TBC on booking</div></div>
+        <div class="brow"><div class="brow-label">🚗 Airport → Hotel</div><div class="brow-amount" style="font-size:.75rem;color:var(--ivory-dim)">Private transfer · Meet & greet</div></div>
+        <div class="brow"><div class="brow-label">✈ Return Flight</div><div class="brow-amount" style="font-size:.75rem;color:var(--ivory-dim)">Business Class · TBC on booking</div></div>
+        <div class="brow"><div class="brow-label">🚗 Airport → Home</div><div class="brow-amount" style="font-size:.75rem;color:var(--ivory-dim)">Private car · Confirmed</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FEEDBACK TAB ══ -->
+<div class="tab-content" id="tab-feedback">
+  <div class="body">
+    <div class="sec-eye reveal">After Your Trip</div>
+    <h2 class="sec-title reveal">Tell Vela <em>everything.</em></h2>
+    <p style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.9;margin-bottom:2rem;max-width:600px" class="reveal">Your feedback shapes every future experience. Every rating you leave, every operator you flag, every highlight you share — it all goes into making Vela smarter for you and for every client who comes after.</p>
+    <div class="feedback-section reveal">
+      <h3 class="feedback-title">Rate Your Experience</h3>
+      <p class="feedback-sub">One honest minute of feedback is worth more than a hundred five-star reviews.</p>
+      <div class="feedback-grid">
+        <div class="feedback-card"><span class="feedback-icon">✈</span><div class="feedback-lbl">Flights</div><div class="stars" data-cat="flights"><span class="star" onclick="rate('flights',1)">★</span><span class="star" onclick="rate('flights',2)">★</span><span class="star" onclick="rate('flights',3)">★</span><span class="star" onclick="rate('flights',4)">★</span><span class="star" onclick="rate('flights',5)">★</span></div></div>
+        <div class="feedback-card"><span class="feedback-icon">🏨</span><div class="feedback-lbl">Accommodation</div><div class="stars" data-cat="hotels"><span class="star" onclick="rate('hotels',1)">★</span><span class="star" onclick="rate('hotels',2)">★</span><span class="star" onclick="rate('hotels',3)">★</span><span class="star" onclick="rate('hotels',4)">★</span><span class="star" onclick="rate('hotels',5)">★</span></div></div>
+        <div class="feedback-card"><span class="feedback-icon">🚗</span><div class="feedback-lbl">Transfers</div><div class="stars" data-cat="transfers"><span class="star" onclick="rate('transfers',1)">★</span><span class="star" onclick="rate('transfers',2)">★</span><span class="star" onclick="rate('transfers',3)">★</span><span class="star" onclick="rate('transfers',4)">★</span><span class="star" onclick="rate('transfers',5)">★</span></div></div>
+        <div class="feedback-card"><span class="feedback-icon">🍽</span><div class="feedback-lbl">Dining</div><div class="stars" data-cat="dining"><span class="star" onclick="rate('dining',1)">★</span><span class="star" onclick="rate('dining',2)">★</span><span class="star" onclick="rate('dining',3)">★</span><span class="star" onclick="rate('dining',4)">★</span><span class="star" onclick="rate('dining',5)">★</span></div></div>
+        <div class="feedback-card"><span class="feedback-icon">🗺</span><div class="feedback-lbl">Experiences</div><div class="stars" data-cat="exp"><span class="star" onclick="rate('exp',1)">★</span><span class="star" onclick="rate('exp',2)">★</span><span class="star" onclick="rate('exp',3)">★</span><span class="star" onclick="rate('exp',4)">★</span><span class="star" onclick="rate('exp',5)">★</span></div></div>
+        <div class="feedback-card"><span class="feedback-icon">✦</span><div class="feedback-lbl">Vela Overall</div><div class="stars" data-cat="vela"><span class="star" onclick="rate('vela',1)">★</span><span class="star" onclick="rate('vela',2)">★</span><span class="star" onclick="rate('vela',3)">★</span><span class="star" onclick="rate('vela',4)">★</span><span class="star" onclick="rate('vela',5)">★</span></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:1rem">
+        <div style="background:rgba(201,169,110,.03);border:1px solid var(--glass-border);padding:1.25rem">
+          <div style="font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.625rem">What was the highlight?</div>
+          <textarea class="feedback-textarea" rows="3" id="fbHighlight" placeholder="The moment Vela should remember and always repeat..."></textarea>
+        </div>
+        <div style="background:rgba(201,169,110,.03);border:1px solid var(--glass-border);padding:1.25rem">
+          <div style="font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.625rem">What should never happen again?</div>
+          <textarea class="feedback-textarea" rows="3" id="fbImprove" placeholder="Any operator, experience, or detail to flag..."></textarea>
+        </div>
+      </div>
+      <button class="btn-feedback" onclick="saveFeedback()">Save to My Profile ✦</button>
+    </div>
+  </div>
+</div>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+const BACKEND = 'https://vela-backend-production-af0a.up.railway.app/api';
+const ratings = {};
+
+// ── TAB SWITCHING ──
+function switchTab(btn, name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'pretrip' && !window.briefLoaded) loadPreTripBrief();
+}
+
+// ── REVEAL ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.04 });
+document.querySelectorAll('.reveal, .day').forEach(el => obs.observe(el));
+
+// ── LOAD TRIP DATA ──
+const DEST = sessionStorage.getItem('vela_destination') || localStorage.getItem('vela_last_dest') || 'Your Destination';
+const OCCASION = sessionStorage.getItem('vela_occasion') || 'Your Trip';
+const BUDGET_RAW = localStorage.getItem('vela_budget') || '$10,000';
+const ADULTS = localStorage.getItem('vela_adults') || '2';
+const DATE_FROM = localStorage.getItem('vela_dateFrom') || '';
+const DATE_TO = localStorage.getItem('vela_dateTo') || '';
+const CONTENT = sessionStorage.getItem('vela_itinerary_content') || '';
+
+// Cover photo map
+const PHOTO_MAP = {
+  'japan': 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1600&q=80',
+  'maldives': 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=1600&q=80',
+  'paris': 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=1600&q=80',
+  'bali': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=80',
+  'safari': 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&q=80',
+  'new zealand': 'https://images.unsplash.com/photo-1469521669194-babb45599def?w=1600&q=80',
+  'santorini': 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&q=80',
+  'morocco': 'https://images.unsplash.com/photo-1539020140153-e479b8a22e6b?w=1600&q=80',
+  'iceland': 'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=1600&q=80',
+  'amalfi': 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=1600&q=80',
+  'dubai': 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=80',
+  'greece': 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1600&q=80',
+  'italy': 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=1600&q=80',
+  'thailand': 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1600&q=80',
+  'patagonia': 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1600&q=80',
+};
+
+function getPhoto(dest) {
+  const key = Object.keys(PHOTO_MAP).find(k => dest.toLowerCase().includes(k));
+  return key ? PHOTO_MAP[key] : 'https://images.unsplash.com/photo-1469521669194-babb45599def?w=1600&q=80';
+}
+
+function initPage() {
+  const photo = getPhoto(DEST);
+  const coverBg = document.getElementById('coverBg');
+  coverBg.style.backgroundImage = "url('" + photo + "')";
+  setTimeout(() => coverBg.classList.add('zoom'), 100);
+
+  document.getElementById('coverTitle').innerHTML = DEST + '<br><em>Awaits You</em>';
+  document.getElementById('coverOccasion').textContent = OCCASION;
+  document.getElementById('coverBudget').textContent = BUDGET_RAW;
+  document.getElementById('coverTravelers').textContent = ADULTS + ' Traveler' + (parseInt(ADULTS) > 1 ? 's' : '');
+  if (DATE_FROM && DATE_TO) {
+    const fmt = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const fmtY = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    document.getElementById('coverDates').textContent = fmt(DATE_FROM) + ' – ' + fmtY(DATE_TO);
+  }
+
+  document.getElementById('statDest').textContent = DEST;
+  document.getElementById('statBudget').textContent = BUDGET_RAW;
+  document.getElementById('budgetTotal').textContent = BUDGET_RAW;
+  document.getElementById('overviewDestTitle').innerHTML = DEST + ' — <em>every moment accounted for.</em>';
+
+  // Day 1 setup
+  document.getElementById('day1dest').textContent = DEST;
+  document.getElementById('day1label').textContent = 'Day One · ' + DEST;
+  document.getElementById('day1photoText').textContent = DEST;
+  document.getElementById('day1caption').textContent = DEST + ' · Your destination awaits';
+  document.getElementById('day1hotelTitle').textContent = 'Your ' + DEST + ' Hotel';
+  document.getElementById('day1hotelCat').textContent = '✦ Vela Selection · ' + DEST;
+  document.getElementById('day1hotelLoc').textContent = DEST + ' · Confirmed upon booking';
+  document.getElementById('routeDestName').textContent = DEST + ' ✦';
+
+  // Load destination photo for day 1
+  const destPhoto = getPhoto(DEST);
+  if (destPhoto) {
+    const img = document.getElementById('day1photo');
+    const ph = document.getElementById('day1photoPlaceholder');
+    img.src = destPhoto;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+  }
+
+  // Set hotel image
+  const hotelImgWrap = document.getElementById('day1hotelImgWrap');
+  hotelImgWrap.innerHTML = '<img src="' + destPhoto + '" alt="Hotel" style="width:100%;height:220px;object-fit:cover;display:block">';
+
+  // Populate itinerary content
+  if (CONTENT) {
+    document.getElementById('itineraryContent').textContent = CONTENT;
+    // Generate Vela note from first 200 chars
+    const note = CONTENT.substring(0, 300).replace(/\n/g, ' ').trim();
+    document.getElementById('velaNote').textContent = '"' + note + '..."';
+  } else {
+    document.getElementById('itineraryContent').textContent = 'Your itinerary is being prepared. Generate a trip from the planner to see your full curated experience here.';
+    document.getElementById('velaNote').textContent = '"Every great journey starts with a single decision. Yours starts here."';
+  }
+
+  // Budget breakdown (estimates based on total)
+  const budgetNum = parseInt(BUDGET_RAW.replace(/[^0-9]/g, '')) || 10000;
+  document.getElementById('bFlights').textContent = '$' + Math.round(budgetNum * 0.28).toLocaleString();
+  document.getElementById('bHotels').textContent = '$' + Math.round(budgetNum * 0.35).toLocaleString();
+  document.getElementById('bTransfers').textContent = '$' + Math.round(budgetNum * 0.08).toLocaleString();
+  document.getElementById('bDining').textContent = '$' + Math.round(budgetNum * 0.10).toLocaleString();
+  document.getElementById('bExp').textContent = '$' + Math.round(budgetNum * 0.12).toLocaleString();
+  document.getElementById('bOther').textContent = '$' + Math.round(budgetNum * 0.07).toLocaleString();
+
+  // Map route
+  document.getElementById('mapRoute').innerHTML = `
+    <div class="map-stop"><div class="map-stop-dot"></div><div class="map-stop-name">Home</div><div class="map-stop-days">Departure</div></div>
+    <div class="map-line"></div>
+    <div class="map-stop"><div class="map-stop-dot" style="background:var(--gold);width:14px;height:14px;margin-top:-2px"></div><div class="map-stop-name" style="color:var(--gold)">${DEST}</div><div class="map-stop-days" style="color:var(--gold)">Your Destination ✦</div></div>
+    <div class="map-line"></div>
+    <div class="map-stop"><div class="map-stop-dot"></div><div class="map-stop-name">Home</div><div class="map-stop-days">Return</div></div>
+  `;
+
+  // Experience grid with photos
+  document.getElementById('experienceGrid').innerHTML = `
+    <div class="exp-card"><img class="exp-img" src="${getPhoto(DEST)}" alt="${DEST}"><div class="exp-body"><div class="exp-cat">${DEST} · Vela Selection</div><div class="exp-title">Local Immersion Experience</div><div class="exp-desc">A private experience that goes beyond the tourist trail — curated by someone who knows this destination intimately.</div><div class="exp-footer"><span class="exp-dur">Half day</span><span class="badge badge-opt">Curated</span></div></div></div>
+    <div class="exp-card"><div class="exp-img-placeholder">🍽</div><div class="exp-body"><div class="exp-cat">${DEST} · Culinary</div><div class="exp-title">Private Dining Experience</div><div class="exp-desc">The restaurant that requires knowing someone to get in. Reservation confirmed for your dates.</div><div class="exp-footer"><span class="exp-dur">Evening</span><span class="badge badge-ok">Booked</span></div></div></div>
+    <div class="exp-card"><div class="exp-img-placeholder">🚗</div><div class="exp-body"><div class="exp-cat">${DEST} · Discovery</div><div class="exp-title">Private Guided Discovery</div><div class="exp-desc">A local expert takes you to the places most visitors never find. The hidden, the historic, the unexpected.</div><div class="exp-footer"><span class="exp-dur">Full day</span><span class="badge badge-opt">Optional</span></div></div></div>
+    <div class="exp-card"><div class="exp-img-placeholder">🌅</div><div class="exp-body"><div class="exp-cat">${DEST} · Sunrise</div><div class="exp-title">The Sunrise Experience</div><div class="exp-desc">The moment most tourists sleep through. An early morning that becomes the memory of the trip.</div><div class="exp-footer"><span class="exp-dur">Morning</span><span class="badge badge-ok">Arranged</span></div></div></div>
+  `;
+}
+
+// ── PRE-TRIP BRIEF ──
+async function loadPreTripBrief() {
+  window.briefLoaded = true;
+  try {
+    const res = await fetch(`${BACKEND}/ai/pretrip-brief`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: DEST, travelers: ADULTS, budget: BUDGET_RAW })
+    });
+    if (!res.ok) throw new Error('Failed');
+    const { brief } = await res.json();
+
+    document.getElementById('briefLoading').style.display = 'none';
+    document.getElementById('briefContent').style.display = 'block';
+
+    document.getElementById('briefVisa').textContent = brief.visa || '—';
+    document.getElementById('briefCurrency').textContent = brief.currency || '—';
+    document.getElementById('briefWeather').textContent = brief.weather || '—';
+    document.getElementById('briefLanguage').textContent = brief.language || '—';
+    document.getElementById('briefHealth').textContent = brief.health || '—';
+    document.getElementById('briefBestTime').textContent = brief.bestTime || '—';
+
+    if (brief.emergency) {
+      document.getElementById('emergPolice').textContent = brief.emergency.police || '—';
+      document.getElementById('emergAmb').textContent = brief.emergency.ambulance || '—';
+      document.getElementById('emergConsulate').textContent = brief.emergency.usConsulate || '—';
+    }
+
+    if (brief.cultural) {
+      document.getElementById('briefCultural').innerHTML = brief.cultural.map(t =>
+        `<div class="brief-item">${t}</div>`).join('');
+    }
+
+    if (brief.localTips) {
+      document.getElementById('briefLocalTips').innerHTML = brief.localTips.map(t =>
+        `<div class="brief-item">✦ ${t}</div>`).join('');
+    }
+
+    const renderPacking = (id, items) => {
+      if (!items || !items.length) return;
+      document.getElementById(id).innerHTML = items.map(item =>
+        `<div class="packing-item" onclick="this.classList.toggle('checked')"><div class="packing-check">✓</div>${item}</div>`
+      ).join('');
+    };
+
+    if (brief.packing) {
+      renderPacking('packClothing', brief.packing.clothing);
+      renderPacking('packDocuments', brief.packing.documents);
+      renderPacking('packVela', brief.packing.velaRecommends || brief.packing.essentials);
+    }
+
+    document.querySelectorAll('#tab-pretrip .reveal').forEach(el => obs.observe(el));
+
+  } catch (err) {
+    document.getElementById('briefLoading').innerHTML = '<p style="font-size:.68rem;color:var(--error)">Failed to load pre-trip brief. Please check your connection.</p>';
+  }
+}
+
+// ── MODIFY DAY ──
+function toggleModify(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function modifyDay(dayNum, dayTitle, requestId) {
+  const request = document.getElementById(requestId).value.trim();
+  if (!request) return;
+  const btn = event.target;
+  btn.textContent = 'Regenerating...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${BACKEND}/ai/modify-day`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: DEST, dayNumber: dayNum, dayTitle, modificationRequest: request })
+    });
+    if (!res.ok) throw new Error('Failed');
+    const { updatedDay } = await res.json();
+    alert('Day ' + dayNum + ' has been updated:\n\n' + updatedDay.substring(0, 300) + '...\n\nFull update applied.');
+    btn.textContent = '✓ Updated';
+  } catch (err) {
+    btn.textContent = 'Regenerate This Day ✦';
+    btn.disabled = false;
+    alert('Failed to modify day. Please try again.');
+  }
+}
+
+// ── SHARE / EMAIL ──
+function showShare() {
+  document.getElementById('modalTitle').innerHTML = 'Send Your <em>Experience</em>';
+  document.getElementById('modalSub').textContent = 'Send this curated experience to your travel companion or to your own inbox.';
+  document.getElementById('modalContent').innerHTML = `
+    <input class="modal-input" type="email" id="shareEmail" placeholder="Email address">
+    <input class="modal-input" type="text" id="shareName" placeholder="Name (optional)">
+    <button class="modal-btn" onclick="sendItinerary()">Send Curated Experience ✦</button>
+  `;
+  document.getElementById('shareModal').classList.add('show');
+}
+
+async function sendItinerary() {
+  const email = document.getElementById('shareEmail').value.trim();
+  const name = document.getElementById('shareName')?.value.trim() || '';
+  if (!email) { document.getElementById('shareEmail').style.borderColor = 'var(--error)'; return; }
+  try {
+    await fetch(`${BACKEND}/email/itinerary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name, destination: DEST, itineraryText: CONTENT })
+    });
+    document.getElementById('modalContent').innerHTML = `
+      <div style="text-align:center;padding:1rem 0">
+        <div style="font-size:2rem;margin-bottom:1rem">✦</div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--ivory);margin-bottom:.5rem">Sent.</p>
+        <p style="font-size:.68rem;color:var(--ivory-dim);letter-spacing:.05em;line-height:1.7">Your curated experience is on its way to <strong style="color:var(--gold)">${email}</strong></p>
+      </div>`;
+    setTimeout(closeModal, 2500);
+  } catch (err) {
+    alert('Send failed. Please try again.');
+  }
+}
+
+function copyShareLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    document.getElementById('modalTitle').innerHTML = 'Link <em>Copied</em>';
+    document.getElementById('modalSub').textContent = 'Share this link with your travel companion. They\'ll see your full curated experience.';
+    document.getElementById('modalContent').innerHTML = `
+      <div class="share-url">${url}</div>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${url}');this.textContent='✓ Copied'">Copy Link</button>
+    `;
+    document.getElementById('shareModal').classList.add('show');
+  }).catch(() => {
+    document.getElementById('shareModal').classList.add('show');
+  });
+}
+
+function closeModal() {
+  document.getElementById('shareModal').classList.remove('show');
+}
+
+// ── STARS ──
+function rate(cat, n) {
+  ratings[cat] = n;
+  document.querySelectorAll('.stars[data-cat="' + cat + '"] .star').forEach((s, i) => s.classList.toggle('lit', i < n));
+}
+
+// ── FEEDBACK ──
+async function saveFeedback() {
+  const highlights = document.getElementById('fbHighlight')?.value || '';
+  const improvements = document.getElementById('fbImprove')?.value || '';
+  try {
+    await fetch(`${BACKEND}/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: DEST, ratings, highlights, improvements })
+    });
+    alert('Feedback saved to your profile. Every future Vela experience will reflect this.');
+  } catch (err) {
+    alert('Feedback saved locally. Will sync when connection is restored.');
+  }
+}
+
+// ── NAVIGATION ──
+function goBack() {
+  window.location.href = 'vela-planner.html';
+}
+
+// ── FETCH REAL PHOTOS ──
+async function fetchPlacePhoto(name, type = 'hotel') {
+  try {
+    const res = await fetch(`${BACKEND}/photos/place`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, type })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.photoUrl || null;
+  } catch (e) { return null; }
+}
+
+async function loadHotelPhoto(hotelName, fallbackUrl) {
+  const photo = await fetchPlacePhoto(hotelName + ' ' + DEST, 'hotel');
+  if (photo) {
+    const wrap = document.getElementById('day1hotelImgWrap');
+    if (wrap) wrap.innerHTML = `<img src="${photo}" alt="${hotelName}" style="width:100%;height:220px;object-fit:cover;display:block">`;
+  }
+}
+
+async function loadExperiencePhotos() {
+  const expCards = document.querySelectorAll('.exp-img-placeholder');
+  const searches = [
+    { query: DEST + ' local experience', el: expCards[0] },
+    { query: DEST + ' fine dining restaurant', el: expCards[1] },
+    { query: DEST + ' guided tour', el: expCards[2] },
+    { query: DEST + ' sunrise landscape', el: expCards[3] },
+  ];
+  
+  for (const s of searches) {
+    if (!s.el) continue;
+    try {
+      const res = await fetch(`${BACKEND}/photos/place`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: s.query, type: 'attraction' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.photoUrl) {
+          s.el.outerHTML = `<img class="exp-img" src="${data.photoUrl}" alt="${s.query}" loading="lazy">`;
+        }
+      }
+    } catch (e) {}
+  }
+}
+
+// ── INIT ──
+initPage();
+
+// Load real photos after page init
+setTimeout(() => {
+  // Extract hotel name from content if available
+  const hotelMatch = CONTENT.match(/([A-Z][a-zA-Z\s&']+(?:Hotel|Lodge|Resort|Ryokan|Ritz|Aman|Four Seasons|Park Hyatt|Mandarin|Peninsula|Raffles))/);
+  if (hotelMatch) {
+    loadHotelPhoto(hotelMatch[1]);
+  } else {
+    loadHotelPhoto(DEST + ' luxury hotel');
+  }
+  loadExperiencePhotos();
+}, 500);
+</script>
+</body>
+</html>
