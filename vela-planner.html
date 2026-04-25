@@ -641,17 +641,17 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
       sessionStorage.setItem('vela_destination', dest);
       sessionStorage.setItem('vela_occasion', state.occasion || '');
       sessionStorage.setItem('vela_itinerary_content', bodyEl.textContent);
-      // Show email capture then redirect to itinerary page
+      // Show email capture then always redirect to itinerary page
       if(!localStorage.getItem(EMAIL_KEY)){
-        setTimeout(()=>document.getElementById('emailModal').classList.add('show'),1500);
         setTimeout(()=>{
-          if(!document.getElementById('emailModal').classList.contains('show')) return;
-          closeModal();
-          window.location.href='vela-itinerary.html';
-        },5000);
-      } else {
-        setTimeout(()=>{ window.location.href='vela-itinerary.html'; }, 1500);
+          const modal = document.getElementById('emailModal');
+          if(modal) modal.classList.add('show');
+        }, 1000);
       }
+      // Always redirect after 3 seconds regardless of email modal
+      setTimeout(()=>{
+        window.location.href='vela-itinerary.html';
+      }, 3000);
 
     } catch(err){
       cursor.remove(); bodyEl.textContent='';
@@ -670,7 +670,10 @@ function submitEmail(){
   localStorage.setItem(EMAIL_KEY,email);
   fetch(`${BACKEND}/waitlist`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,source:'planner',destination:state.destination,occasion:state.occasion})}).catch(()=>{});
   document.querySelector('.modal').innerHTML=`<div style="text-align:center;padding:1.5rem 0"><div style="font-size:2.5rem;margin-bottom:1.25rem">✦</div><h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ivory);margin-bottom:.75rem">You're on the list.</h2><p style="font-size:.7rem;color:var(--ivory-dim);letter-spacing:.06em;line-height:1.8;margin-bottom:1.75rem">We'll reach out the moment Vela launches with full booking.</p><button onclick="closeModal()" style="background:var(--gold);color:var(--obsidian);border:none;padding:.95rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;cursor:pointer;width:100%;touch-action:manipulation">View My Itinerary →</button></div>`;
-  setTimeout(closeModal,3000);
+  setTimeout(()=>{
+    closeModal();
+    window.location.href='vela-itinerary.html';
+  }, 2000);
 }
 
 function showFullItinerary(){
