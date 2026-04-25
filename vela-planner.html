@@ -557,7 +557,7 @@ const SAFARI_DISCOVERY = {
       { value: 'The Great Migration — witnessing the wildebeest river crossings', label: 'The Great Migration', desc: 'One million wildebeest crossing the Mara River. Crocodiles. Drama. July–October in Kenya\'s Masai Mara. The greatest wildlife spectacle on earth.' },
       { value: 'Safari combined with a beach — wildlife then white sand', label: 'Safari + Beach', desc: 'Kenya + Zanzibar. Tanzania + Zanzibar. South Africa + Mozambique. The perfect Africa trip — game drives, then collapse on pristine coastline.' },
       { value: 'The most exclusive, most remote, most private safari experience possible', label: 'Most Exclusive — Private Concession', desc: 'No other vehicles at your sighting. Off-road driving. Night drives. Walking safaris. Singita, Wilderness, &Beyond on private land. The difference is like private jet vs commercial.' },
-      { value: 'I don\'t know — I've never been on safari and I need Vela to guide me', label: 'First Safari — Guide Me', desc: 'Tell Vela your budget and how adventurous you are. We\'ll recommend the right country, the right operator, and the right experience for a first timer.' },
+      { value: 'I don\'t know — I\'ve never been on safari and I need Vela to guide me', label: 'First Safari — Guide Me', desc: 'Tell Vela your budget and how adventurous you are. We\'ll recommend the right country, the right operator, and the right experience for a first timer.' },
     ]
   },
   publicVsPrivate: {
@@ -612,12 +612,12 @@ const MUST_STAY_HOTELS = {
   'maldives': {
     hotel: 'Soneva Fushi',
     why: 'World\'s 50 Best Hotels 2024 #8. No shoes policy. Your own private beach. A chef who knows your dietary preferences before you arrive. The open-air bathroom under the stars. The house reef is one of the finest in the Maldives.',
-    alternative: 'Cheval Blanc Randheli — LVMH's Maldives property. The service standard is different to anything else on the island nation.',
+    alternative: 'Cheval Blanc Randheli — LVMH\'s Maldives property. The service standard is different to anything else on the island nation.',
     price_signal: 'from $3,000/night'
   },
   'paris': {
     hotel: 'Cheval Blanc Paris',
-    why: 'World\'s 50 Best Hotels 2024 #4. On the Seine. LVMH's flagship urban hotel. Dior spa. The only hotel in Paris where the building, the service, and the food all operate at the same extraordinary level simultaneously.',
+    why: 'World\'s 50 Best Hotels 2024 #4. On the Seine. LVMH\'s flagship urban hotel. Dior spa. The only hotel in Paris where the building, the service, and the food all operate at the same extraordinary level simultaneously.',
     alternative: 'Hotel de Crillon — Place de la Concorde. 18th century palace. One of the most storied addresses in the world.',
     price_signal: 'from $2,500/night'
   },
@@ -1027,7 +1027,7 @@ const regionNote = regionChoice ? `CLIENT REGION PREFERENCE: ${regionChoice}. Bu
 const hotelNote = hotelPhil ? `HOTEL PHILOSOPHY: "${hotelPhil}". ${mustStayNote}
 If the client wants the hotel to be the experience — recommend properties that are genuinely worth traveling for. Explain WHY each property deserves to be there. What you would miss by not staying there. The specific detail — the onsen at dawn, the check-in ceremony, the rooftop view — that makes it irreplaceable.` : '';
 
-const prompt=\`You are Vela, a world-class AI luxury travel concierge with deep personal knowledge of destinations worldwide.
+const prompt=`You are Vela, a world-class AI luxury travel concierge with deep personal knowledge of destinations worldwide.
 
 TRIP DETAILS:
 - Occasion: ${state.occasion||'Trip'}
