@@ -242,6 +242,12 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
     <p class="step-eyebrow">Step 03 of 04</p>
     <h1 class="step-title">A few questions<br>about <em id="destDisplay">your trip.</em></h1>
     <p class="step-sub">Vela wants to understand exactly what you're hoping for.</p>
+    <!-- SEASONAL INSIGHT -->
+    <div id="seasonalInsight" style="display:none;background:rgba(201,169,110,.06);border-left:2px solid var(--gold);padding:1.1rem 1.5rem;margin-bottom:2rem;font-size:.72rem;color:var(--ivory-dim);letter-spacing:.04em;line-height:1.8">
+      <div style="font-size:.5rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem">✦ Vela — When to Go</div>
+      <div id="seasonalInsightText"></div>
+    </div>
+
     <div id="questionsLoading" class="questions-loading">
       <div class="q-spinner"></div>
       <span id="loadingText">Thinking about your destination...</span>
@@ -384,7 +390,51 @@ function goToStep(n){
 function selectOccasion(el,occasion){ document.querySelectorAll('.occasion-tile').forEach(t=>t.classList.remove('selected')); el.classList.add('selected'); state.occasion=occasion; }
 function setDest(el,dest){ document.getElementById('destinationInput').value=dest; document.querySelectorAll('.dest-chip').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); state.destination=dest; }
 
+
+// ── SEASONAL INSIGHTS ──
+const SEASONAL = {
+  'japan': 'Best time: March–May (cherry blossom season — the most magical) and October–November (autumn foliage, fewer crowds). Summer (June–August) is hot and humid. Winter is cold but beautiful for snow landscapes.',
+  'maldives': 'Best time: November–April (dry season, crystal clear water, ideal for diving and snorkeling). May–October brings rain and rougher seas — but rates drop significantly and it\'s far less crowded.',
+  'bali': 'Best time: April–October (dry season — lush without the heavy rain). July–August is peak season. The shoulder months of April, May, September and October offer the best balance of weather and value.',
+  'paris': 'Best time: April–June (spring bloom, mild weather, fewer tourists than summer) and September–October (golden light, harvest season, the city at its most sophisticated). July–August is crowded and hot.',
+  'new zealand': 'Best time: October–April (Southern Hemisphere summer). October–November is spring — wildflowers, fewer crowds, dramatic light. December–February is peak summer. March–April is golden autumn.',
+  'safari': 'Best time depends on your goal — July–October for the Great Migration in Kenya (wildebeest crossing the Mara River, one of nature\'s greatest spectacles). January–March for calving season. Dry season offers best game viewing.',
+  'kenya': 'Best time: July–October for the Great Migration wildebeest crossing. January–March for calving season and newborn animals. June–October is dry season — best wildlife viewing overall.',
+  'amalfi': 'Best time: May–June and September–October. July–August is peak season — beautiful but overcrowded and expensive. Spring and early autumn offer the perfect Mediterranean climate with fewer crowds.',
+  'santorini': 'Best time: April–June and September–October. July–August is peak — stunning but very crowded. Shoulder season gives you the iconic views without sharing them with thousands of others.',
+  'iceland': 'Best time: June–August for midnight sun, green landscapes, and all roads open. December–March for Northern Lights. September–October offers both autumn colors and potential aurora.',
+  'morocco': 'Best time: March–May and September–November. Summer (June–August) in Marrakech can exceed 100°F. Winter is mild but the Sahara is cold at night. Spring brings wildflowers in the Atlas Mountains.',
+  'dubai': 'Best time: November–March (winter — warm and sunny, 75–85°F). April–October is extreme heat (up to 115°F). The Dubai winter is genuinely beautiful — outdoor dining, beach weather, festivals.',
+  'greece': 'Best time: May–June and September–October. July–August is peak — hot, crowded, and expensive. The shoulder seasons offer perfect weather, fewer tourists, and significantly lower prices.',
+  'italy': 'Best time: April–June and September–October. Spring brings wildflowers and mild weather. Autumn has harvest season and softer light. July–August is beautiful but very crowded.',
+  'thailand': 'Best time: November–April (cool and dry season). May–October is monsoon — heavy rain but lush landscapes and fewer tourists. December–January is peak season — expect crowds at popular spots.',
+  'patagonia': 'Best time: November–March (Southern Hemisphere summer). December–February is peak — long days and the most stable weather. March offers fewer crowds and beautiful autumn colors beginning.',
+  'switzerland': 'Best time: June–September for hiking and outdoor activities (alpine meadows, clear skies). December–March for skiing. Zurich specifically is beautiful year-round — Christmas markets in winter are exceptional.',
+  'zurich': 'Best time: May–September for outdoor café culture, lake swimming, and festivals. December–January brings Christmas markets that are among Europe\'s most spectacular. The city is clean and beautiful in every season.',
+  'portugal': 'Best time: March–May and September–October. Summer is hot and crowded in Lisbon and the Algarve. Spring is perfect — mild, green, affordable. October is arguably the best month — warm sea, quiet streets.',
+  'default': 'For the best experience at your destination, consider the shoulder seasons — one month before or after peak season. You\'ll find fewer crowds, lower prices, and often the most authentic experience.'
+};
+
+function getSeasonalInsight(destination) {
+  const dest = destination.toLowerCase();
+  for (const [key, text] of Object.entries(SEASONAL)) {
+    if (dest.includes(key)) return text;
+  }
+  return SEASONAL.default;
+}
+
+function showSeasonalInsight(destination) {
+  const text = getSeasonalInsight(destination);
+  const el = document.getElementById('seasonalInsight');
+  const textEl = document.getElementById('seasonalInsightText');
+  if (el && textEl) {
+    textEl.textContent = text;
+    el.style.display = 'block';
+  }
+}
+
 async function loadAdaptiveQuestions(destination){
+  showSeasonalInsight(destination);
   const loadEl=document.getElementById('questionsLoading');
   const listEl=document.getElementById('questionsList');
   const dreamEl=document.getElementById('dreamSection');
@@ -583,8 +633,25 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
       }
 
       localStorage.setItem(USED_KEY,'true');
-      document.getElementById('upsellSection').style.display='block';
-      if(!localStorage.getItem(EMAIL_KEY)){ setTimeout(()=>document.getElementById('emailModal').classList.add('show'),2500); }
+      localStorage.setItem('vela_last_dest', dest);
+      localStorage.setItem('vela_budget', state.budget);
+      localStorage.setItem('vela_adults', state.adults);
+      localStorage.setItem('vela_dateFrom', state.dateFrom || '');
+      localStorage.setItem('vela_dateTo', state.dateTo || '');
+      sessionStorage.setItem('vela_destination', dest);
+      sessionStorage.setItem('vela_occasion', state.occasion || '');
+      sessionStorage.setItem('vela_itinerary_content', bodyEl.textContent);
+      // Show email capture then redirect to itinerary page
+      if(!localStorage.getItem(EMAIL_KEY)){
+        setTimeout(()=>document.getElementById('emailModal').classList.add('show'),1500);
+        setTimeout(()=>{
+          if(!document.getElementById('emailModal').classList.contains('show')) return;
+          closeModal();
+          window.location.href='vela-itinerary.html';
+        },5000);
+      } else {
+        setTimeout(()=>{ window.location.href='vela-itinerary.html'; }, 1500);
+      }
 
     } catch(err){
       cursor.remove(); bodyEl.textContent='';
