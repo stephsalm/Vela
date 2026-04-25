@@ -313,50 +313,21 @@ input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px
     </div>
   </div>
 
-  <!-- RESULT -->
-  <div id="result">
-    <div class="result-header">
-      <p class="result-eyebrow">Your Vela Itinerary</p>
-      <div class="result-dest" id="resultDest">Your Journey <em>Awaits</em></div>
-      <div class="result-meta">
-        <div class="result-meta-item">📅 <span id="resultDates">—</span></div>
-        <div class="result-meta-item">👤 <span id="resultTravelers">—</span></div>
-        <div class="result-meta-item">💰 <span id="resultBudget">—</span></div>
-        <div class="result-meta-item">✦ <span id="resultOccasion">—</span></div>
+  <!-- RESULT - Simple redirect screen -->
+  <div id="result" style="display:none">
+    <div style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;gap:2rem">
+      <div style="width:60px;height:60px;border-radius:50%;border:1px solid rgba(201,169,110,.2);border-top-color:var(--gold);animation:ringRotate 1.2s linear infinite"></div>
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ivory);margin-bottom:.5rem">Your experience is ready.</h2>
+        <p style="font-size:.72rem;color:var(--ivory-dim);letter-spacing:.06em">Taking you to your curated journey...</p>
       </div>
     </div>
-    <div class="itinerary-card" style="position:relative">
-      <div class="itinerary-header-bar">
-        <div class="itinerary-badge"><span class="live-dot"></span> Vela AI — Generated for You</div>
-      </div>
-      <div class="itinerary-body" id="itineraryBody" style="max-height:320px;overflow:hidden;position:relative"></div>
-      <!-- FADE TEASER -->
-      <div id="itineraryFade" style="position:absolute;bottom:0;left:0;right:0;height:180px;background:linear-gradient(to bottom,transparent,var(--surface));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:2rem;z-index:2">
-        <p style="font-size:.68rem;letter-spacing:.1em;color:var(--ivory-dim);margin-bottom:1.25rem;text-align:center">Your full itinerary is ready — sign up to unlock every detail</p>
-        <div style="display:flex;gap:.875rem;flex-wrap:wrap;justify-content:center">
-          <a href="vela-auth.html" style="display:inline-flex;align-items:center;gap:.75rem;background:var(--gold);color:var(--obsidian);padding:.875rem 2rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;text-decoration:none;cursor:pointer;touch-action:manipulation">Unlock Full Itinerary ✦</a>
-          <button onclick="showFullItinerary()" style="display:inline-flex;align-items:center;background:transparent;color:var(--gold-dim);padding:.875rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--glass-border);cursor:pointer;touch-action:manipulation">Preview Only</button>
-        </div>
-      </div>
+    <div id="itineraryBody" style="display:none"></div>
+    <div id="errorBox" style="display:none;padding:2rem;text-align:center">
+      <p id="errorMsg" style="font-size:.75rem;color:#e08080;letter-spacing:.05em;line-height:1.7"></p>
+      <button onclick="goToStep(4)" style="margin-top:1rem;background:var(--gold);color:var(--obsidian);border:none;padding:.75rem 1.5rem;font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;touch-action:manipulation">Try Again</button>
     </div>
-    <div class="error-box" id="errorBox"><p id="errorMsg"></p></div>
-    <div class="upsell" id="upsellSection" style="display:none">
-      <div class="upsell-eyebrow">✦ Want Vela to book all of this for you?</div>
-      <h3 class="upsell-title">Upgrade to Premier and our agents handle <em>everything.</em></h3>
-      <p class="upsell-desc">Flights booked. Hotels reserved. Transfers arranged. Dining secured. One confirmation — agents execute everything in real time. $99/month, cancel any time.</p>
-      <div class="upsell-feats">
-        <div class="upsell-feat"><span class="upsell-feat-icon">✈</span><div class="upsell-feat-label">Autonomous Booking</div></div>
-        <div class="upsell-feat"><span class="upsell-feat-icon">🍽</span><div class="upsell-feat-label">Dining Reservations</div></div>
-        <div class="upsell-feat"><span class="upsell-feat-icon">🚗</span><div class="upsell-feat-label">All Transfers</div></div>
-      </div>
-      <div class="upsell-actions">
-        <a href="vela-pricing.html" class="btn-gold">Upgrade to Premier — $99/mo</a>
-        <a href="vela-pricing.html" class="btn-outline">View All Plans →</a>
-      </div>
-    </div>
-    <div style="margin-top:1rem"><button class="restart-btn" onclick="restart()">← Plan Another Trip</button></div>
   </div>
-
 </div>
 
 <script>
@@ -1061,7 +1032,8 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
 
   setTimeout(async()=>{
     document.getElementById('generating').style.display='none';
-    document.getElementById('result').style.display='block';
+    document.getElementById('result').style.display='flex';
+    document.getElementById('result').style.flexDirection='column';
     window.scrollTo({top:0,behavior:'smooth'});
 
     const bodyEl=document.getElementById('itineraryBody');
@@ -1107,6 +1079,7 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
         }
       }
 
+      // Save everything
       localStorage.setItem(USED_KEY,'true');
       localStorage.setItem('vela_last_dest', dest);
       localStorage.setItem('vela_budget', state.budget);
@@ -1116,17 +1089,13 @@ Write in an elevated, warm, personal tone. Make them feel the trip before they'v
       sessionStorage.setItem('vela_destination', dest);
       sessionStorage.setItem('vela_occasion', state.occasion || '');
       sessionStorage.setItem('vela_itinerary_content', bodyEl.textContent);
-      // Show email capture then always redirect to itinerary page
+      // Show email modal briefly then redirect
       if(!localStorage.getItem(EMAIL_KEY)){
-        setTimeout(()=>{
-          const modal = document.getElementById('emailModal');
-          if(modal) modal.classList.add('show');
-        }, 1000);
+        const modal = document.getElementById('emailModal');
+        if(modal) modal.classList.add('show');
       }
-      // Always redirect after 3 seconds regardless of email modal
-      setTimeout(()=>{
-        window.location.href='vela-itinerary.html';
-      }, 3000);
+      // Redirect to beautiful itinerary page
+      setTimeout(()=>{ window.location.href='vela-itinerary.html'; }, 2000);
 
     } catch(err){
       cursor.remove(); bodyEl.textContent='';
